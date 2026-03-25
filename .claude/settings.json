@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Bash(*)"
+    ],
+    "deny": [
+      "Bash(rm *)",
+      "Bash(rm -rf*)",
+      "Bash(del *)",
+      "Bash(rmdir *)",
+      "Bash(Remove-Item*)",
+      "Bash(git commit*)"
+    ]
+  }
+}
