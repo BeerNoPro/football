@@ -1,0 +1,44 @@
+## .NET / C#
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+bin/
+obj/
+*.nupkg
+*.snupkg
+**/launchSettings.json
+
+## Logs (Serilog output)
+logs/
+
+## Secrets & Config local
+appsettings.Development.json
+appsettings.Staging.json
+appsettings.Production.json
+secrets.json
+
+## EF Core Migrations temp
+*.Designer.cs.bak
+
+## Node / Tailwind
+node_modules/
+npm-debug.log*
+
+## OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+## IDE
+.idea/
+*.iml
+.vscode/settings.json
+
+## Docker volumes
+postgres_data/
+redis_data/
+
+## Uploads local
+**/wwwroot/uploads/

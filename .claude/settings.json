@@ -12,5 +12,34 @@
       "Bash(Remove-Item*)",
       "Bash(git commit*)"
     ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /c/Users/Admin/football/.claude/hooks/build-check.sh",
+            "statusMessage": "Formatting & building..."
+          },
+          {
+            "type": "command",
+            "command": "bash /c/Users/Admin/football/.claude/hooks/dbcontext-check.sh",
+            "statusMessage": "Checking DbContext..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /c/Users/Admin/football/.claude/hooks/stop-notify.sh"
+          }
+        ]
+      }
+    ]
   }
 }

@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FootballBlog.Web", "FootballBlog.Web\FootballBlog.Web.csproj", "{F4B7B428-6C88-44B0-9AA9-6E40E5356CA5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FootballBlog.API", "FootballBlog.API\FootballBlog.API.csproj", "{C7934AF6-F515-475D-A367-81ABC4701306}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FootballBlog.Core", "FootballBlog.Core\FootballBlog.Core.csproj", "{F5534CBB-A9B4-4EE7-8B53-AC29A5DF3D04}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FootballBlog.Infrastructure", "FootballBlog.Infrastructure\FootballBlog.Infrastructure.csproj", "{36CAF714-F0C6-46C4-8C35-EA8A1973264E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F4B7B428-6C88-44B0-9AA9-6E40E5356CA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4B7B428-6C88-44B0-9AA9-6E40E5356CA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4B7B428-6C88-44B0-9AA9-6E40E5356CA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4B7B428-6C88-44B0-9AA9-6E40E5356CA5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7934AF6-F515-475D-A367-81ABC4701306}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7934AF6-F515-475D-A367-81ABC4701306}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7934AF6-F515-475D-A367-81ABC4701306}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7934AF6-F515-475D-A367-81ABC4701306}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5534CBB-A9B4-4EE7-8B53-AC29A5DF3D04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5534CBB-A9B4-4EE7-8B53-AC29A5DF3D04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5534CBB-A9B4-4EE7-8B53-AC29A5DF3D04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5534CBB-A9B4-4EE7-8B53-AC29A5DF3D04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36CAF714-F0C6-46C4-8C35-EA8A1973264E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36CAF714-F0C6-46C4-8C35-EA8A1973264E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36CAF714-F0C6-46C4-8C35-EA8A1973264E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36CAF714-F0C6-46C4-8C35-EA8A1973264E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
