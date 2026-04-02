@@ -1,0 +1,12 @@
+{
+  "name": "footballblog-web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i Styles/app.input.css -o wwwroot/app.css --minify",
+    "watch:css": "tailwindcss -i Styles/app.input.css -o wwwroot/app.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}

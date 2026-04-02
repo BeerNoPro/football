@@ -16,6 +16,8 @@
 | Hosting (prd) | AWS EC2 + RDS + S3 + CloudFront |
 | CDN / DNS | Cloudflare |
 | IDE | VS Code (AI + edit) + Visual Studio (debug) |
+| AI APIs | Claude API (claude-opus-4-6) / Google Gemini |
+| Notification | Telegram Bot API |
 
 ---
 
@@ -55,42 +57,73 @@ FootballBlog/
 - **Users** — id, username, email, password_hash, role (admin/author)
 - **LiveMatches** — id, home_team, away_team, score, status, started_at
 - **MatchEvents** — id, match_id, minute, type (goal/card/sub), description
+- **Matches** — id, external_id, home_team_id, away_team_id, kickoff_utc, status, league_id
+- **MatchPredictions** — id, match_id, ai_provider, predicted_score, confidence_score, analysis_summary, telegram_message_id, generated_at
 
 ---
 
 ## Phases
 
-### Phase 1 — Setup & Foundation
-- [ ] Khởi tạo solution ASP.NET Core 8 + Blazor
-- [ ] Cấu hình Docker Compose (PostgreSQL + Redis)
-- [ ] Setup Entity Framework Core + migrations
-- [ ] Cấu hình môi trường dev (appsettings, secrets)
+### Phase 1 — Setup & Foundation ✅
+- [x] Solution structure 4 projects (Web/API/Core/Infrastructure)
+- [x] Docker Compose (PostgreSQL + Redis) với healthchecks
+- [x] EF Core + InitialCreate migration (7 entities)
+- [x] Serilog multi-sink (app/error/api/jobs)
+- [x] IUnitOfWork + UnitOfWork pattern
+- [x] DTOs: PostSummaryDto, PostDetailDto, CategoryDto, LiveMatchDto
+- [x] Service Layer: IPostService/PostService, ICategoryService
+- [x] Typed HttpClient IPostApiClient trong Web
+- [x] Tailwind CSS setup (npm build pipeline)
+- [x] Claude hooks: build-check, dbcontext-check, stop-notify
 
-### Phase 2 — Blog Core (SEO)
+### Phase 2 — Blog Core (SEO) ⬜
 - [ ] Blazor SSR pages: Home, Bài viết, Danh mục, Tag
 - [ ] SEO: meta tags, Open Graph, sitemap.xml, robots.txt
 - [ ] Schema.org JSON-LD cho bài viết thể thao
 - [ ] Upload ảnh lên S3 (hoặc local khi dev)
+- [ ] Tailwind CSS public pages
 
-### Phase 3 — Admin Panel
-- [ ] Authentication / Authorization (role: admin, author)
-- [ ] CRUD bài viết (editor Markdown hoặc rich text)
-- [ ] Quản lý danh mục, tag
-- [ ] Dashboard traffic cơ bản
+### Phase 3 — Admin Panel ⬜
+- [ ] Replace ApplicationUser → extend IdentityUser<int> + migration
+- [ ] ASP.NET Core Identity (Cookie Auth cho Blazor, JWT cho API)
+- [ ] Install MudBlazor (chỉ cho Admin routes)
+- [ ] Admin pages: Dashboard, Posts CRUD, Categories, Tags
+- [ ] Rich text editor (Quill.js qua JS interop)
+- [ ] Upload ảnh → MediaController → S3/Local
 
-### Phase 4 — Realtime Football
-- [ ] Tích hợp Football API bên ngoài (API-Football / SportMonks)
-- [ ] Hangfire job polling live score mỗi 30 giây
-- [ ] SignalR Hub broadcast live score xuống client
-- [ ] Blazor LiveScore widget (InteractiveServer)
-- [ ] Tường thuật trực tiếp realtime
+### Phase 4 — Realtime Football ⬜
+- [ ] FootballApiClient (IHttpClientFactory + Polly retry)
+- [ ] Redis rate limit counter (100 req/ngày)
+- [ ] Match + MatchEvent schema: enum MatchStatus, EventType
+- [ ] Hangfire jobs: FetchUpcomingMatchesJob (6h), LiveScorePollingJob (30s)
+- [ ] SignalR Hub (LiveScoreHub) + Redis backplane
+- [ ] Blazor LiveScore pages + widget (InteractiveServer)
 
-### Phase 5 — Deploy & DevOps
-- [ ] Deploy lên Railway (free, từ GitHub)
-- [ ] Cấu hình domain + Cloudflare DNS + HTTPS
+### Phase 5 — AI Match Prediction ⬜
+- [ ] Domain entities: Match (từ Football API), MatchPrediction
+- [ ] EF Core migration cho Match + MatchPrediction
+- [ ] IAIPredictionProvider interface + Claude implementation
+- [ ] MatchContext object (h2h, form, lineup, referee)
+- [ ] Prompt template lưu DB để A/B test
+- [ ] Hangfire GeneratePredictionJob (trigger 24h trước kickoff)
+- [ ] PublishPredictionJob → tạo blog post từ prediction
+- [ ] Gemini implementation (fallback provider)
+
+### Phase 6 — Telegram + Auto-publish ⬜
+- [ ] Install Telegram.Bot NuGet
+- [ ] ITelegramService: SendPredictionAsync, EditMessageAsync
+- [ ] TelegramNotificationChannel implement INotificationChannel
+- [ ] Bot command: /lichdat (query lịch đấu upcoming)
+- [ ] Edit Telegram message khi kết quả thực tế về
+- [ ] Admin page: xem prediction history, manual retrigger
+
+### Phase 7 — Deploy & DevOps ⬜
+- [ ] Dockerfile (multi-stage, Web + API)
+- [ ] Railway deploy (dev/staging)
 - [ ] GitHub Actions CI/CD pipeline
-- [ ] Chuyển sang AWS: EC2 + RDS + S3 + CloudFront
-- [ ] Monitoring logs + alerts cơ bản
+- [ ] AWS EC2 + RDS + S3 + CloudFront
+- [ ] CloudWatch logging
+- [ ] Monitoring: alert khi Football API gần hết quota
 
 ---
 
@@ -99,18 +132,7 @@ FootballBlog/
 1. Thiết kế màn hình trên **Figma**
 2. Dùng **Figma MCP** trong Claude Code để đọc design trực tiếp
 3. Claude generate Blazor component từ Figma spec
-4. Apply Tailwind CSS / Bootstrap theo design token từ Figma
-
----
-
-## Pages cần design trên Figma
-
-- [ ] Home — danh sách bài viết nổi bật, live score widget
-- [ ] Trang bài viết — nội dung, SEO layout
-- [ ] Trang danh mục / tag
-- [ ] Live Score / Tường thuật trực tiếp
-- [ ] Admin Dashboard
-- [ ] Admin — Tạo / Sửa bài viết
+4. Apply Tailwind CSS theo design token từ Figma
 
 ---
 
@@ -119,4 +141,6 @@ FootballBlog/
 - Ưu tiên SSR cho tất cả trang blog → SEO tốt
 - Chỉ dùng InteractiveServer cho widget cần realtime hoặc admin
 - Không dùng Blazor WASM (bundle nặng, SEO kém)
-- Football API free tier: API-Football (100 req/ngày)
+- Football API free tier: API-Football (100 req/ngày) — cache + rate limit ngay từ Phase 4
+- AI Provider dùng interface (IAIPredictionProvider) để swap Claude/Gemini không cần sửa business logic
+- Telegram message lưu ID để edit sau khi có kết quả thực

@@ -1,0 +1,28 @@
+# Build output — không bao giờ cần đọc
+**/bin/
+**/obj/
+
+# EF Core auto-generated — chỉ đọc khi debug migration cụ thể
+**/Migrations/*.Designer.cs
+**/Migrations/*Snapshot.cs
+
+# Node
+**/node_modules/
+
+# Logs (runtime output)
+logs/
+
+# Generated CSS (output của Tailwind build)
+**/wwwroot/app.css
+
+# IDE / OS
+.vs/
+.vscode/settings.json
+.DS_Store
+
+# NuGet
+*.nupkg
+**/.nuget/
+
+# Git internals
+.git/

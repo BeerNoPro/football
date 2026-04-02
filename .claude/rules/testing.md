@@ -5,59 +5,20 @@ paths:
   - "**/*Test.cs"
 ---
 
-# Testing Rules
+# Testing
 
-## Thư viện
-- Unit test: xUnit + FluentAssertions + NSubstitute (mock)
-- Integration test: xUnit + WebApplicationFactory + Testcontainers (real PostgreSQL)
+- Unit: xUnit + FluentAssertions + NSubstitute | Integration: xUnit + WebApplicationFactory + Testcontainers (real PostgreSQL)
+- Method naming: `MethodName_Scenario_ExpectedResult` (e.g., `GetPostBySlug_WhenNotFound_ReturnsNull`)
+- Pattern: Arrange / Act / Assert | 1 behavior per test | test độc lập, không phụ thuộc thứ tự
 
-## Cấu trúc
-```
-FootballBlog.Tests/
-├── Unit/
-│   ├── Services/PostServiceTests.cs
-│   └── Validators/CreatePostValidatorTests.cs
-└── Integration/
-    ├── Api/PostsEndpointTests.cs
-    └── Fixtures/DatabaseFixture.cs
-```
-
-## Naming Convention
+## Unit test
 ```csharp
-// Method_Scenario_ExpectedResult
-[Fact]
-public async Task GetPostBySlug_WhenSlugExists_ReturnsPost() { }
-
-[Fact]
-public async Task GetPostBySlug_WhenSlugNotFound_ReturnsNull() { }
+var mockUow = Substitute.For<IUnitOfWork>();
+var service = new PostService(mockUow, NullLogger<PostService>.Instance);
+var result = await service.GetBySlugAsync("test");
+result.Should().BeNull();
+await mockUow.Posts.Received(1).GetBySlugAsync("test");
 ```
 
-## Unit Test Pattern (Arrange-Act-Assert)
-```csharp
-[Fact]
-public async Task CreatePost_ValidData_ReturnsCreatedPost()
-{
-    // Arrange
-    var mockRepo = Substitute.For<IPostRepository>();
-    var service = new PostService(mockRepo, _logger);
-    var command = new CreatePostCommand { Title = "Test", Slug = "test" };
-
-    // Act
-    var result = await service.CreatePostAsync(command);
-
-    // Assert
-    result.Should().NotBeNull();
-    result.Slug.Should().Be("test");
-    await mockRepo.Received(1).AddAsync(Arg.Any<Post>());
-}
-```
-
-## Integration Test — dùng real DB
-- KHÔNG mock DbContext trong integration test
-- Dùng Testcontainers để spin up PostgreSQL container
-- Reset DB state giữa các test (transactions hoặc truncate)
-
-## Nguyên tắc
-- Mỗi test chỉ assert 1 behavior
-- Test phải độc lập, không phụ thuộc thứ tự chạy
-- Không test EF Core internals — test behavior của service
+## Integration test
+- KHÔNG mock DbContext | Testcontainers spin up PostgreSQL | reset DB state giữa tests

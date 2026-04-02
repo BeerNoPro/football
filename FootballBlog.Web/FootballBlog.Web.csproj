@@ -16,4 +16,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <!-- Tailwind CSS: chỉ chạy nếu node_modules đã được cài (npm install) -->
+  <Target Name="BuildTailwind" BeforeTargets="Build" Condition="Exists('$(MSBuildProjectDirectory)/node_modules')">
+    <Message Text="Building Tailwind CSS..." Importance="high" />
+    <Exec Command="npm run build:css" WorkingDirectory="$(MSBuildProjectDirectory)" />
+  </Target>
+
 </Project>

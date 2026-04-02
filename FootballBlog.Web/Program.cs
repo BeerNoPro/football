@@ -1,5 +1,9 @@
+using FootballBlog.Web.ApiClients;
 using FootballBlog.Web.Components;
 using Serilog;
+using Serilog.Events;
+
+const string OutputTemplate = "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {SourceContext} | {Message:lj}{NewLine}{Exception}";
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -9,18 +13,32 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
 
-    // Serilog
+    // Đường dẫn log tập trung tại solution root /logs/
+    var logBasePath = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "logs"));
+
     builder.Host.UseSerilog((context, services, configuration) =>
         configuration
             .ReadFrom.Configuration(context.Configuration)
             .ReadFrom.Services(services)
             .Enrich.FromLogContext()
-            .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {SourceContext} | {Message:lj}{NewLine}{Exception}")
-            .WriteTo.File("logs/app/app-.log", rollingInterval: RollingInterval.Day,
-                outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {SourceContext} | {Message:lj}{NewLine}{Exception}")
-            .WriteTo.File("logs/error/error-.log", rollingInterval: RollingInterval.Day,
-                restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Error,
-                outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {SourceContext} | {Message:lj}{NewLine}{Exception}"));
+            // Console
+            .WriteTo.Console(outputTemplate: OutputTemplate)
+            // app/ — log chung (Information+)
+            .WriteTo.File(Path.Combine(logBasePath, "app", "web-.log"),
+                rollingInterval: RollingInterval.Day,
+                outputTemplate: OutputTemplate)
+            // error/ — chỉ Error + Fatal
+            .WriteTo.File(Path.Combine(logBasePath, "error", "web-error-.log"),
+                rollingInterval: RollingInterval.Day,
+                restrictedToMinimumLevel: LogEventLevel.Error,
+                outputTemplate: OutputTemplate));
+
+    // Typed HttpClient để gọi FootballBlog.API
+    builder.Services.AddHttpClient<IPostApiClient, PostApiClient>(client =>
+    {
+        client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]
+            ?? throw new InvalidOperationException("ApiBaseUrl không được cấu hình"));
+    });
 
     builder.Services.AddRazorComponents()
         .AddInteractiveServerComponents();

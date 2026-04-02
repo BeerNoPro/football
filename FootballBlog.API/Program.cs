@@ -1,7 +1,10 @@
+using FootballBlog.Core.Interfaces;
+using FootballBlog.Core.Interfaces.Services;
+using FootballBlog.Core.Services;
 using FootballBlog.Infrastructure.Data;
 using FootballBlog.Infrastructure.Repositories;
-using FootballBlog.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
 
@@ -55,15 +58,32 @@ try
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-    // Repositories
-    builder.Services.AddScoped<IPostRepository, PostRepository>();
-    builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-    builder.Services.AddScoped<ITagRepository, TagRepository>();
-    builder.Services.AddScoped<ILiveMatchRepository, LiveMatchRepository>();
+    // Unit of Work (bao gồm tất cả repositories)
+    builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+    // Services
+    builder.Services.AddScoped<IPostService, PostService>();
+    builder.Services.AddScoped<ICategoryService, CategoryService>();
 
     // Health checks
     builder.Services.AddHealthChecks()
         .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!);
+
+    // CORS — chỉ allow Web project gọi vào API
+    builder.Services.AddCors(options =>
+        options.AddPolicy("BlazorWeb", policy =>
+            policy.WithOrigins(builder.Configuration["WebBaseUrl"] ?? "https://localhost:7000")
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials()));
+
+    // Swagger — chỉ dùng trong Development
+    if (builder.Environment.IsDevelopment())
+    {
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen(c =>
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "FootballBlog API", Version = "v1" }));
+    }
 
     var app = builder.Build();
 
@@ -72,9 +92,13 @@ try
     if (app.Environment.IsDevelopment())
     {
         app.UseDeveloperExceptionPage();
+        app.UseSwagger();
+        app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "FootballBlog API v1"));
     }
 
     app.UseHttpsRedirection();
+    app.UseCors("BlazorWeb");
+    app.UseAuthentication();
     app.UseAuthorization();
     app.MapControllers();
     app.MapHealthChecks("/health");

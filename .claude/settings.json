@@ -20,12 +20,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /c/Users/Admin/football/.claude/hooks/build-check.sh",
+            "command": "bash .claude/hooks/build-check.sh",
             "statusMessage": "Formatting & building..."
           },
           {
             "type": "command",
-            "command": "bash /c/Users/Admin/football/.claude/hooks/dbcontext-check.sh",
+            "command": "bash .claude/hooks/dbcontext-check.sh",
             "statusMessage": "Checking DbContext..."
           }
         ]
@@ -36,7 +36,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /c/Users/Admin/football/.claude/hooks/stop-notify.sh"
+            "command": "bash .claude/hooks/stop-notify.sh"
           }
         ]
       }

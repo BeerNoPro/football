@@ -4,30 +4,21 @@ paths:
   - "FootballBlog.Web/**/*.razor.cs"
 ---
 
-# Blazor Component Rules
+# Blazor Rules
 
-## Render Mode — QUAN TRỌNG
-- Trang Blog, Home, bài viết, category, tag → KHÔNG đặt @rendermode → mặc định Static SSR
-- Live score widget, tường thuật realtime → `@rendermode InteractiveServer`
-- Admin panel toàn bộ → `@rendermode InteractiveServer`
-- TUYỆT ĐỐI KHÔNG dùng `@rendermode InteractiveWebAssembly`
+## Render Mode (CRITICAL)
+- Blog/Home/Post/Category/Tag → KHÔNG đặt @rendermode (Static SSR, SEO)
+- Live score widget + admin → `@rendermode InteractiveServer`
+- KHÔNG dùng `@rendermode InteractiveWebAssembly`
 
-## SEO cho Static SSR Pages
-- Luôn set PageTitle và meta description
-- Dùng <HeadContent> để inject Open Graph tags
-- Slug URL phải là tiếng Việt không dấu, lowercase, dùng dấu gạch ngang
+## SEO (Static SSR pages)
+- Luôn set `<PageTitle>` và meta description
+- Dùng `<HeadContent>` cho Open Graph tags
+- Slug: tiếng Việt không dấu, lowercase, dùng dấu gạch ngang
 
-## Component Structure
-- Code-behind tách file .razor.cs nếu logic phức tạp hơn 50 dòng
-- Inject service qua @inject, không dùng static
-- Dùng EventCallback cho component giao tiếp với parent
-
-## SignalR / Realtime
-- Dispose HubConnection trong IAsyncDisposable
-- Luôn kiểm tra connection state trước khi gọi
-- Hiển thị loading state khi chờ kết nối
+## Component
+- Tách `.razor.cs` khi logic > 50 dòng | inject qua `@inject` | dùng `EventCallback` cho parent communication
+- SignalR: dispose `HubConnection` trong `IAsyncDisposable` | check connection state trước khi gọi
 
 ## Styling
-- Dùng Tailwind CSS utility classes
-- Không viết inline style trừ trường hợp dynamic value
-- Component có style riêng thì dùng CSS isolation (file .razor.css)
+- Tailwind CSS utility classes | không inline style (trừ dynamic value) | CSS isolation cho style riêng (`.razor.css`)

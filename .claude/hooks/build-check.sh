@@ -6,8 +6,8 @@ export PATH="$PATH:/c/Program Files/dotnet"
 
 FILE=$(python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('file_path',''))" 2>/dev/null)
 
-# Chỉ chạy khi edit file .cs
-if ! echo "$FILE" | grep -qiE '\.cs$'; then exit 0; fi
+# Chỉ chạy khi edit file .cs hoặc .razor
+if ! echo "$FILE" | grep -qiE '\.(cs|razor)$'; then exit 0; fi
 
 # Step 1: Auto-format toàn solution (sửa thẳng file, không chỉ check)
 dotnet format /c/Users/Admin/football --no-restore 2>/dev/null

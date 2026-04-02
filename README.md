@@ -31,6 +31,8 @@ Xây dựng với ASP.NET Core 8 + Blazor, PostgreSQL, Redis, SignalR, Hangfire.
 | Live Score | Widget realtime qua SignalR, poll từ API-Football mỗi 30 giây |
 | Admin Panel | CRUD bài viết, upload ảnh, quản lý danh mục/tag |
 | Background Jobs | Hangfire polling Football API, tự động update live score |
+| AI Match Prediction | Tổng hợp data (lineup, h2h, form) → Claude/Gemini phân tích → dự đoán kết quả |
+| Telegram Notification | Bot gửi prediction vào channel, edit message khi có kết quả thực tế |
 
 ---
 
@@ -46,6 +48,8 @@ Xây dựng với ASP.NET Core 8 + Blazor, PostgreSQL, Redis, SignalR, Hangfire.
 | ORM | Entity Framework Core 8 + Npgsql |
 | CSS | Tailwind CSS + @tailwindcss/typography |
 | Football API | API-Football (100 req/ngày free tier) |
+| AI APIs | Claude API (claude-opus-4-6) / Google Gemini (configurable) |
+| Telegram | Telegram.Bot — prediction channel + bot commands |
 | Logging | Serilog → Console + File |
 | Local Dev | Docker Compose |
 | Deploy Dev | Railway (auto từ GitHub) |
@@ -91,8 +95,11 @@ FootballBlog/
 │   ├── Hubs/
 │   │   └── LiveScoreHub.cs           # SignalR hub
 │   └── Jobs/
-│       ├── LiveScorePollingJob.cs    # Hangfire — poll 30s khi có live match
-│       └── MatchScheduleJob.cs       # Hangfire — lấy schedule hàng ngày
+│       ├── LiveScorePollingJob.cs        # Hangfire — poll 30s khi có live match
+│       ├── MatchScheduleJob.cs           # Hangfire — lấy schedule hàng ngày
+│       ├── FetchUpcomingMatchesJob.cs    # Phase 5 — lấy trận 48h tới (6h/lần)
+│       ├── GeneratePredictionJob.cs      # Phase 5 — trigger AI (1h/lần)
+│       └── PublishPredictionJob.cs       # Phase 5/6 — blog post + Telegram
 │
 ├── FootballBlog.Core/                 # Business Logic (không phụ thuộc gì ngoài .NET)
 │   ├── Models/                        # Domain models (POCO)
@@ -102,7 +109,9 @@ FootballBlog/
 │   │   ├── PostTag.cs
 │   │   ├── ApplicationUser.cs
 │   │   ├── LiveMatch.cs
-│   │   └── MatchEvent.cs
+│   │   ├── MatchEvent.cs
+│   │   ├── Match.cs                   # Phase 5 — từ Football API
+│   │   └── MatchPrediction.cs         # Phase 5 — kết quả AI
 │   ├── Interfaces/                    # Contracts
 │   │   ├── IRepository.cs
 │   │   ├── IPostRepository.cs
@@ -112,7 +121,10 @@ FootballBlog/
 │   │   ├── IPostService.cs
 │   │   ├── ICacheService.cs
 │   │   ├── IStorageService.cs
-│   │   └── IFootballApiClient.cs
+│   │   ├── IFootballApiClient.cs
+│   │   ├── IAIPredictionProvider.cs   # Phase 5 — abstraction Claude/Gemini
+│   │   ├── INotificationChannel.cs    # Phase 6 — abstraction Telegram/Email
+│   │   └── ITelegramService.cs        # Phase 6
 │   ├── Services/                      # Business logic
 │   │   ├── PostService.cs
 │   │   ├── SlugService.cs
@@ -120,7 +132,9 @@ FootballBlog/
 │   └── DTOs/
 │       ├── PostSummaryDto.cs
 │       ├── PostDetailDto.cs
-│       └── CategoryDto.cs
+│       ├── CategoryDto.cs
+│       ├── MatchContextDto.cs         # Phase 5 — input cho AI prompt
+│       └── PredictionResultDto.cs     # Phase 5 — output từ AI
 │
 ├── FootballBlog.Infrastructure/       # Data Access + External Services
 │   ├── Data/
@@ -135,8 +149,11 @@ FootballBlog/
 │   └── Services/
 │       ├── RedisCacheService.cs
 │       ├── FootballApiClient.cs
-│       ├── LocalStorageService.cs     # Dev
-│       └── S3StorageService.cs        # Production
+│       ├── ClaudeAIPredictionProvider.cs  # Phase 5
+│       ├── GeminiAIPredictionProvider.cs  # Phase 5
+│       ├── TelegramService.cs             # Phase 6
+│       ├── LocalStorageService.cs         # Dev
+│       └── S3StorageService.cs            # Production
 │
 ├── .claude/                           # Claude Code config
 │   ├── settings.json                  # Hooks, permissions (commit vào git)
@@ -587,17 +604,39 @@ catch (Exception ex)
 
 - [ ] FootballApiClient (IHttpClientFactory + Polly retry)
 - [ ] Redis rate limit counter (API-Football 100 req/ngày)
+- [ ] Match + MatchEvent schema: enum MatchStatus, EventType
 - [ ] Hangfire jobs (LiveScorePollingJob, MatchScheduleJob)
 - [ ] SignalR Hub (LiveScoreHub) + Redis backplane
 - [ ] Blazor LiveScore pages + widget (InteractiveServer)
 
-### Phase 5 — Deploy & DevOps ⬜
+### Phase 5 — AI Match Prediction ⬜
+
+- [ ] Domain entities: Match (từ Football API), MatchPrediction
+- [ ] EF Core migration cho Match + MatchPrediction
+- [ ] IAIPredictionProvider interface + Claude implementation
+- [ ] MatchContext object (h2h, form, lineup, referee stats)
+- [ ] Prompt template lưu DB để A/B test
+- [ ] Hangfire GeneratePredictionJob (trigger 24h trước kickoff)
+- [ ] PublishPredictionJob → tạo blog post từ prediction
+- [ ] Gemini implementation (fallback provider)
+
+### Phase 6 — Telegram + Auto-publish ⬜
+
+- [ ] Install Telegram.Bot NuGet
+- [ ] ITelegramService: SendPredictionAsync, EditMessageAsync
+- [ ] TelegramNotificationChannel implement INotificationChannel
+- [ ] Bot command: /lichdat (query lịch đấu upcoming)
+- [ ] Edit Telegram message khi kết quả thực tế về
+- [ ] Admin page: xem prediction history, manual retrigger
+
+### Phase 7 — Deploy & DevOps ⬜
 
 - [ ] Dockerfile (multi-stage, Web + API)
 - [ ] Railway deploy (dev/staging)
 - [ ] GitHub Actions CI/CD
 - [ ] AWS EC2 + RDS + S3 + CloudFront
 - [ ] CloudWatch logging
+- [ ] Alert khi Football API gần hết quota ngày
 
 ---
 
@@ -638,6 +677,54 @@ ASPNETCORE_ENVIRONMENT=Staging
 - Không commit `appsettings.Production.json`
 - Dùng AWS Secrets Manager hoặc SSM Parameter Store cho secrets
 - EC2 Instance Profile cho S3 access (không dùng access key)
+
+---
+
+## Cấu hình API Keys (Phase 5+)
+
+Dùng `dotnet user-secrets` — KHÔNG commit key vào git:
+
+```bash
+cd FootballBlog.API
+
+# Football API
+dotnet user-secrets set "FootballApi:ApiKey" "<key>"
+
+# Claude AI
+dotnet user-secrets set "AI:Claude:ApiKey" "<key>"
+
+# Google Gemini
+dotnet user-secrets set "AI:Gemini:ApiKey" "<key>"
+
+# Telegram Bot
+dotnet user-secrets set "Telegram:BotToken" "<token>"
+dotnet user-secrets set "Telegram:PredictionChannelId" "<channel_id>"
+```
+
+**appsettings.json structure (không chứa secret):**
+```json
+{
+  "FootballApi": {
+    "BaseUrl": "https://v3.football.api-sports.io",
+    "ApiKey": "",
+    "DailyRequestLimit": 100
+  },
+  "AI": {
+    "DefaultProvider": "Claude",
+    "Claude": { "ApiKey": "", "Model": "claude-opus-4-6", "MaxTokens": 2000 },
+    "Gemini": { "ApiKey": "", "Model": "gemini-2.0-flash" }
+  },
+  "Telegram": {
+    "BotToken": "",
+    "DefaultChatId": "",
+    "PredictionChannelId": ""
+  },
+  "Prediction": {
+    "GenerateHoursBeforeKickoff": 24,
+    "AutoPublishPost": true
+  }
+}
+```
 
 ---
 
