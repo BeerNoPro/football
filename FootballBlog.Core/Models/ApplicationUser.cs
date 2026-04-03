@@ -1,12 +1,11 @@
+using Microsoft.AspNetCore.Identity;
+
 namespace FootballBlog.Core.Models;
 
-public class ApplicationUser
+public class ApplicationUser : IdentityUser<int>
 {
-    public int Id { get; set; }
-    public string Username { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-    public string PasswordHash { get; set; } = string.Empty;
-    public string Role { get; set; } = "Author"; // Admin | Author
+    // Id, UserName, Email, PasswordHash, SecurityStamp v.v. đã có trong IdentityUser<int>
+    // Role được quản lý qua AspNetRoles — không cần field riêng
 
     public ICollection<Post> Posts { get; set; } = new List<Post>();
 }

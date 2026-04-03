@@ -1,8 +1,10 @@
 using FootballBlog.Core.Interfaces;
 using FootballBlog.Core.Interfaces.Services;
+using FootballBlog.Core.Models;
 using FootballBlog.Core.Services;
 using FootballBlog.Infrastructure.Data;
 using FootballBlog.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -57,6 +59,18 @@ try
     // EF Core + PostgreSQL
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+    // ASP.NET Core Identity
+    builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
+    {
+        options.Password.RequireDigit = true;
+        options.Password.RequiredLength = 8;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.User.RequireUniqueEmail = true;
+    })
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
 
     // Unit of Work (bao gồm tất cả repositories)
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

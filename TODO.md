@@ -87,7 +87,7 @@ FootballBlog/
 - [ ] Tailwind CSS public pages
 
 ### Phase 3 — Admin Panel ⬜
-- [ ] Replace ApplicationUser → extend IdentityUser<int> + migration
+- [x] Replace ApplicationUser → extend IdentityUser<int> + migration (IdentityMigration)
 - [ ] ASP.NET Core Identity (Cookie Auth cho Blazor, JWT cho API)
 - [ ] Install MudBlazor (chỉ cho Admin routes)
 - [ ] Admin pages: Dashboard, Posts CRUD, Categories, Tags

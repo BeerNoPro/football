@@ -1,16 +1,17 @@
 using FootballBlog.Core.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace FootballBlog.Infrastructure.Data;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+    : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>(options)
 {
-
     public DbSet<Post> Posts => Set<Post>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<PostTag> PostTags => Set<PostTag>();
-    public DbSet<ApplicationUser> Users => Set<ApplicationUser>();
     public DbSet<LiveMatch> LiveMatches => Set<LiveMatch>();
     public DbSet<MatchEvent> MatchEvents => Set<MatchEvent>();
     public DbSet<Match> Matches => Set<Match>();
@@ -64,14 +65,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.HasIndex(t => t.Slug).IsUnique();
             entity.Property(t => t.Name).HasMaxLength(200).IsRequired();
             entity.Property(t => t.Slug).HasMaxLength(200).IsRequired();
-        });
-
-        // ApplicationUser
-        modelBuilder.Entity<ApplicationUser>(entity =>
-        {
-            entity.HasIndex(u => u.Email).IsUnique();
-            entity.HasIndex(u => u.Username).IsUnique();
-            entity.Property(u => u.Role).HasMaxLength(50).HasDefaultValue("Author");
         });
 
         // LiveMatch

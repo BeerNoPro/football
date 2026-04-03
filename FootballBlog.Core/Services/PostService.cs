@@ -126,7 +126,7 @@ public class PostService : IPostService
         p.Thumbnail,
         p.Category.Name,
         p.Category.Slug,
-        p.Author.Username,
+        p.Author.UserName ?? string.Empty,
         p.PublishedAt!.Value
     );
 
@@ -138,7 +138,7 @@ public class PostService : IPostService
         p.Thumbnail,
         p.Category?.Name ?? string.Empty,
         p.Category?.Slug ?? string.Empty,
-        p.Author?.Username ?? string.Empty,
+        p.Author?.UserName ?? string.Empty,
         p.PublishedAt ?? DateTime.UtcNow,
         p.PostTags.Select(pt => pt.Tag.Name).ToList()
     );
