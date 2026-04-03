@@ -72,7 +72,10 @@ FootballBlog/
 - [x] IUnitOfWork + UnitOfWork pattern
 - [x] DTOs: PostSummaryDto, PostDetailDto, CategoryDto, LiveMatchDto
 - [x] Service Layer: IPostService/PostService, ICategoryService
-- [x] Typed HttpClient IPostApiClient trong Web
+- [x] Typed HttpClient IPostApiClient + ICategoryApiClient trong Web
+- [x] API Controllers: PostsController, CategoriesController (CRUD + filter by category/tag)
+- [x] CountByCategoryAsync / CountByTagAsync (fix pagination bug)
+- [x] SlugService (static, hỗ trợ tiếng Việt + GenerateUnique)
 - [x] Tailwind CSS setup (npm build pipeline)
 - [x] Claude hooks: build-check, dbcontext-check, stop-notify
 
@@ -100,8 +103,10 @@ FootballBlog/
 - [ ] Blazor LiveScore pages + widget (InteractiveServer)
 
 ### Phase 5 — AI Match Prediction ⬜
-- [ ] Domain entities: Match (từ Football API), MatchPrediction
-- [ ] EF Core migration cho Match + MatchPrediction
+- [x] Domain entities: Match (từ Football API), MatchPrediction, MatchStatus enum
+- [x] EF Core migration cho Match + MatchPrediction (AddMatchAndPrediction)
+- [x] IMatchRepository / IMatchPredictionRepository + implementations
+- [x] MatchSummaryDto / MatchPredictionDto
 - [ ] IAIPredictionProvider interface + Claude implementation
 - [ ] MatchContext object (h2h, form, lineup, referee)
 - [ ] Prompt template lưu DB để A/B test

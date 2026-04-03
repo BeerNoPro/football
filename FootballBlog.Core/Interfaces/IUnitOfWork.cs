@@ -6,6 +6,8 @@ public interface IUnitOfWork : IDisposable
     ICategoryRepository Categories { get; }
     ITagRepository Tags { get; }
     ILiveMatchRepository LiveMatches { get; }
+    IMatchRepository Matches { get; }
+    IMatchPredictionRepository MatchPredictions { get; }
 
     /// <summary>Commit tất cả thay đổi trong 1 transaction.</summary>
     Task<int> CommitAsync();

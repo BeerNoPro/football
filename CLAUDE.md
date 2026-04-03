@@ -9,10 +9,12 @@ ASP.NET Core 8 + Blazor (SSR + InteractiveServer) | PostgreSQL | Redis + SignalR
 - TUYỆT ĐỐI KHÔNG dùng Blazor WASM
 
 ## Architecture
-- Web gọi API qua typed HttpClient (`IPostApiClient`, v.v.)
+- Web gọi API qua typed HttpClient (`IPostApiClient`, `ICategoryApiClient`, v.v.)
 - Service Layer trong Core, inject qua `IUnitOfWork`
 - Repository chỉ modify ChangeTracker — commit duy nhất qua `IUnitOfWork.CommitAsync()`
 - DTOs trong Core/DTOs/ — KHÔNG expose domain entity ra ngoài service layer
+- **Read-only repo query**: bắt buộc `.AsNoTracking()` — xem MatchRepository làm mẫu
+- **GetBySlugAsync (Post)**: chỉ trả published post (`PublishedAt != null`) — draft KHÔNG lộ ra public endpoint
 
 ## Key Service Abstractions (đã quyết định)
 ```
@@ -63,6 +65,8 @@ IFootballApiClient      — wrapper api-football.com với rate limit counter
 - Tailwind: `npm install` + `npm run watch:css` trong FootballBlog.Web/
 - Logs: solution root `/logs/` — xem `.claude/rules/logging.md`
 - Secrets: `dotnet user-secrets` cho local, AWS Parameter Store cho production
+- **Dev ports**: API `https://localhost:7007` | Web `https://localhost:7241`
+- **CORS**: API cho phép origin `WebBaseUrl` (appsettings) — dev = `https://localhost:7241`
 
 ## appsettings Structure (các section đã quyết định)
 ```json
@@ -80,6 +84,14 @@ IFootballApiClient      — wrapper api-football.com với rate limit counter
 
 ## Current Phase
 Xem TODO.md. **Phase 1 xong.** Tiếp theo: Phase 2 (Blog SSR + SEO).
+
+**Đã làm thêm ngoài plan:**
+- `CategoriesController` + `ICategoryApiClient`/`CategoryApiClient`
+- `CountByCategoryAsync` / `CountByTagAsync` trong IPostRepository/IPostService
+- `Match` + `MatchPrediction` entities + migration (Phase 5 entities done sớm)
+- `IMatchRepository` / `IMatchPredictionRepository` + implementations
+- `MatchSummaryDto` / `MatchPredictionDto`
+- `SlugService` (static, hỗ trợ tiếng Việt)
 
 ## Deploy
 Railway (dev) → AWS EC2 + RDS + S3 + CloudFront (prod) | CI/CD: GitHub Actions

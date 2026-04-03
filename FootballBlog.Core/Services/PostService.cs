@@ -52,6 +52,10 @@ public class PostService : IPostService
 
     public Task<int> CountPublishedAsync() => _uow.Posts.CountPublishedAsync();
 
+    public Task<int> CountByCategoryAsync(string categorySlug) => _uow.Posts.CountByCategoryAsync(categorySlug);
+
+    public Task<int> CountByTagAsync(string tagSlug) => _uow.Posts.CountByTagAsync(tagSlug);
+
     public async Task<PostDetailDto> CreateAsync(CreatePostDto dto)
     {
         var post = new Post

@@ -9,4 +9,6 @@ public interface IPostRepository : IRepository<Post>
     Task<IEnumerable<Post>> GetByCategoryAsync(string categorySlug, int page, int pageSize);
     Task<IEnumerable<Post>> GetByTagAsync(string tagSlug, int page, int pageSize);
     Task<int> CountPublishedAsync();
+    Task<int> CountByCategoryAsync(string categorySlug);
+    Task<int> CountByTagAsync(string tagSlug);
 }

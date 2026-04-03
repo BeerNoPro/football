@@ -3,9 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FootballBlog.Infrastructure.Data;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
     public DbSet<Post> Posts => Set<Post>();
     public DbSet<Category> Categories => Set<Category>();
@@ -14,6 +13,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<ApplicationUser> Users => Set<ApplicationUser>();
     public DbSet<LiveMatch> LiveMatches => Set<LiveMatch>();
     public DbSet<MatchEvent> MatchEvents => Set<MatchEvent>();
+    public DbSet<Match> Matches => Set<Match>();
+    public DbSet<MatchPrediction> MatchPredictions => Set<MatchPrediction>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -88,6 +89,43 @@ public class ApplicationDbContext : DbContext
                   .HasForeignKey(e => e.MatchId);
 
             entity.Property(e => e.Type).HasMaxLength(50).IsRequired();
+        });
+
+        // Match (từ Football API)
+        modelBuilder.Entity<Match>(entity =>
+        {
+            entity.HasIndex(m => m.ExternalId).IsUnique();
+            entity.Property(m => m.HomeTeam).HasMaxLength(200).IsRequired();
+            entity.Property(m => m.AwayTeam).HasMaxLength(200).IsRequired();
+            entity.Property(m => m.LeagueName).HasMaxLength(200).IsRequired();
+            entity.Property(m => m.Season).HasMaxLength(20).IsRequired();
+            entity.Property(m => m.Round).HasMaxLength(100);
+            entity.Property(m => m.VenueName).HasMaxLength(200);
+            entity.Property(m => m.RefereeName).HasMaxLength(200);
+            entity.Property(m => m.Status)
+                  .HasConversion<string>()
+                  .HasMaxLength(20)
+                  .HasDefaultValue(MatchStatus.Scheduled);
+        });
+
+        // MatchPrediction — 1-to-1 với Match
+        modelBuilder.Entity<MatchPrediction>(entity =>
+        {
+            entity.HasIndex(p => p.MatchId).IsUnique();
+            entity.Property(p => p.AIProvider).HasMaxLength(50).IsRequired();
+            entity.Property(p => p.AIModel).HasMaxLength(100).IsRequired();
+            entity.Property(p => p.PredictedOutcome).HasMaxLength(20).IsRequired();
+            entity.Property(p => p.ConfidenceScore).HasPrecision(5, 2);
+
+            entity.HasOne(p => p.Match)
+                  .WithOne(m => m.Prediction)
+                  .HasForeignKey<MatchPrediction>(p => p.MatchId);
+
+            entity.HasOne(p => p.BlogPost)
+                  .WithMany()
+                  .HasForeignKey(p => p.BlogPostId)
+                  .IsRequired(false)
+                  .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

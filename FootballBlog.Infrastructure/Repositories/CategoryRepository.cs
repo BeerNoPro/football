@@ -10,5 +10,5 @@ public class CategoryRepository : BaseRepository<Category>, ICategoryRepository
     public CategoryRepository(ApplicationDbContext dbContext) : base(dbContext) { }
 
     public async Task<Category?> GetBySlugAsync(string slug) =>
-        await _dbSet.FirstOrDefaultAsync(c => c.Slug == slug);
+        await _dbSet.AsNoTracking().FirstOrDefaultAsync(c => c.Slug == slug);
 }

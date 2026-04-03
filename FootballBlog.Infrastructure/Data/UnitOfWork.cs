@@ -12,6 +12,8 @@ public class UnitOfWork : IUnitOfWork
     public ICategoryRepository Categories { get; }
     public ITagRepository Tags { get; }
     public ILiveMatchRepository LiveMatches { get; }
+    public IMatchRepository Matches { get; }
+    public IMatchPredictionRepository MatchPredictions { get; }
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -20,6 +22,8 @@ public class UnitOfWork : IUnitOfWork
         Categories = new CategoryRepository(context);
         Tags = new TagRepository(context);
         LiveMatches = new LiveMatchRepository(context);
+        Matches = new MatchRepository(context);
+        MatchPredictions = new MatchPredictionRepository(context);
     }
 
     public Task<int> CommitAsync() => _context.SaveChangesAsync();

@@ -33,12 +33,15 @@ try
                 restrictedToMinimumLevel: LogEventLevel.Error,
                 outputTemplate: OutputTemplate));
 
-    // Typed HttpClient để gọi FootballBlog.API
+    var apiBaseUrl = builder.Configuration["ApiBaseUrl"]
+        ?? throw new InvalidOperationException("ApiBaseUrl không được cấu hình");
+
+    // Typed HttpClients để gọi FootballBlog.API
     builder.Services.AddHttpClient<IPostApiClient, PostApiClient>(client =>
-    {
-        client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]
-            ?? throw new InvalidOperationException("ApiBaseUrl không được cấu hình"));
-    });
+        client.BaseAddress = new Uri(apiBaseUrl));
+
+    builder.Services.AddHttpClient<ICategoryApiClient, CategoryApiClient>(client =>
+        client.BaseAddress = new Uri(apiBaseUrl));
 
     builder.Services.AddRazorComponents()
         .AddInteractiveServerComponents();
