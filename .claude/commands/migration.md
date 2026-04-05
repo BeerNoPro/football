@@ -6,9 +6,9 @@ Khi được gọi với tên migration (e.g., `/migration AddPostTable`):
 2. Giải thích ngắn gọn migration sẽ tạo ra thay đổi gì trong DB
 3. Chạy lệnh:
    ```
-   dotnet ef migrations add {TênMigration} --project FootballBlog.Infrastructure --startup-project FootballBlog.Web
+   dotnet ef migrations add {TênMigration} --project FootballBlog.Infrastructure --startup-project FootballBlog.API
    ```
 4. Đọc file migration vừa tạo và giải thích Up() / Down() làm gì
-5. Hỏi xác nhận trước khi apply: `dotnet ef database update --project FootballBlog.Infrastructure --startup-project FootballBlog.Web`
+5. Hỏi xác nhận trước khi apply: `dotnet ef database update --project FootballBlog.Infrastructure --startup-project FootballBlog.API`
 
 Lưu ý: Không tự động apply migration, luôn hỏi người dùng trước.

@@ -3,72 +3,42 @@
 ## Stack
 ASP.NET Core 8 + Blazor (SSR + InteractiveServer) | PostgreSQL | Redis + SignalR | Hangfire | EF Core | Tailwind CSS (public) | MudBlazor (admin)
 
-## CRITICAL: Render Mode
-- Blog / Home / Post / Category / Tag → **Static SSR** — KHÔNG đặt @rendermode (SEO)
-- Live score widget, tường thuật, admin → `@rendermode InteractiveServer`
-- TUYỆT ĐỐI KHÔNG dùng Blazor WASM
-
-## Architecture
-- Web gọi API qua typed HttpClient (`IPostApiClient`, `ICategoryApiClient`, v.v.)
-- Service Layer trong Core, inject qua `IUnitOfWork`
+## Architecture Nhanh
+- **4 projects**: Web → API → Core ← Infrastructure
+- Web gọi API qua typed HttpClient (`IPostApiClient`, `ICategoryApiClient`)
 - Repository chỉ modify ChangeTracker — commit duy nhất qua `IUnitOfWork.CommitAsync()`
-- DTOs trong Core/DTOs/ — KHÔNG expose domain entity ra ngoài service layer
-- **Read-only repo query**: bắt buộc `.AsNoTracking()` — xem MatchRepository làm mẫu
-- **GetBySlugAsync (Post)**: chỉ trả published post (`PublishedAt != null`) — draft KHÔNG lộ ra public endpoint
+- DTOs trong `Core/DTOs/` — KHÔNG expose entity ra ngoài service layer
+- `GetBySlugAsync (Post)`: chỉ trả published (`PublishedAt != null`) — draft KHÔNG lộ public
 
-## Key Service Abstractions (đã quyết định)
+## IUnitOfWork Properties (quick ref)
+```csharp
+uow.Posts           // IPostRepository
+uow.Categories      // ICategoryRepository
+uow.Tags            // ITagRepository
+uow.LiveMatches     // ILiveMatchRepository
+uow.Matches         // IMatchRepository
+uow.MatchPredictions // IMatchPredictionRepository
 ```
-IAIPredictionProvider   — abstraction cho Claude/Gemini (swap không sửa business logic)
-INotificationChannel    — abstraction cho Telegram/Email/webhook
-ITelegramService        — gửi + edit message theo chatId
-IFootballApiClient      — wrapper api-football.com với rate limit counter
-```
-
-## AI Prediction Pipeline
-**Flow:** Football API → Hangfire collect job → DB → Hangfire trigger job → AI API → MatchPrediction → Blog post + Telegram notify
-
-**Nguồn dữ liệu cho AI prompt:**
-- Lineup/đội hình dự kiến (players ra sân)
-- H2H 5 trận gần nhất
-- Form hiện tại (5 trận gần nhất mỗi đội)
-- Thông tin trọng tài
-- Lịch thi đấu / mức độ mệt mỏi
-
-**Entities:**
-- `Match` — từ Football API, status: Scheduled | Live | Finished
-- `MatchPrediction` — kết quả AI: provider, score dự đoán, confidence, analysis markdown, TelegramMessageId
-
-**AI Providers:** Claude (claude-opus-4-6 default) hoặc Gemini — configurable qua appsettings
-
-## Telegram Integration
-- Package: `Telegram.Bot` (official NuGet)
-- Gửi prediction khi AI xong → edit message khi kết quả thực tế về
-- Có Channel riêng cho predictions + bot command query lịch đấu
-- TelegramMessageId lưu trong MatchPrediction để edit sau
-
-## Hangfire Jobs Pipeline
-```
-[Cron 6h]   FetchUpcomingMatchesJob    — lấy trận 48h tới từ Football API
-[Cron 1h]   GeneratePredictionJob      — query Match chưa có prediction, gọi AI
-[Trigger]   PublishPredictionJob        — tạo blog post SSR + gửi Telegram
-[Cron 30s]  LiveScorePollingJob         — chỉ chạy khi có live match
-[Cron 6h]   MatchScheduleJob            — đồng bộ lịch tổng quát
-```
-
-## Rate Limit Football API
-- Free tier: 100 req/ngày
-- Đếm request trong Redis, alert khi gần hết quota
-- Cache response với TTL phù hợp — KHÔNG fetch real-time
 
 ## Dev Environment
 - DB: `docker compose up` (postgres:5432, redis:6379)
-- Tailwind: `npm install` + `npm run watch:css` trong FootballBlog.Web/
+- Tailwind: `npm install` + `npm run watch:css` trong `FootballBlog.Web/`
 - Logs: solution root `/logs/` — xem `.claude/rules/logging.md`
-- Secrets: `dotnet user-secrets` cho local, AWS Parameter Store cho production
+- Secrets: `dotnet user-secrets` (local) | AWS Parameter Store (prod)
 - **Dev ports**: API `https://localhost:7007` | Web `https://localhost:7241`
-- **CORS**: API cho phép origin `WebBaseUrl` (appsettings) — dev = `https://localhost:7241`
+- **EF migration**: `--project FootballBlog.Infrastructure --startup-project FootballBlog.API`
 
-## appsettings Structure (các section đã quyết định)
+## appsettings Hiện Tại (thực tế đã có)
+```json
+{
+  "ConnectionStrings": { "DefaultConnection": "" },
+  "WebBaseUrl": "https://localhost:7241",
+  "ApiBaseUrl": "https://localhost:7007",
+  "Serilog": { "MinimumLevel": { "Default": "Information" } }
+}
+```
+
+## appsettings Phase 4-6 (chưa có, sẽ thêm khi implement)
 ```json
 {
   "FootballApi": { "BaseUrl": "", "ApiKey": "", "DailyRequestLimit": 100 },
@@ -82,16 +52,25 @@ IFootballApiClient      — wrapper api-football.com với rate limit counter
 }
 ```
 
-## Current Phase
-Xem TODO.md. **Phase 1 xong.** Tiếp theo: Phase 2 (Blog SSR + SEO).
+## Service Abstractions Phase 4-6 (CHƯA implement)
+```
+IAIPredictionProvider   — [Phase 5] abstraction Claude/Gemini
+INotificationChannel    — [Phase 6] abstraction Telegram/Email
+ITelegramService        — [Phase 6] gửi + edit message theo chatId
+IFootballApiClient      — [Phase 4] wrapper api-football.com + rate limit
+```
 
-**Đã làm thêm ngoài plan:**
-- `CategoriesController` + `ICategoryApiClient`/`CategoryApiClient`
-- `CountByCategoryAsync` / `CountByTagAsync` trong IPostRepository/IPostService
-- `Match` + `MatchPrediction` entities + migration (Phase 5 entities done sớm)
-- `IMatchRepository` / `IMatchPredictionRepository` + implementations
-- `MatchSummaryDto` / `MatchPredictionDto`
-- `SlugService` (static, hỗ trợ tiếng Việt)
+## Hangfire Jobs Pipeline (CHƯA implement — Phase 4-5)
+```
+[Cron 6h]   FetchUpcomingMatchesJob    — lấy trận 48h tới từ Football API
+[Cron 1h]   GeneratePredictionJob      — query Match chưa có prediction, gọi AI
+[Trigger]   PublishPredictionJob        — tạo blog post + gửi Telegram
+[Cron 30s]  LiveScorePollingJob         — chỉ chạy khi có live match
+```
+
+## Current Phase
+Xem **TODO.md** để biết phase hiện tại và task cụ thể.
+Xem **Bugs.md** để biết architectural decisions và known issues.
 
 ## Deploy
 Railway (dev) → AWS EC2 + RDS + S3 + CloudFront (prod) | CI/CD: GitHub Actions
