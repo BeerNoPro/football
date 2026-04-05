@@ -71,15 +71,25 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<LiveMatch>(entity =>
         {
             entity.HasIndex(m => m.ExternalId).IsUnique();
-            entity.Property(m => m.Status).HasMaxLength(50).HasDefaultValue("SCHEDULED");
+            entity.Property(m => m.Status)
+                  .HasConversion<string>()
+                  .HasMaxLength(20)
+                  .HasDefaultValue(MatchStatus.Scheduled);
+
+            // FK → Match (nullable: LiveMatch có thể tồn tại trước khi Match được fetch)
+            entity.HasOne(m => m.Match)
+                  .WithOne(m => m.LiveMatch)
+                  .HasForeignKey<LiveMatch>(m => m.MatchId)
+                  .IsRequired(false)
+                  .OnDelete(DeleteBehavior.SetNull);
         });
 
         // MatchEvent
         modelBuilder.Entity<MatchEvent>(entity =>
         {
-            entity.HasOne(e => e.Match)
+            entity.HasOne(e => e.LiveMatch)
                   .WithMany(m => m.Events)
-                  .HasForeignKey(e => e.MatchId);
+                  .HasForeignKey(e => e.LiveMatchId);
 
             entity.Property(e => e.Type).HasMaxLength(50).IsRequired();
         });

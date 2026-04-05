@@ -11,7 +11,7 @@ public class LiveMatchRepository : BaseRepository<LiveMatch>, ILiveMatchReposito
 
     public async Task<IEnumerable<LiveMatch>> GetLiveMatchesAsync() =>
         await _dbSet
-            .Where(m => m.Status == "LIVE")
+            .Where(m => m.Status == MatchStatus.Live)
             .Include(m => m.Events)
             .OrderBy(m => m.StartedAt)
             .ToListAsync();
@@ -19,7 +19,7 @@ public class LiveMatchRepository : BaseRepository<LiveMatch>, ILiveMatchReposito
     public async Task<LiveMatch?> GetByExternalIdAsync(int externalId) =>
         await _dbSet.FirstOrDefaultAsync(m => m.ExternalId == externalId);
 
-    public async Task<IEnumerable<LiveMatch>> GetByStatusAsync(string status) =>
+    public async Task<IEnumerable<LiveMatch>> GetByStatusAsync(MatchStatus status) =>
         await _dbSet
             .Where(m => m.Status == status)
             .OrderBy(m => m.StartedAt)

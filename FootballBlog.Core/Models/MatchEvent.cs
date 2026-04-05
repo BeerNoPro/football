@@ -3,8 +3,8 @@ namespace FootballBlog.Core.Models;
 public class MatchEvent
 {
     public int Id { get; set; }
-    public int MatchId { get; set; }
-    public LiveMatch Match { get; set; } = null!;
+    public int LiveMatchId { get; set; }
+    public LiveMatch LiveMatch { get; set; } = null!;
 
     public int Minute { get; set; }
 

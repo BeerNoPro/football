@@ -79,6 +79,12 @@ try
     builder.Services.AddScoped<IPostService, PostService>();
     builder.Services.AddScoped<ICategoryService, CategoryService>();
 
+    // Output Cache — cache GET blog endpoints 5 phút, invalidate khi có write
+    builder.Services.AddOutputCache(options =>
+    {
+        options.AddPolicy("BlogPages", p => p.Expire(TimeSpan.FromMinutes(5)).Tag("posts"));
+    });
+
     // Health checks
     builder.Services.AddHealthChecks()
         .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!);
@@ -114,6 +120,7 @@ try
     app.UseCors("BlazorWeb");
     app.UseAuthentication();
     app.UseAuthorization();
+    app.UseOutputCache();
     app.MapControllers();
     app.MapHealthChecks("/health");
 

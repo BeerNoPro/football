@@ -3,14 +3,16 @@ using FootballBlog.Core.DTOs;
 using FootballBlog.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace FootballBlog.API.Controllers;
 
 [ApiController]
 [Route("api/posts")]
-public class PostsController(IPostService postService, ILogger<PostsController> logger) : ControllerBase
+public class PostsController(IPostService postService, ILogger<PostsController> logger, IOutputCacheStore cacheStore) : ControllerBase
 {
     [HttpGet]
+    [OutputCache(PolicyName = "BlogPages")]
     public async Task<ActionResult<ApiResponse<PagedResult<PostSummaryDto>>>> GetPublished(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10)
@@ -21,6 +23,7 @@ public class PostsController(IPostService postService, ILogger<PostsController> 
     }
 
     [HttpGet("{slug}")]
+    [OutputCache(PolicyName = "BlogPages")]
     public async Task<ActionResult<ApiResponse<PostDetailDto>>> GetBySlug(string slug)
     {
         var post = await postService.GetBySlugAsync(slug);
@@ -33,6 +36,7 @@ public class PostsController(IPostService postService, ILogger<PostsController> 
     }
 
     [HttpGet("by-category/{categorySlug}")]
+    [OutputCache(PolicyName = "BlogPages")]
     public async Task<ActionResult<ApiResponse<PagedResult<PostSummaryDto>>>> GetByCategory(
         string categorySlug,
         [FromQuery] int page = 1,
@@ -44,6 +48,7 @@ public class PostsController(IPostService postService, ILogger<PostsController> 
     }
 
     [HttpGet("by-tag/{tagSlug}")]
+    [OutputCache(PolicyName = "BlogPages")]
     public async Task<ActionResult<ApiResponse<PagedResult<PostSummaryDto>>>> GetByTag(
         string tagSlug,
         [FromQuery] int page = 1,
@@ -59,6 +64,7 @@ public class PostsController(IPostService postService, ILogger<PostsController> 
     public async Task<ActionResult<ApiResponse<PostDetailDto>>> Create([FromBody] CreatePostDto dto)
     {
         var post = await postService.CreateAsync(dto);
+        await cacheStore.EvictByTagAsync("posts", default);
         logger.LogInformation("Post created {Slug}", post.Slug);
         return CreatedAtAction(nameof(GetBySlug), new { slug = post.Slug }, ApiResponse<PostDetailDto>.Ok(post));
     }
@@ -73,6 +79,7 @@ public class PostsController(IPostService postService, ILogger<PostsController> 
             return NotFound(ApiResponse<PostDetailDto>.Fail($"Post {id} not found"));
         }
 
+        await cacheStore.EvictByTagAsync("posts", default);
         return Ok(ApiResponse<PostDetailDto>.Ok(post));
     }
 
@@ -86,6 +93,7 @@ public class PostsController(IPostService postService, ILogger<PostsController> 
             return NotFound(ApiResponse<bool>.Fail($"Post {id} not found"));
         }
 
+        await cacheStore.EvictByTagAsync("posts", default);
         return Ok(ApiResponse<bool>.Ok(true));
     }
 }

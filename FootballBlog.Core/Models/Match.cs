@@ -30,4 +30,7 @@ public class Match
     public DateTime FetchedAt { get; set; }
 
     public MatchPrediction? Prediction { get; set; }
+
+    /// <summary>LiveMatch tương ứng khi trận đang diễn ra. Null nếu chưa live.</summary>
+    public LiveMatch? LiveMatch { get; set; }
 }

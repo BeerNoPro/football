@@ -6,5 +6,5 @@ public interface ILiveMatchRepository : IRepository<LiveMatch>
 {
     Task<IEnumerable<LiveMatch>> GetLiveMatchesAsync();
     Task<LiveMatch?> GetByExternalIdAsync(int externalId);
-    Task<IEnumerable<LiveMatch>> GetByStatusAsync(string status);
+    Task<IEnumerable<LiveMatch>> GetByStatusAsync(MatchStatus status);
 }
