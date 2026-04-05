@@ -68,6 +68,16 @@ IFootballApiClient      — [Phase 4] wrapper api-football.com + rate limit
 [Cron 30s]  LiveScorePollingJob         — chỉ chạy khi có live match
 ```
 
+## Cleanup Sau Khi Implement
+
+Khi implement xong một feature từ plan file trong `.claude/plans/`:
+1. Xóa file plan đó — source code là source of truth, plan đã implement là dead weight
+2. Nếu plan chỉ implement một phần, ghi chú phần còn lại vào TODO.md rồi xóa plan
+
+Khi thêm config/rule mới vào `.claude/`:
+- Kiểm tra xem thông tin đó đã có ở file khác chưa (CLAUDE.md, rules/, commands/)
+- Nếu trùng lặp → gộp hoặc xóa bản cũ
+
 ## Current Phase
 Xem **TODO.md** để biết phase hiện tại và task cụ thể.
 Xem **Bugs.md** để biết architectural decisions và known issues.
