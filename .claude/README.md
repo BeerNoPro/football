@@ -100,6 +100,7 @@ Claude stopped. Verify: dotnet build --no-restore -v q
 | `rules/logging.md` | Serilog structured logging, log levels |
 | `rules/security.md` | Auth, secrets, input validation, rate limiting |
 | `rules/testing.md` | Test conventions |
+| `rules/ui-design.md` | UI workflow, design system, prototype files |
 
 ---
 

@@ -97,38 +97,24 @@ public class ApplicationUser : IdentityUser<int>
 
 ---
 
-### Workflow Figma → Blazor
+### Workflow HTML Prototype → Blazor
 
-**Bước 1: Tìm nguồn tham khảo design**
+Không dùng Figma. UI được làm theo quy trình:
 
-- **Dribbble** — search "football blog", "sports news website"
-- **Behance** — search "football website design", "sports blog 2024"
-- **Figma Community** — search "sports dashboard", "blog template"
+1. **Tham khảo:** URL web (WebFetch) hoặc ảnh screenshot (paste vào chat)
+2. **Tạo prototype:** 1 file HTML tĩnh, Tailwind CDN, mở trực tiếp trên browser
+3. **Review:** Chỉnh DevTools → approve
+4. **Convert:** Tách thành Blazor component (`.razor`)
 
-**Bước 2: Design trong Figma**
+**Design system đã có — xem `.claude/rules/ui-design.md`:**
+- Color tokens: `#141414` bg, `#c8f04d` accent lime, `#4ade80` live green
+- Layout: 3 cột (240px sidebar | 1fr center | 300px right panel)
+- File tham chiếu chính: `wwwroot/prototype/combined-home.html`
 
-Thứ tự ưu tiên:
-1. `Home.figma` — hero + bài viết nổi bật + live score widget
-2. `PostDetail.figma` — trang bài viết (typography quan trọng nhất)
-3. `Admin/Dashboard.figma`
-
-**Bước 3: Cấu hình Figma MCP trong Claude Code**
-
-```json
-{
-  "mcpServers": {
-    "figma": {
-      "command": "npx",
-      "args": ["-y", "@figma/mcp-server-figma"],
-      "env": { "FIGMA_ACCESS_TOKEN": "<your-personal-access-token>" }
-    }
-  }
-}
-```
-
-**Bước 4: Export design tokens → tailwind.config.js**
-
-Cập nhật `FootballBlog.Web/tailwind.config.js` với màu/font từ Figma sau khi có design.
+**Thứ tự ưu tiên trang cần làm:**
+1. `Home` — live score + bài viết nổi bật (đã có prototype)
+2. `PostDetail` — trang bài viết (typography quan trọng nhất)
+3. `Admin/Dashboard` — dùng MudBlazor, thiết kế riêng
 
 ---
 
@@ -139,8 +125,8 @@ Cập nhật `FootballBlog.Web/tailwind.config.js` với màu/font từ Figma sa
 | 1 | Replace `ApplicationUser` → extend `IdentityUser<int>` + migration | HIGH | Phase 3 |
 | 2 | Install MudBlazor (chỉ cho Admin routes) | MEDIUM | Phase 3 |
 | 3 | Đổi `LiveMatch.Status` và `MatchEvent.Type` thành enum | LOW | Trước Phase 4 |
-| 4 | Tìm Figma reference → tạo design Home + PostDetail | MEDIUM | Song song Phase 2 |
-| 5 | Cấu hình Figma MCP sau khi có design file | LOW | Sau khi có design |
+| 4 | Tạo HTML prototype PostDetail page (typography + AI analysis) | MEDIUM | Song song Phase 2 |
+| 5 | Convert prototype Home → Blazor components (sau khi approve) | MEDIUM | Phase 2 |
 | 6 | Thiết kế DB schema cho Match + MatchPrediction | HIGH | Phase 5 |
 | 7 | Tạo IAIPredictionProvider interface + Claude implementation | HIGH | Phase 5 |
 | 8 | Thiết kế MatchContext DTO (input cho AI prompt) | HIGH | Phase 5 |

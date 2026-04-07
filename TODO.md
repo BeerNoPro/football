@@ -10,7 +10,7 @@
 | Cache / Realtime | Redis + SignalR |
 | Background Jobs | Hangfire |
 | ORM | Entity Framework Core |
-| UI Design | Figma → Blazor components |
+| UI Design | HTML Prototype → Blazor components |
 | Local Dev | Docker Compose |
 | Hosting (dev) | Railway (free tier) |
 | Hosting (prd) | AWS EC2 + RDS + S3 + CloudFront |
@@ -134,10 +134,13 @@ FootballBlog/
 
 ## UI / Design Workflow
 
-1. Thiết kế màn hình trên **Figma**
-2. Dùng **Figma MCP** trong Claude Code để đọc design trực tiếp
-3. Claude generate Blazor component từ Figma spec
-4. Apply Tailwind CSS theo design token từ Figma
+1. Lấy tham khảo từ **URL web** (WebFetch) hoặc **ảnh screenshot** (paste vào chat)
+2. Claude tạo **file HTML tĩnh** trong `FootballBlog.Web/wwwroot/prototype/`
+3. Review trực tiếp trên browser — chỉnh DevTools nếu cần
+4. Sau khi approve → tách thành **Blazor component**
+
+**Design system hiện có:** xem `.claude/rules/ui-design.md`
+**File prototype chính:** `wwwroot/prototype/combined-home.html`
 
 ---
 
