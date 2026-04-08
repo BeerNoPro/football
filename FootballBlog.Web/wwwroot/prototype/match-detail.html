@@ -360,6 +360,22 @@
       </div>
     </div>
     <div class="league-tree" id="league-tree">
+
+      <!-- Vietnam -->
+      <div class="country-group" id="cg-vn">
+        <div class="country-header" onclick="toggleCountry('cg-vn')">
+          <span class="country-flag">🇻🇳</span>
+          <span class="country-name">Việt Nam</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <a class="league-item" href="league-page.html" data-league="vleague1" onclick="selectLeague(this, 'vleague1')">V.League 1 <span class="league-live-count">2</span></a>
+          <a class="league-item" href="league-page.html" data-league="vleague2" onclick="selectLeague(this, 'vleague2')">V.League 2</a>
+          <a class="league-item" href="league-page.html" data-league="vcup" onclick="selectLeague(this, 'vcup')">Cúp Quốc gia</a>
+        </div>
+      </div>
+
+      <!-- England -->
       <div class="country-group" id="cg-eng">
         <div class="country-header" onclick="toggleCountry('cg-eng')">
           <span class="country-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
@@ -367,27 +383,80 @@
           <span class="country-chevron">▾</span>
         </div>
         <div class="sub-leagues">
-          <div class="league-item active" data-league="epl" onclick="selectLeague(this, 'epl')">Premier League <span class="league-live-count">1</span></div>
-          <div class="league-item" data-league="championship" onclick="selectLeague(this, 'championship')">Championship</div>
+          <a class="league-item" href="league-page.html" data-league="epl" onclick="selectLeague(this, 'epl')">Premier League <span class="league-live-count">1</span></a>
+          <a class="league-item" href="league-page.html" data-league="championship" onclick="selectLeague(this, 'championship')">Championship</a>
+          <a class="league-item" href="league-page.html" data-league="facup" onclick="selectLeague(this, 'facup')">FA Cup</a>
         </div>
       </div>
-      <div class="country-group" id="cg-vn">
-        <div class="country-header" onclick="toggleCountry('cg-vn')">
-          <span class="country-flag">🇻🇳</span><span class="country-name">Việt Nam</span><span class="country-chevron">▾</span>
-        </div>
-        <div class="sub-leagues">
-          <div class="league-item" data-league="vleague1" onclick="selectLeague(this, 'vleague1')">V.League 1 <span class="league-live-count">2</span></div>
-        </div>
-      </div>
+
+      <!-- UEFA -->
       <div class="country-group" id="cg-uefa">
         <div class="country-header" onclick="toggleCountry('cg-uefa')">
-          <span class="country-flag">🏆</span><span class="country-name">UEFA</span><span class="country-chevron">▾</span>
+          <span class="country-flag">🏆</span>
+          <span class="country-name">UEFA</span>
+          <span class="country-chevron">▾</span>
         </div>
         <div class="sub-leagues">
-          <div class="league-item" data-league="ucl" onclick="selectLeague(this, 'ucl')">Champions League</div>
-          <div class="league-item" data-league="uel" onclick="selectLeague(this, 'uel')">Europa League</div>
+          <a class="league-item" href="league-page.html" data-league="ucl" onclick="selectLeague(this, 'ucl')">Champions League <span class="league-live-count">1</span></a>
+          <a class="league-item" href="league-page.html" data-league="uel" onclick="selectLeague(this, 'uel')">Europa League</a>
+          <a class="league-item" href="league-page.html" data-league="uecl" onclick="selectLeague(this, 'uecl')">Conference League</a>
         </div>
       </div>
+
+      <!-- Germany -->
+      <div class="country-group" id="cg-de">
+        <div class="country-header" onclick="toggleCountry('cg-de')">
+          <span class="country-flag">🇩🇪</span>
+          <span class="country-name">Đức</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <a class="league-item" href="league-page.html" data-league="bund" onclick="selectLeague(this, 'bund')">Bundesliga</a>
+          <a class="league-item" href="league-page.html" data-league="bund2" onclick="selectLeague(this, 'bund2')">2. Bundesliga</a>
+        </div>
+      </div>
+
+      <!-- Spain -->
+      <div class="country-group" id="cg-es">
+        <div class="country-header" onclick="toggleCountry('cg-es')">
+          <span class="country-flag">🇪🇸</span>
+          <span class="country-name">Tây Ban Nha</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <a class="league-item" href="league-page.html" data-league="laliga" onclick="selectLeague(this, 'laliga')">La Liga</a>
+          <a class="league-item" href="league-page.html" data-league="laliga2" onclick="selectLeague(this, 'laliga2')">La Liga 2</a>
+          <a class="league-item" href="league-page.html" data-league="cdr" onclick="selectLeague(this, 'cdr')">Copa del Rey</a>
+        </div>
+      </div>
+
+      <!-- Italy -->
+      <div class="country-group" id="cg-it">
+        <div class="country-header" onclick="toggleCountry('cg-it')">
+          <span class="country-flag">🇮🇹</span>
+          <span class="country-name">Ý</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <a class="league-item" href="league-page.html" data-league="seriea" onclick="selectLeague(this, 'seriea')">Serie A</a>
+          <a class="league-item" href="league-page.html" data-league="serieb" onclick="selectLeague(this, 'serieb')">Serie B</a>
+          <a class="league-item" href="league-page.html" data-league="coppait" onclick="selectLeague(this, 'coppait')">Coppa Italia</a>
+        </div>
+      </div>
+
+      <!-- France -->
+      <div class="country-group" id="cg-fr">
+        <div class="country-header" onclick="toggleCountry('cg-fr')">
+          <span class="country-flag">🇫🇷</span>
+          <span class="country-name">Pháp</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <a class="league-item" href="league-page.html" data-league="ligue1" onclick="selectLeague(this, 'ligue1')">Ligue 1</a>
+          <a class="league-item" href="league-page.html" data-league="ligue2" onclick="selectLeague(this, 'ligue2')">Ligue 2</a>
+        </div>
+      </div>
+
     </div>
     <div class="left-bottom">
       <button class="settings-btn">
@@ -409,7 +478,7 @@
 
     <!-- Breadcrumb -->
     <div class="breadcrumb">
-      <a href="combined-home.html">Trang chủ</a>
+      <a href="home.html">Trang chủ</a>
       <span>›</span>
       <a href="league-page.html">Premier League</a>
       <span>›</span>
@@ -425,7 +494,7 @@
       </div>
       <div class="match-header-teams">
         <div class="team-block home">
-          <div class="team-name-lg">Manchester City</div>
+          <div class="team-name-lg"><a href="team-profile.html">Manchester City</a></div>
           <div class="team-logo-lg">🔵</div>
           <div class="team-record">W5 D1 L1</div>
         </div>
@@ -438,7 +507,7 @@
           </div>
         </div>
         <div class="team-block away">
-          <div class="team-name-lg">Arsenal</div>
+          <div class="team-name-lg"><a href="team-profile.html">Arsenal</a></div>
           <div class="team-logo-lg">🔴</div>
           <div class="team-record">W4 D2 L1</div>
         </div>
@@ -842,7 +911,7 @@
         </div>
       </div>
 
-      <div class="post-item">
+      <div class="post-item" onclick="location.href='post-detail.html'">
         <div class="post-thumb" style="background: linear-gradient(135deg, #0a1a1a, #1a3a3a);">🏆</div>
         <div class="post-item-body">
           <div class="post-item-tag">🤖 AI · UCL</div>
@@ -861,13 +930,6 @@
 </div>
 
 <script src="assets/common.js"></script>
-<script>
-  function switchDetailTab(el) {
-    document.querySelectorAll('.detail-tab-bar .tab-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-    document.querySelectorAll('.detail-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById(el.dataset.tab).classList.add('active');
-  }
-</script>
+
 </body>
 </html>

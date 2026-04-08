@@ -109,7 +109,7 @@ Không dùng Figma. UI được làm theo quy trình:
 **Design system đã có — xem `.claude/rules/ui-design.md`:**
 - Color tokens: `#141414` bg, `#c8f04d` accent lime, `#4ade80` live green
 - Layout: 3 cột (240px sidebar | 1fr center | 300px right panel)
-- File tham chiếu chính: `wwwroot/prototype/combined-home.html`
+- File tham chiếu chính: `wwwroot/prototype/home.html`
 
 **Thứ tự ưu tiên trang cần làm:**
 1. `Home` — live score + bài viết nổi bật (đã có prototype)

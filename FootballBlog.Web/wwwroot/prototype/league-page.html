@@ -152,41 +152,112 @@
       </div>
     </div>
     <div class="league-tree" id="league-tree">
-      <div class="country-group" id="cg-eng">
-        <div class="country-header" onclick="toggleCountry('cg-eng')">
-          <span class="country-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span><span class="country-name">Anh</span><span class="country-chevron">▾</span>
-        </div>
-        <div class="sub-leagues">
-          <div class="league-item active" data-league="epl" onclick="selectLeague(this, 'epl')">Premier League <span class="league-live-count">1</span></div>
-          <div class="league-item" data-league="championship" onclick="selectLeague(this, 'championship')">Championship</div>
-          <div class="league-item" data-league="facup" onclick="selectLeague(this, 'facup')">FA Cup</div>
-        </div>
-      </div>
+
+      <!-- Vietnam -->
       <div class="country-group" id="cg-vn">
         <div class="country-header" onclick="toggleCountry('cg-vn')">
-          <span class="country-flag">🇻🇳</span><span class="country-name">Việt Nam</span><span class="country-chevron">▾</span>
+          <span class="country-flag">🇻🇳</span>
+          <span class="country-name">Việt Nam</span>
+          <span class="country-chevron">▾</span>
         </div>
         <div class="sub-leagues">
-          <div class="league-item" data-league="vleague1" onclick="selectLeague(this, 'vleague1')">V.League 1 <span class="league-live-count">2</span></div>
+          <a class="league-item" href="league-page.html" data-league="vleague1" onclick="selectLeague(this, 'vleague1')">
+            V.League 1
+            <span class="league-live-count">2</span>
+          </a>
+          <a class="league-item" href="league-page.html" data-league="vleague2" onclick="selectLeague(this, 'vleague2')">V.League 2</a>
+          <a class="league-item" href="league-page.html" data-league="vcup" onclick="selectLeague(this, 'vcup')">Cúp Quốc gia</a>
         </div>
       </div>
+
+      <!-- England -->
+      <div class="country-group" id="cg-eng">
+        <div class="country-header" onclick="toggleCountry('cg-eng')">
+          <span class="country-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+          <span class="country-name">Anh</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <a class="league-item" href="league-page.html" data-league="epl" onclick="selectLeague(this, 'epl')">
+            Premier League
+            <span class="league-live-count">1</span>
+          </a>
+          <a class="league-item" href="league-page.html" data-league="championship" onclick="selectLeague(this, 'championship')">Championship</a>
+          <a class="league-item" href="league-page.html" data-league="facup" onclick="selectLeague(this, 'facup')">FA Cup</a>
+        </div>
+      </div>
+
+      <!-- UEFA -->
       <div class="country-group" id="cg-uefa">
         <div class="country-header" onclick="toggleCountry('cg-uefa')">
-          <span class="country-flag">🏆</span><span class="country-name">UEFA</span><span class="country-chevron">▾</span>
+          <span class="country-flag">🏆</span>
+          <span class="country-name">UEFA</span>
+          <span class="country-chevron">▾</span>
         </div>
         <div class="sub-leagues">
-          <div class="league-item" data-league="ucl" onclick="selectLeague(this, 'ucl')">Champions League</div>
-          <div class="league-item" data-league="uel" onclick="selectLeague(this, 'uel')">Europa League</div>
+          <a class="league-item" href="league-page.html" data-league="ucl" onclick="selectLeague(this, 'ucl')">
+            Champions League
+            <span class="league-live-count">1</span>
+          </a>
+          <a class="league-item" href="league-page.html" data-league="uel" onclick="selectLeague(this, 'uel')">Europa League</a>
+          <a class="league-item" href="league-page.html" data-league="uecl" onclick="selectLeague(this, 'uecl')">Conference League</a>
         </div>
       </div>
+
+      <!-- Germany -->
+      <div class="country-group" id="cg-de">
+        <div class="country-header" onclick="toggleCountry('cg-de')">
+          <span class="country-flag">🇩🇪</span>
+          <span class="country-name">Đức</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <a class="league-item" href="league-page.html" data-league="bund" onclick="selectLeague(this, 'bund')">Bundesliga</a>
+          <a class="league-item" href="league-page.html" data-league="bund2" onclick="selectLeague(this, 'bund2')">2. Bundesliga</a>
+        </div>
+      </div>
+
+      <!-- Spain -->
       <div class="country-group" id="cg-es">
         <div class="country-header" onclick="toggleCountry('cg-es')">
-          <span class="country-flag">🇪🇸</span><span class="country-name">Tây Ban Nha</span><span class="country-chevron">▾</span>
+          <span class="country-flag">🇪🇸</span>
+          <span class="country-name">Tây Ban Nha</span>
+          <span class="country-chevron">▾</span>
         </div>
         <div class="sub-leagues">
-          <div class="league-item" data-league="laliga" onclick="selectLeague(this, 'laliga')">La Liga</div>
+          <a class="league-item" href="league-page.html" data-league="laliga" onclick="selectLeague(this, 'laliga')">La Liga</a>
+          <a class="league-item" href="league-page.html" data-league="laliga2" onclick="selectLeague(this, 'laliga2')">La Liga 2</a>
+          <a class="league-item" href="league-page.html" data-league="cdr" onclick="selectLeague(this, 'cdr')">Copa del Rey</a>
         </div>
       </div>
+
+      <!-- Italy -->
+      <div class="country-group" id="cg-it">
+        <div class="country-header" onclick="toggleCountry('cg-it')">
+          <span class="country-flag">🇮🇹</span>
+          <span class="country-name">Ý</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <a class="league-item" href="league-page.html" data-league="seriea" onclick="selectLeague(this, 'seriea')">Serie A</a>
+          <a class="league-item" href="league-page.html" data-league="serieb" onclick="selectLeague(this, 'serieb')">Serie B</a>
+          <a class="league-item" href="league-page.html" data-league="coppait" onclick="selectLeague(this, 'coppait')">Coppa Italia</a>
+        </div>
+      </div>
+
+      <!-- France -->
+      <div class="country-group" id="cg-fr">
+        <div class="country-header" onclick="toggleCountry('cg-fr')">
+          <span class="country-flag">🇫🇷</span>
+          <span class="country-name">Pháp</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <a class="league-item" href="league-page.html" data-league="ligue1" onclick="selectLeague(this, 'ligue1')">Ligue 1</a>
+          <a class="league-item" href="league-page.html" data-league="ligue2" onclick="selectLeague(this, 'ligue2')">Ligue 2</a>
+        </div>
+      </div>
+
     </div>
     <div class="left-bottom">
       <button class="settings-btn">
@@ -203,6 +274,13 @@
 
   <!-- CENTER COLUMN -->
   <main class="main-col">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="home.html">Trang chủ</a>
+      <span>›</span>
+      <span>Premier League</span>
+    </div>
 
     <!-- League header -->
     <div class="league-header">
@@ -254,93 +332,93 @@
           <div class="mr-away live-team"><div class="tl">🔴</div><span class="tn">Arsenal</span></div>
           <div class="mr-status"><span class="badge-live"><span class="live-dot" style="width:5px;height:5px;"></span>LIVE</span></div>
         </div>
-        <div class="match-row">
+        <a class="match-row" href="match-detail.html">
           <div class="mr-time">22:15</div>
           <div class="mr-home"><span class="tn">Tottenham</span><div class="tl">⚪</div></div>
           <div class="score-c no-score">–</div>
           <div class="mr-away"><div class="tl">🔴</div><span class="tn">Man United</span></div>
           <div class="mr-status"><span class="badge-sch">22:15</span></div>
-        </div>
-        <div class="match-row">
+        </a>
+        <a class="match-row" href="match-detail.html">
           <div class="mr-time">22:15</div>
           <div class="mr-home"><span class="tn">Newcastle Utd</span><div class="tl">⚫</div></div>
           <div class="score-c no-score">–</div>
           <div class="mr-away"><div class="tl">🔵</div><span class="tn">Everton</span></div>
           <div class="mr-status"><span class="badge-sch">22:15</span></div>
-        </div>
+        </a>
 
         <div class="date-group-header">08/04/2025 · T2</div>
-        <div class="match-row">
+        <a class="match-row" href="match-detail.html">
           <div class="mr-time">21:00</div>
           <div class="mr-home"><span class="tn">Brentford</span><div class="tl">🟠</div></div>
           <div class="score-c no-score">–</div>
           <div class="mr-away"><div class="tl">🔵</div><span class="tn">Chelsea</span></div>
           <div class="mr-status"><span class="badge-sch">21:00</span></div>
-        </div>
-        <div class="match-row">
+        </a>
+        <a class="match-row" href="match-detail.html">
           <div class="mr-time">21:00</div>
           <div class="mr-home"><span class="tn">West Ham</span><div class="tl">🔵</div></div>
           <div class="score-c no-score">–</div>
           <div class="mr-away"><div class="tl">🔴</div><span class="tn">Nottm Forest</span></div>
           <div class="mr-status"><span class="badge-sch">21:00</span></div>
-        </div>
-        <div class="match-row">
+        </a>
+        <a class="match-row" href="match-detail.html">
           <div class="mr-time">21:00</div>
           <div class="mr-home"><span class="tn">Wolves</span><div class="tl">🟡</div></div>
           <div class="score-c no-score">–</div>
           <div class="mr-away"><div class="tl">🔴</div><span class="tn">Liverpool</span></div>
           <div class="mr-status"><span class="badge-sch">21:00</span></div>
-        </div>
+        </a>
 
         <div class="date-group-header">12/04/2025 · T7</div>
-        <div class="match-row">
+        <a class="match-row" href="match-detail.html">
           <div class="mr-time">22:00</div>
           <div class="mr-home"><span class="tn">Arsenal</span><div class="tl">🔴</div></div>
           <div class="score-c no-score">–</div>
           <div class="mr-away"><div class="tl">🔵</div><span class="tn">Chelsea</span></div>
           <div class="mr-status"><span class="badge-sch">22:00</span></div>
-        </div>
-        <div class="match-row">
+        </a>
+        <a class="match-row" href="match-detail.html">
           <div class="mr-time">22:00</div>
           <div class="mr-home"><span class="tn">Liverpool</span><div class="tl">🔴</div></div>
           <div class="score-c no-score">–</div>
           <div class="mr-away"><div class="tl">⚫</div><span class="tn">Fulham</span></div>
           <div class="mr-status"><span class="badge-sch">22:00</span></div>
-        </div>
+        </a>
       </div>
 
       <!-- RESULTS -->
       <div class="league-panel" id="panel-results">
         <div class="date-group-header">05/04/2025 · T7</div>
-        <div class="match-row">
+        <a class="match-row" href="match-detail.html">
           <div class="mr-time">22:00</div>
           <div class="mr-home"><span class="tn">Chelsea</span><div class="tl">🔵</div></div>
           <div class="score-c has-score">2 – 1</div>
           <div class="mr-away"><div class="tl">🔴</div><span class="tn">Liverpool</span></div>
           <div class="mr-status"><span class="badge-ft">KT</span></div>
-        </div>
-        <div class="match-row">
+        </a>
+        <a class="match-row" href="match-detail.html">
           <div class="mr-time">22:00</div>
           <div class="mr-home"><span class="tn">Aston Villa</span><div class="tl">🟣</div></div>
           <div class="score-c has-score">0 – 0</div>
           <div class="mr-away"><div class="tl">🔵</div><span class="tn">Man City</span></div>
           <div class="mr-status"><span class="badge-ft">KT</span></div>
-        </div>
+        </a>
         <div class="date-group-header">04/04/2025 · T6</div>
-        <div class="match-row">
+        <a class="match-row" href="match-detail.html">
           <div class="mr-time">02:30</div>
           <div class="mr-home"><span class="tn">Arsenal</span><div class="tl">🔴</div></div>
           <div class="score-c has-score">1 – 1</div>
           <div class="mr-away"><div class="tl">⚫</div><span class="tn">Newcastle</span></div>
           <div class="mr-status"><span class="badge-ft">KT</span></div>
-        </div>
-        <div class="match-row">
+        </a>
+        <a class="match-row" href="match-detail.html">
           <div class="mr-time">02:30</div>
           <div class="mr-home"><span class="tn">Man United</span><div class="tl">🔴</div></div>
           <div class="score-c has-score">0 – 3</div>
           <div class="mr-away"><div class="tl">🔵</div><span class="tn">Man City</span></div>
           <div class="mr-status"><span class="badge-ft">KT</span></div>
-        </div>
+        </a>
       </div>
 
       <!-- TABLE -->
@@ -357,35 +435,35 @@
             <tbody>
               <tr>
                 <td class="rank cl-zone">1</td>
-                <td><div class="team-cell"><div class="team-cell-logo">🔵</div> Manchester City</div></td>
+                <td><a class="team-cell" href="team-profile.html"><div class="team-cell-logo">🔵</div> Manchester City</a></td>
                 <td>31</td><td>22</td><td>5</td><td>4</td><td>71</td><td>29</td><td>+42</td>
                 <td class="standings-pts" style="color:var(--accent)">71</td>
                 <td><div class="standings-form"><span class="form-dot form-w">T</span><span class="form-dot form-w">T</span><span class="form-dot form-d">H</span><span class="form-dot form-w">T</span><span class="form-dot form-w">T</span></div></td>
               </tr>
               <tr>
                 <td class="rank cl-zone">2</td>
-                <td><div class="team-cell"><div class="team-cell-logo">🔴</div> Arsenal</div></td>
+                <td><a class="team-cell" href="team-profile.html"><div class="team-cell-logo">🔴</div> Arsenal</a></td>
                 <td>31</td><td>20</td><td>7</td><td>4</td><td>65</td><td>28</td><td>+37</td>
                 <td class="standings-pts">67</td>
                 <td><div class="standings-form"><span class="form-dot form-w">T</span><span class="form-dot form-d">H</span><span class="form-dot form-w">T</span><span class="form-dot form-d">H</span><span class="form-dot form-w">T</span></div></td>
               </tr>
               <tr>
                 <td class="rank cl-zone">3</td>
-                <td><div class="team-cell"><div class="team-cell-logo">🔴</div> Liverpool</div></td>
+                <td><a class="team-cell" href="team-profile.html"><div class="team-cell-logo">🔴</div> Liverpool</a></td>
                 <td>31</td><td>19</td><td>8</td><td>4</td><td>62</td><td>30</td><td>+32</td>
                 <td class="standings-pts">65</td>
                 <td><div class="standings-form"><span class="form-dot form-l">T</span><span class="form-dot form-w">T</span><span class="form-dot form-w">T</span><span class="form-dot form-d">H</span><span class="form-dot form-l">T</span></div></td>
               </tr>
               <tr>
                 <td class="rank cl-zone">4</td>
-                <td><div class="team-cell"><div class="team-cell-logo">🔵</div> Chelsea</div></td>
+                <td><a class="team-cell" href="team-profile.html"><div class="team-cell-logo">🔵</div> Chelsea</a></td>
                 <td>31</td><td>17</td><td>6</td><td>8</td><td>54</td><td>38</td><td>+16</td>
                 <td class="standings-pts">57</td>
                 <td><div class="standings-form"><span class="form-dot form-w">T</span><span class="form-dot form-l">T</span><span class="form-dot form-w">T</span><span class="form-dot form-w">T</span><span class="form-dot form-d">H</span></div></td>
               </tr>
               <tr>
                 <td class="rank el-zone">5</td>
-                <td><div class="team-cell"><div class="team-cell-logo">⚪</div> Tottenham</div></td>
+                <td><a class="team-cell" href="team-profile.html"><div class="team-cell-logo">⚪</div> Tottenham</a></td>
                 <td>31</td><td>14</td><td>8</td><td>9</td><td>51</td><td>45</td><td>+6</td>
                 <td class="standings-pts">50</td>
                 <td><div class="standings-form"><span class="form-dot form-d">H</span><span class="form-dot form-w">T</span><span class="form-dot form-l">T</span><span class="form-dot form-w">T</span><span class="form-dot form-d">H</span></div></td>
@@ -441,21 +519,81 @@
           <div style="display:grid;grid-template-columns:24px 1fr 50px 50px;padding:9px 16px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;background:var(--bg-dark);border-bottom:1px solid var(--border);">
             <div>#</div><div>Cầu thủ</div><div style="text-align:right">Bàn</div><div style="text-align:right">KT</div>
           </div>
-          <div class="scorer-row"><div class="scorer-rank" style="color:var(--accent)">1</div><div class="scorer-player"><div class="scorer-name">Erling Haaland</div><div class="scorer-club">🔵 Man City</div></div><div class="scorer-goals">26</div><div class="scorer-assists">6</div></div>
-          <div class="scorer-row"><div class="scorer-rank">2</div><div class="scorer-player"><div class="scorer-name">Mohamed Salah</div><div class="scorer-club">🔴 Liverpool</div></div><div class="scorer-goals">24</div><div class="scorer-assists">14</div></div>
-          <div class="scorer-row"><div class="scorer-rank">3</div><div class="scorer-player"><div class="scorer-name">Cole Palmer</div><div class="scorer-club">🔵 Chelsea</div></div><div class="scorer-goals">21</div><div class="scorer-assists">10</div></div>
-          <div class="scorer-row"><div class="scorer-rank">4</div><div class="scorer-player"><div class="scorer-name">Bukayo Saka</div><div class="scorer-club">🔴 Arsenal</div></div><div class="scorer-goals">18</div><div class="scorer-assists">11</div></div>
-          <div class="scorer-row"><div class="scorer-rank">5</div><div class="scorer-player"><div class="scorer-name">Alexander Isak</div><div class="scorer-club">⚫ Newcastle</div></div><div class="scorer-goals">17</div><div class="scorer-assists">4</div></div>
-          <div class="scorer-row"><div class="scorer-rank">6</div><div class="scorer-player"><div class="scorer-name">Ollie Watkins</div><div class="scorer-club">🟣 Aston Villa</div></div><div class="scorer-goals">16</div><div class="scorer-assists">8</div></div>
-          <div class="scorer-row"><div class="scorer-rank">7</div><div class="scorer-player"><div class="scorer-name">Jarrod Bowen</div><div class="scorer-club">🔵 West Ham</div></div><div class="scorer-goals">14</div><div class="scorer-assists">6</div></div>
-          <div class="scorer-row"><div class="scorer-rank">8</div><div class="scorer-player"><div class="scorer-name">Son Heung-min</div><div class="scorer-club">⚪ Tottenham</div></div><div class="scorer-goals">14</div><div class="scorer-assists">9</div></div>
-          <div class="scorer-row"><div class="scorer-rank">9</div><div class="scorer-player"><div class="scorer-name">Phil Foden</div><div class="scorer-club">🔵 Man City</div></div><div class="scorer-goals">13</div><div class="scorer-assists">7</div></div>
-          <div class="scorer-row"><div class="scorer-rank">10</div><div class="scorer-player"><div class="scorer-name">Dominic Solanke</div><div class="scorer-club">⚪ Tottenham</div></div><div class="scorer-goals">12</div><div class="scorer-assists">3</div></div>
+          <div class="scorer-row"><div class="scorer-rank" style="color:var(--accent)">1</div><div class="scorer-player"><div class="scorer-name"><a href="player-profile.html">Erling Haaland</a></div><div class="scorer-club"><a href="team-profile.html">🔵 Man City</a></div></div><div class="scorer-goals">26</div><div class="scorer-assists">6</div></div>
+          <div class="scorer-row"><div class="scorer-rank">2</div><div class="scorer-player"><div class="scorer-name"><a href="player-profile.html">Mohamed Salah</a></div><div class="scorer-club"><a href="team-profile.html">🔴 Liverpool</a></div></div><div class="scorer-goals">24</div><div class="scorer-assists">14</div></div>
+          <div class="scorer-row"><div class="scorer-rank">3</div><div class="scorer-player"><div class="scorer-name"><a href="player-profile.html">Cole Palmer</a></div><div class="scorer-club"><a href="team-profile.html">🔵 Chelsea</a></div></div><div class="scorer-goals">21</div><div class="scorer-assists">10</div></div>
+          <div class="scorer-row"><div class="scorer-rank">4</div><div class="scorer-player"><div class="scorer-name"><a href="player-profile.html">Bukayo Saka</a></div><div class="scorer-club"><a href="team-profile.html">🔴 Arsenal</a></div></div><div class="scorer-goals">18</div><div class="scorer-assists">11</div></div>
+          <div class="scorer-row"><div class="scorer-rank">5</div><div class="scorer-player"><div class="scorer-name"><a href="player-profile.html">Alexander Isak</a></div><div class="scorer-club"><a href="team-profile.html">⚫ Newcastle</a></div></div><div class="scorer-goals">17</div><div class="scorer-assists">4</div></div>
+          <div class="scorer-row"><div class="scorer-rank">6</div><div class="scorer-player"><div class="scorer-name"><a href="player-profile.html">Ollie Watkins</a></div><div class="scorer-club"><a href="team-profile.html">🟣 Aston Villa</a></div></div><div class="scorer-goals">16</div><div class="scorer-assists">8</div></div>
+          <div class="scorer-row"><div class="scorer-rank">7</div><div class="scorer-player"><div class="scorer-name"><a href="player-profile.html">Jarrod Bowen</a></div><div class="scorer-club"><a href="team-profile.html">🔵 West Ham</a></div></div><div class="scorer-goals">14</div><div class="scorer-assists">6</div></div>
+          <div class="scorer-row"><div class="scorer-rank">8</div><div class="scorer-player"><div class="scorer-name"><a href="player-profile.html">Son Heung-min</a></div><div class="scorer-club"><a href="team-profile.html">⚪ Tottenham</a></div></div><div class="scorer-goals">14</div><div class="scorer-assists">9</div></div>
+          <div class="scorer-row"><div class="scorer-rank">9</div><div class="scorer-player"><div class="scorer-name"><a href="player-profile.html">Phil Foden</a></div><div class="scorer-club"><a href="team-profile.html">🔵 Man City</a></div></div><div class="scorer-goals">13</div><div class="scorer-assists">7</div></div>
+          <div class="scorer-row"><div class="scorer-rank">10</div><div class="scorer-player"><div class="scorer-name"><a href="player-profile.html">Dominic Solanke</a></div><div class="scorer-club"><a href="team-profile.html">⚪ Tottenham</a></div></div><div class="scorer-goals">12</div><div class="scorer-assists">3</div></div>
         </div>
       </div>
 
     </div><!-- /league-scroll -->
   </main>
+
+  <!-- RIGHT SIDEBAR — AI Blog -->
+  <aside class="right-sidebar">
+    <div class="right-header">
+      <div class="right-title">Nhận định AI</div>
+      <div class="ai-badge">🤖 AI Agent</div>
+    </div>
+    <div class="right-tabs">
+      <button class="right-tab active" onclick="setRightTab(this)">Giải đấu</button>
+      <button class="right-tab" onclick="setRightTab(this)">Liên quan</button>
+    </div>
+    <div class="right-scroll">
+
+      <div class="post-featured" onclick="location.href='post-detail.html'">
+        <div class="post-featured-img" style="background: linear-gradient(135deg, #1a0a2d, #3a1a5c);">
+          🏴󠁧󠁢󠁥󠁮󠁧󠁿
+          <div class="match-label">
+            <span>Premier League</span>
+            <span style="color:var(--accent)">Top 4 căng thẳng</span>
+          </div>
+        </div>
+        <div class="post-featured-body">
+          <div class="post-tag">🤖 AI · Premier League</div>
+          <div class="post-title">Premier League 2024/25: Cuộc đua Top 4 và suất xuống hạng</div>
+          <div class="post-excerpt">Phân tích chi tiết về cuộc đua giành vé dự Champions League và các đội có nguy cơ xuống hạng Championship.</div>
+          <div class="post-meta">
+            <span class="post-time">3 giờ trước</span>
+            <span class="post-read">Đọc tiếp →</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="post-item" onclick="location.href='post-detail.html'">
+        <div class="post-thumb" style="background: linear-gradient(135deg, #0a1a1a, #1a3a3a);">⚽</div>
+        <div class="post-item-body">
+          <div class="post-item-tag">🤖 AI · Premier League</div>
+          <div class="post-item-title">Man City vs Arsenal: Trận derby nước Anh</div>
+          <div class="post-item-meta">Trận đấu · 5 giờ trước</div>
+        </div>
+        <div class="pred-score">
+          <div class="ps-val">2-1</div>
+          <div class="ps-label">AI<br>dự đoán</div>
+        </div>
+      </div>
+
+      <div class="post-item" onclick="location.href='post-detail.html'">
+        <div class="post-thumb" style="background: linear-gradient(135deg, #1a1a0a, #3a3a1a);">🏆</div>
+        <div class="post-item-body">
+          <div class="post-item-tag">🤖 AI · UCL</div>
+          <div class="post-item-title">Champions League: Tứ kết lượt về</div>
+          <div class="post-item-meta">Lịch đấu · 1 ngày trước</div>
+        </div>
+        <div class="pred-score" style="opacity:0.5;">
+          <div class="ps-val">3-1</div>
+          <div class="ps-label">Kết<br>quả</div>
+        </div>
+      </div>
+
+    </div>
+  </aside>
 
   <!-- RIGHT SIDEBAR -->
   <aside class="right-sidebar">
@@ -479,9 +617,9 @@
           <div class="post-meta"><span class="post-time">2 giờ trước</span><span class="post-read">Đọc tiếp →</span></div>
         </div>
       </div>
-      <div class="post-item"><div class="post-thumb" style="background:linear-gradient(135deg,#1a0a2d,#3a1a5c);">⚽</div><div class="post-item-body"><div class="post-item-tag">🤖 AI · PL GW32</div><div class="post-item-title">Tottenham vs Man United: Cuộc chiến top 4</div><div class="post-item-meta">22:15 hôm nay</div></div><div class="pred-score"><div class="ps-val">2-1</div><div class="ps-label">AI<br>dự đoán</div></div></div>
-      <div class="post-item"><div class="post-thumb" style="background:linear-gradient(135deg,#0a1a1a,#1a3a3a);">⚫</div><div class="post-item-body"><div class="post-item-tag">🤖 AI · PL GW32</div><div class="post-item-title">Newcastle vs Everton: Derby phương Bắc</div><div class="post-item-meta">22:15 hôm nay</div></div><div class="pred-score"><div class="ps-val">2-0</div><div class="ps-label">AI<br>dự đoán</div></div></div>
-      <div class="post-item"><div class="post-thumb" style="background:linear-gradient(135deg,#1a1a0a,#3a3a10);">🟡</div><div class="post-item-body"><div class="post-item-tag">🤖 AI · PL GW31</div><div class="post-item-title">Chelsea 2-1 Liverpool: Kết quả ngược chỉ số</div><div class="post-item-meta">Kết thúc · 1 ngày trước</div></div><div class="pred-score" style="opacity:0.5;"><div class="ps-val">1-2</div><div class="ps-label">Kết<br>quả</div></div></div>
+      <div class="post-item" onclick="location.href='post-detail.html'"><div class="post-thumb" style="background:linear-gradient(135deg,#1a0a2d,#3a1a5c);">⚽</div><div class="post-item-body"><div class="post-item-tag">🤖 AI · PL GW32</div><div class="post-item-title">Tottenham vs Man United: Cuộc chiến top 4</div><div class="post-item-meta">22:15 hôm nay</div></div><div class="pred-score"><div class="ps-val">2-1</div><div class="ps-label">AI<br>dự đoán</div></div></div>
+      <div class="post-item" onclick="location.href='post-detail.html'"><div class="post-thumb" style="background:linear-gradient(135deg,#0a1a1a,#1a3a3a);">⚫</div><div class="post-item-body"><div class="post-item-tag">🤖 AI · PL GW32</div><div class="post-item-title">Newcastle vs Everton: Derby phương Bắc</div><div class="post-item-meta">22:15 hôm nay</div></div><div class="pred-score"><div class="ps-val">2-0</div><div class="ps-label">AI<br>dự đoán</div></div></div>
+      <div class="post-item" onclick="location.href='post-detail.html'"><div class="post-thumb" style="background:linear-gradient(135deg,#1a1a0a,#3a3a10);">🟡</div><div class="post-item-body"><div class="post-item-tag">🤖 AI · PL GW31</div><div class="post-item-title">Chelsea 2-1 Liverpool: Kết quả ngược chỉ số</div><div class="post-item-meta">Kết thúc · 1 ngày trước</div></div><div class="pred-score" style="opacity:0.5;"><div class="ps-val">1-2</div><div class="ps-label">Kết<br>quả</div></div></div>
     </div>
   </aside>
 
@@ -494,6 +632,444 @@
     document.querySelectorAll('.league-panel').forEach(p => p.classList.remove('active'));
     document.getElementById(el.dataset.tab).classList.add('active');
   }
+
+  // League data mapping
+  const leagueData = {
+    epl: {
+      name: 'Premier League',
+      flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+      country: 'England',
+      season: 'Mùa giải 2024/25 · Vòng 32/38',
+      rounds: 38,
+      teams: 20,
+      matches: 380,
+      fixtures: [
+        { date: 'Hôm nay · 07/04/2025', time: '78\'', home: 'Manchester City', homeLogo: '🔵', away: 'Arsenal', awayLogo: '🔴', score: '1 – 0', status: 'live' },
+        { date: 'Hôm nay · 07/04/2025', time: '22:15', home: 'Tottenham', homeLogo: '⚪', away: 'Man United', awayLogo: '🔴', score: '–', status: 'scheduled' },
+        { date: 'Hôm nay · 07/04/2025', time: '22:15', home: 'Newcastle Utd', homeLogo: '⚫', away: 'Everton', awayLogo: '🔵', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '21:00', home: 'Brentford', homeLogo: '🟠', away: 'Chelsea', awayLogo: '🔵', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '21:00', home: 'West Ham', homeLogo: '🔵', away: 'Nottm Forest', awayLogo: '🔴', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '21:00', home: 'Wolves', homeLogo: '🟡', away: 'Liverpool', awayLogo: '🔴', score: '–', status: 'scheduled' }
+      ],
+      results: [
+        { date: '05/04/2025 · T7', time: '22:00', home: 'Chelsea', homeLogo: '🔵', away: 'Liverpool', awayLogo: '🔴', score: '2 – 1', status: 'finished' }
+      ]
+    },
+    bund: {
+      name: 'Bundesliga',
+      flag: '🇩🇪',
+      country: 'Germany',
+      season: 'Mùa giải 2024/25 · Vòng 29/34',
+      rounds: 34,
+      teams: 18,
+      matches: 306,
+      fixtures: [
+        { date: 'Hôm nay · 07/04/2025', time: '20:30', home: 'Bayern Munich', homeLogo: '🔴', away: 'Dortmund', awayLogo: '🟡', score: '–', status: 'scheduled' },
+        { date: 'Hôm nay · 07/04/2025', time: '20:30', home: 'RB Leipzig', homeLogo: '⚪', away: 'Leverkusen', awayLogo: '⚫', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '18:30', home: 'Frankfurt', homeLogo: '🔴', away: 'Stuttgart', awayLogo: '⚪', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '20:30', home: 'Werder Bremen', homeLogo: '🟢', away: 'Hoffenheim', awayLogo: '🔵', score: '–', status: 'scheduled' }
+      ],
+      results: [
+        { date: '06/04/2025 · T7', time: '15:30', home: 'Bayern Munich', homeLogo: '🔴', away: 'Schalke', awayLogo: '🔵', score: '4 – 0', status: 'finished' },
+        { date: '06/04/2025 · T7', time: '18:30', home: 'Dortmund', homeLogo: '🟡', away: 'Mainz', awayLogo: '🔴', score: '2 – 1', status: 'finished' }
+      ]
+    },
+    laliga: {
+      name: 'La Liga',
+      flag: '🇪🇸',
+      country: 'Spain',
+      season: 'Mùa giải 2024/25 · Vòng 32/38',
+      rounds: 38,
+      teams: 20,
+      matches: 380,
+      fixtures: [
+        { date: 'Hôm nay · 07/04/2025', time: '21:00', home: 'Real Madrid', homeLogo: '⚪', away: 'Barcelona', awayLogo: '🔵', score: '–', status: 'scheduled' },
+        { date: 'Hôm nay · 07/04/2025', time: '23:00', home: 'Atletico Madrid', homeLogo: '🔴', away: 'Sevilla', awayLogo: '⚪', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '19:00', home: 'Valencia', homeLogo: '🟣', away: 'Villarreal', awayLogo: '🟡', score: '–', status: 'scheduled' }
+      ],
+      results: [
+        { date: '06/04/2025 · T7', time: '16:15', home: 'Real Madrid', homeLogo: '⚪', away: 'Athletic Bilbao', awayLogo: '🔴', score: '3 – 1', status: 'finished' }
+      ]
+    },
+    seriea: {
+      name: 'Serie A',
+      flag: '🇮🇹',
+      country: 'Italy',
+      season: 'Mùa giải 2024/25 · Vòng 33/38',
+      rounds: 38,
+      teams: 20,
+      matches: 380,
+      fixtures: [
+        { date: 'Hôm nay · 07/04/2025', time: '20:45', home: 'Juventus', homeLogo: '⚫', away: 'Inter Milan', awayLogo: '🔵', score: '–', status: 'scheduled' },
+        { date: 'Hôm nay · 07/04/2025', time: '23:00', home: 'AC Milan', homeLogo: '🔴', away: 'Napoli', awayLogo: '🔵', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '18:00', home: 'Roma', homeLogo: '🟣', away: 'Lazio', awayLogo: '🔵', score: '–', status: 'scheduled' }
+      ],
+      results: [
+        { date: '06/04/2025 · T7', time: '15:00', home: 'Juventus', homeLogo: '⚫', away: 'Fiorentina', awayLogo: '🟣', score: '2 – 0', status: 'finished' }
+      ]
+    },
+    ligue1: {
+      name: 'Ligue 1',
+      flag: '🇫🇷',
+      country: 'France',
+      season: 'Mùa giải 2024/25 · Vòng 30/34',
+      rounds: 34,
+      teams: 18,
+      matches: 306,
+      fixtures: [
+        { date: 'Hôm nay · 07/04/2025', time: '21:00', home: 'PSG', homeLogo: '🔵', away: 'Marseille', awayLogo: '🔵', score: '–', status: 'scheduled' },
+        { date: 'Hôm nay · 07/04/2025', time: '23:00', home: 'Lyon', homeLogo: '🔵', away: 'Monaco', awayLogo: '🔴', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '20:00', home: 'Lille', homeLogo: '🔴', away: 'Nice', awayLogo: '🔴', score: '–', status: 'scheduled' }
+      ],
+      results: [
+        { date: '06/04/2025 · T7', time: '17:00', home: 'PSG', homeLogo: '🔵', away: 'Lens', awayLogo: '🟠', score: '3 – 1', status: 'finished' }
+      ]
+    },
+    // Add more leagues as needed
+    championship: {
+      name: 'Championship',
+      flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+      country: 'England',
+      season: 'Mùa giải 2024/25 · Vòng 40/46',
+      rounds: 46,
+      teams: 24,
+      matches: 552,
+      fixtures: [
+        { date: 'Hôm nay · 07/04/2025', time: '20:45', home: 'Leeds', homeLogo: '⚪', away: 'Norwich', awayLogo: '🟡', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '19:45', home: 'Birmingham', homeLogo: '🔵', away: 'Cardiff', awayLogo: '🔵', score: '–', status: 'scheduled' }
+      ],
+      results: [
+        { date: '06/04/2025 · T7', time: '15:00', home: 'Leeds', homeLogo: '⚪', away: 'Watford', awayLogo: '🟡', score: '2 – 1', status: 'finished' }
+      ]
+    },
+    bund2: {
+      name: '2. Bundesliga',
+      flag: '🇩🇪',
+      country: 'Germany',
+      season: 'Mùa giải 2024/25 · Vòng 29/34',
+      rounds: 34,
+      teams: 18,
+      matches: 306,
+      fixtures: [
+        { date: 'Hôm nay · 07/04/2025', time: '18:30', home: 'Hamburger SV', homeLogo: '🔵', away: 'St. Pauli', awayLogo: '🟤', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '13:00', home: 'Darmstadt', homeLogo: '🔵', away: 'Nuremberg', awayLogo: '🔴', score: '–', status: 'scheduled' }
+      ],
+      results: [
+        { date: '06/04/2025 · T7', time: '13:30', home: 'Hamburger SV', homeLogo: '🔵', away: 'Kiel', awayLogo: '🔵', score: '1 – 0', status: 'finished' }
+      ]
+    },
+    laliga2: {
+      name: 'La Liga 2',
+      flag: '🇪🇸',
+      country: 'Spain',
+      season: 'Mùa giải 2024/25 · Vòng 35/42',
+      rounds: 42,
+      teams: 22,
+      matches: 462,
+      fixtures: [
+        { date: 'Hôm nay · 07/04/2025', time: '19:00', home: 'Las Palmas', homeLogo: '🟡', away: 'Almeria', awayLogo: '🔴', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '16:15', home: 'Granada', homeLogo: '🔴', away: 'Tenerife', awayLogo: '🔵', score: '–', status: 'scheduled' }
+      ],
+      results: [
+        { date: '06/04/2025 · T7', time: '18:30', home: 'Las Palmas', homeLogo: '🟡', away: 'Sporting Gijon', awayLogo: '🔴', score: '2 – 0', status: 'finished' }
+      ]
+    },
+    serieb: {
+      name: 'Serie B',
+      flag: '🇮🇹',
+      country: 'Italy',
+      season: 'Mùa giải 2024/25 · Vòng 33/38',
+      rounds: 38,
+      teams: 20,
+      matches: 380,
+      fixtures: [
+        { date: 'Hôm nay · 07/04/2025', time: '15:00', home: 'Parma', homeLogo: '🟡', away: 'Bari', awayLogo: '⚪', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '14:00', home: 'Palermo', homeLogo: '🩷', away: 'Modena', awayLogo: '🟡', score: '–', status: 'scheduled' }
+      ],
+      results: [
+        { date: '06/04/2025 · T7', time: '15:00', home: 'Parma', homeLogo: '🟡', away: 'Sampdoria', awayLogo: '🔵', score: '1 – 1', status: 'finished' }
+      ]
+    },
+    ligue2: {
+      name: 'Ligue 2',
+      flag: '🇫🇷',
+      country: 'France',
+      season: 'Mùa giải 2024/25 · Vòng 30/34',
+      rounds: 34,
+      teams: 18,
+      matches: 306,
+      fixtures: [
+        { date: 'Hôm nay · 07/04/2025', time: '19:45', home: 'Toulouse', homeLogo: '🟣', away: 'Ajaccio', awayLogo: '⚪', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '19:00', home: 'Auxerre', homeLogo: '🔵', away: 'Angers', awayLogo: '⚫', score: '–', status: 'scheduled' }
+      ],
+      results: [
+        { date: '06/04/2025 · T7', time: '19:00', home: 'Toulouse', homeLogo: '🟣', away: 'Caen', awayLogo: '🔴', score: '2 – 1', status: 'finished' }
+      ]
+    },
+    ucl: {
+      name: 'UEFA Champions League',
+      flag: '🇪🇺',
+      country: 'Europe',
+      season: 'Mùa giải 2024/25 · Vòng bảng',
+      rounds: 8,
+      teams: 32,
+      matches: 96,
+      fixtures: [
+        { date: 'Hôm nay · 07/04/2025', time: '21:00', home: 'Real Madrid', homeLogo: '⚪', away: 'PSG', awayLogo: '🔵', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '21:00', home: 'Bayern Munich', homeLogo: '🔴', away: 'Arsenal', awayLogo: '🔴', score: '–', status: 'scheduled' }
+      ],
+      results: [
+        { date: '06/04/2025 · T7', time: '21:00', home: 'Inter Milan', homeLogo: '🔵', away: 'Dortmund', awayLogo: '🟡', score: '1 – 0', status: 'finished' }
+      ]
+    },
+    uel: {
+      name: 'UEFA Europa League',
+      flag: '🇪🇺',
+      country: 'Europe',
+      season: 'Mùa giải 2024/25 · Vòng 1/16',
+      rounds: 16,
+      teams: 32,
+      matches: 96,
+      fixtures: [
+        { date: 'Hôm nay · 07/04/2025', time: '19:45', home: 'Roma', homeLogo: '🟣', away: 'Leverkusen', awayLogo: '⚫', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '21:00', home: 'Marseille', homeLogo: '🔵', away: 'Brighton', awayLogo: '🔵', score: '–', status: 'scheduled' }
+      ],
+      results: [
+        { date: '06/04/2025 · T7', time: '18:45', home: 'Liverpool', homeLogo: '🔴', away: 'Atalanta', awayLogo: '🔵', score: '3 – 0', status: 'finished' }
+      ]
+    },
+    uecl: {
+      name: 'UEFA Conference League',
+      flag: '🇪🇺',
+      country: 'Europe',
+      season: 'Mùa giải 2024/25 · Vòng play-off',
+      rounds: 16,
+      teams: 32,
+      matches: 96,
+      fixtures: [
+        { date: 'Hôm nay · 07/04/2025', time: '20:00', home: 'Fiorentina', homeLogo: '🟣', away: 'Club Brugge', awayLogo: '🔵', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '18:00', home: 'Panathinaikos', homeLogo: '🟢', away: 'Sturm Graz', awayLogo: '⚫', score: '–', status: 'scheduled' }
+      ],
+      results: [
+        { date: '06/04/2025 · T7', time: '20:00', home: 'Olympiakos', homeLogo: '🔴', away: 'Fenerbahce', awayLogo: '🔵', score: '2 – 1', status: 'finished' }
+      ]
+    },
+    facup: {
+      name: 'FA Cup',
+      flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+      country: 'England',
+      season: 'Mùa giải 2024/25 · Tứ kết',
+      rounds: 6,
+      teams: 64,
+      matches: 63,
+      fixtures: [
+        { date: 'Hôm nay · 07/04/2025', time: '17:30', home: 'Manchester Utd', homeLogo: '🔴', away: 'Liverpool', awayLogo: '🔴', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '16:00', home: 'Chelsea', homeLogo: '🔵', away: 'Tottenham', awayLogo: '⚪', score: '–', status: 'scheduled' }
+      ],
+      results: [
+        { date: '06/04/2025 · T7', time: '15:00', home: 'Arsenal', homeLogo: '🔴', away: 'Manchester City', awayLogo: '🔵', score: '2 – 1', status: 'finished' }
+      ]
+    },
+    cdr: {
+      name: 'Copa del Rey',
+      flag: '🇪🇸',
+      country: 'Spain',
+      season: 'Mùa giải 2024/25 · Tứ kết',
+      rounds: 6,
+      teams: 64,
+      matches: 63,
+      fixtures: [
+        { date: 'Hôm nay · 07/04/2025', time: '21:00', home: 'Barcelona', homeLogo: '🔵', away: 'Real Madrid', awayLogo: '⚪', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '19:00', home: 'Atletico Madrid', homeLogo: '🔴', away: 'Sevilla', awayLogo: '⚪', score: '–', status: 'scheduled' }
+      ],
+      results: [
+        { date: '06/04/2025 · T7', time: '20:30', home: 'Valencia', homeLogo: '🟣', away: 'Real Sociedad', awayLogo: '🔵', score: '1 – 0', status: 'finished' }
+      ]
+    },
+    coppait: {
+      name: 'Coppa Italia',
+      flag: '🇮🇹',
+      country: 'Italy',
+      season: 'Mùa giải 2024/25 · Tứ kết',
+      rounds: 6,
+      teams: 64,
+      matches: 63,
+      fixtures: [
+        { date: 'Hôm nay · 07/04/2025', time: '20:45', home: 'Juventus', homeLogo: '⚫', away: 'Napoli', awayLogo: '🔵', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '21:00', home: 'Inter Milan', homeLogo: '🔵', away: 'AC Milan', awayLogo: '🔴', score: '–', status: 'scheduled' }
+      ],
+      results: [
+        { date: '06/04/2025 · T7', time: '18:00', home: 'Roma', homeLogo: '🟣', away: 'Lazio', awayLogo: '🔵', score: '1 – 0', status: 'finished' }
+      ]
+    },
+    vleague1: {
+      name: 'V.League 1',
+      flag: '🇻🇳',
+      country: 'Vietnam',
+      season: 'Mùa giải 2024/25 · Vòng 20/26',
+      rounds: 26,
+      teams: 14,
+      matches: 182,
+      fixtures: [
+        { date: 'Hôm nay · 07/04/2025', time: '17:00', home: 'Ha Noi FC', homeLogo: '🔴', away: 'Hai Phong', awayLogo: '🔵', score: '–', status: 'scheduled' },
+        { date: 'Hôm nay · 07/04/2025', time: '19:15', home: 'Thanh Hoa', homeLogo: '🟡', away: 'Sai Gon FC', awayLogo: '🔴', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '17:00', home: 'Viettel', homeLogo: '🔴', away: 'Nam Dinh', awayLogo: '🟡', score: '–', status: 'scheduled' }
+      ],
+      results: [
+        { date: '06/04/2025 · T7', time: '17:00', home: 'Ha Noi FC', homeLogo: '🔴', away: 'Thanh Hoa', awayLogo: '🟡', score: '2 – 1', status: 'finished' }
+      ]
+    },
+    vleague2: {
+      name: 'V.League 2',
+      flag: '🇻🇳',
+      country: 'Vietnam',
+      season: 'Mùa giải 2024/25 · Vòng 18/22',
+      rounds: 22,
+      teams: 12,
+      matches: 132,
+      fixtures: [
+        { date: 'Hôm nay · 07/04/2025', time: '15:00', home: 'Phu Tho', homeLogo: '🟡', away: 'Tuyen Quang', awayLogo: '🔵', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '15:00', home: 'Ha Tinh', homeLogo: '🟢', away: 'Quang Nam', awayLogo: '🔴', score: '–', status: 'scheduled' }
+      ],
+      results: [
+        { date: '06/04/2025 · T7', time: '15:00', home: 'Phu Tho', homeLogo: '🟡', away: 'Ha Tinh', awayLogo: '🟢', score: '1 – 0', status: 'finished' }
+      ]
+    },
+    vcup: {
+      name: 'Cúp Quốc gia',
+      flag: '🇻🇳',
+      country: 'Vietnam',
+      season: 'Mùa giải 2024/25 · Vòng 1/8',
+      rounds: 8,
+      teams: 16,
+      matches: 15,
+      fixtures: [
+        { date: 'Hôm nay · 07/04/2025', time: '17:00', home: 'Ha Noi FC', homeLogo: '🔴', away: 'Hai Phong', awayLogo: '🔵', score: '–', status: 'scheduled' },
+        { date: '08/04/2025 · T2', time: '15:00', home: 'Thanh Hoa', homeLogo: '🟡', away: 'Viettel', awayLogo: '🔴', score: '–', status: 'scheduled' }
+      ],
+      results: [
+        { date: '06/04/2025 · T7', time: '17:00', home: 'Sai Gon FC', homeLogo: '🔴', away: 'Nam Dinh', awayLogo: '🟡', score: '3 – 2', status: 'finished' }
+      ]
+    }
+  };
+
+  // Update league info based on URL parameter
+  function updateLeagueInfo(leagueId) {
+    const data = leagueData[leagueId];
+    if (!data) return;
+
+    // Update title
+    document.title = data.name + ' — FootballBlog';
+
+    // Update breadcrumb
+    document.querySelector('.breadcrumb span:last-child').textContent = data.name;
+
+    // Update header
+    document.querySelector('.league-logo-lg').textContent = data.flag;
+    document.querySelector('.league-name-lg').textContent = data.name;
+    document.querySelector('.league-season').textContent = data.country + ' · ' + data.season;
+
+    // Update stats
+    const statItems = document.querySelectorAll('.league-stat-item');
+    if (statItems.length >= 3) {
+      statItems[0].querySelector('.league-stat-val').textContent = data.rounds;
+      statItems[1].querySelector('.league-stat-val').textContent = data.teams;
+      statItems[2].querySelector('.league-stat-val').textContent = data.matches;
+    }
+
+    // Update match content
+    updateMatchContent(leagueId);
+  }
+
+  // Update match content based on league
+  function updateMatchContent(leagueId) {
+    const data = leagueData[leagueId];
+    if (!data) return;
+
+    // Update fixtures
+    const fixturesPanel = document.getElementById('panel-fixtures');
+    if (fixturesPanel && data.fixtures) {
+      let fixturesHtml = '';
+      let currentDate = '';
+
+      data.fixtures.forEach(match => {
+        if (match.date !== currentDate) {
+          fixturesHtml += `<div class="date-group-header">${match.date}</div>`;
+          currentDate = match.date;
+        }
+
+        const isLive = match.status === 'live';
+        const scoreClass = match.score === '–' ? 'no-score' : 'has-score';
+        const timeClass = isLive ? 'is-live' : '';
+        const scoreDivClass = isLive ? 'is-live-score' : '';
+        const homeTeamClass = isLive ? 'live-team' : '';
+        const awayTeamClass = isLive ? 'live-team' : '';
+
+        let statusHtml = '';
+        if (isLive) {
+          statusHtml = '<span class="badge-live"><span class="live-dot" style="width:5px;height:5px;"></span>LIVE</span>';
+        } else if (match.status === 'finished') {
+          statusHtml = '<span class="badge-ft">KT</span>';
+        } else {
+          statusHtml = `<span class="badge-sch">${match.time}</span>`;
+        }
+
+        fixturesHtml += `
+          <a class="match-row" href="match-detail.html">
+            <div class="mr-time ${timeClass}">${isLive ? match.time : match.time}</div>
+            <div class="mr-home ${homeTeamClass}"><span class="tn">${match.home}</span><div class="tl">${match.homeLogo}</div></div>
+            <div class="score-c ${scoreClass} ${scoreDivClass}">${match.score}</div>
+            <div class="mr-away ${awayTeamClass}"><div class="tl">${match.awayLogo}</div><span class="tn">${match.away}</span></div>
+            <div class="mr-status">${statusHtml}</div>
+          </a>
+        `;
+      });
+
+      // Replace the content inside fixtures panel
+      fixturesPanel.innerHTML = fixturesHtml;
+    }
+
+    // Update results
+    const resultsPanel = document.getElementById('panel-results');
+    if (resultsPanel && data.results) {
+      let resultsHtml = '';
+      let currentDate = '';
+
+      data.results.forEach(match => {
+        if (match.date !== currentDate) {
+          resultsHtml += `<div class="date-group-header">${match.date}</div>`;
+          currentDate = match.date;
+        }
+
+        resultsHtml += `
+          <a class="match-row" href="match-detail.html">
+            <div class="mr-time">${match.time}</div>
+            <div class="mr-home"><span class="tn">${match.home}</span><div class="tl">${match.homeLogo}</div></div>
+            <div class="score-c has-score">${match.score}</div>
+            <div class="mr-away"><div class="tl">${match.awayLogo}</div><span class="tn">${match.away}</span></div>
+            <div class="mr-status"><span class="badge-ft">KT</span></div>
+          </a>
+        `;
+      });
+
+      // Replace the content inside results panel
+      resultsPanel.innerHTML = resultsHtml;
+    }
+  }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    // Check URL parameter and update league info
+    const urlParams = new URLSearchParams(window.location.search);
+    const leagueParam = urlParams.get('league');
+
+    if (leagueParam && leagueData[leagueParam]) {
+      updateLeagueInfo(leagueParam);
+    } else {
+      // Default to EPL if no parameter
+      updateLeagueInfo('epl');
+    }
+  });
 </script>
 </body>
 </html>

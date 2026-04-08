@@ -140,7 +140,7 @@ FootballBlog/
 4. Sau khi approve → tách thành **Blazor component**
 
 **Design system hiện có:** xem `.claude/rules/ui-design.md`
-**File prototype chính:** `wwwroot/prototype/combined-home.html`
+**File prototype chính:** `wwwroot/prototype/home.html`
 
 ---
 

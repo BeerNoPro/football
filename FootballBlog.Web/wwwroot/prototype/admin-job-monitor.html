@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Job Monitor — Admin FootballBlog</title>
+  <link rel="stylesheet" href="assets/common.css">
+  <link rel="stylesheet" href="assets/admin-common.css">
+  <style>
+    /* ===== JOB MONITOR SPECIFIC ===== */
+
+    /* API Quota card */
+    .quota-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+    }
+    .quota-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .quota-title { font-size: 13px; font-weight: 700; color: var(--text); }
+    .quota-reset { font-size: 10px; color: var(--muted); }
+    .quota-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .quota-item {}
+    .quota-item-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
+    .quota-item-val { font-size: 22px; font-weight: 900; }
+    .quota-item-val.ok { color: var(--accent); }
+    .quota-item-val.warn { color: #f59e0b; }
+    .quota-item-val.danger { color: #f87171; }
+    .quota-item-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .quota-bar-wrap { margin-bottom: 8px; }
+    .quota-bar-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-bottom: 5px; }
+    .quota-bar-labels span:last-child { font-weight: 700; color: var(--accent); }
+    .quota-bar { height: 8px; border-radius: 4px; background: var(--border2); overflow: hidden; }
+    .quota-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
+    .quota-bar-fill.ok { background: linear-gradient(90deg, #4ade80, #c8f04d); }
+    .quota-bar-fill.warn { background: linear-gradient(90deg, #d97706, #f59e0b); }
+    .quota-bar-fill.danger { background: linear-gradient(90deg, #dc2626, #f87171); }
+
+    /* Status summary cards */
+    .job-status-cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    /* Telegram status card */
+    .telegram-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .telegram-icon {
+      width: 42px;
+      height: 42px;
+      background: rgba(38,140,215,0.15);
+      border: 1px solid rgba(38,140,215,0.25);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .telegram-info { flex: 1; }
+    .telegram-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+    .telegram-sub { font-size: 11px; color: var(--muted); }
+    .telegram-status {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #4ade80;
+    }
+
+    /* Manual trigger buttons */
+    .trigger-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+    }
+    .trigger-section-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .trigger-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+    .trigger-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border2);
+      background: var(--bg);
+      color: var(--muted2);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .trigger-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+    .trigger-btn.primary { background: var(--accent); border-color: var(--accent); color: #111; }
+    .trigger-btn.primary:hover { background: #d4f560; }
+
+    /* Job status chips */
+    .chip-success { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
+    .chip-running { background: rgba(200,240,77,0.12); color: var(--accent); border: 1px solid rgba(200,240,77,0.2); }
+    .chip-failed { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.2); }
+    .chip-scheduled { background: rgba(255,255,255,0.06); color: var(--muted2); border: 1px solid var(--border2); }
+    .chip-warn { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+
+    /* Running indicator */
+    .running-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: livepulse 1.5s ease-in-out infinite;
+      display: inline-block;
+    }
+
+    /* Error expand row */
+    .error-row td { background: rgba(248,113,113,0.04) !important; }
+    .error-detail {
+      background: #0f0808;
+      border: 1px solid rgba(248,113,113,0.15);
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 10px;
+      color: #f87171;
+      font-family: 'Consolas', monospace;
+      line-height: 1.5;
+      margin-top: 6px;
+      max-height: 80px;
+      overflow: hidden;
+    }
+    .error-toggle {
+      font-size: 10px;
+      color: #f87171;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .error-toggle:hover { text-decoration: underline; }
+
+    /* Duration chip */
+    .dur { font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+    /* Next run */
+    .next-run { font-size: 10px; color: var(--muted2); }
+
+    /* Section gap */
+    .section-gap { margin-bottom: 20px; }
+  </style>
+</head>
+<body class="admin-body">
+<div class="admin-wrap">
+
+  <!-- TOP NAV -->
+  <header class="admin-topnav">
+    <div class="logo-wrap">
+      <div class="logo"><span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span></div>
+    </div>
+    <div class="admin-topnav-spacer"></div>
+    <div class="admin-topnav-actions">
+      <a href="home.html" class="topnav-btn">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Xem trang chính
+      </a>
+      <button class="topnav-btn">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Admin
+      </button>
+    </div>
+  </header>
+
+  <div class="admin-body-area">
+
+    <!-- ADMIN SIDEBAR -->
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-scroll">
+        <div class="admin-menu-group">
+          <div class="admin-menu-label">Nội dung</div>
+          <a class="admin-menu-item" href="admin-dashboard.html">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            Dashboard
+          </a>
+          <a class="admin-menu-item" href="admin-posts.html">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Bài viết
+          </a>
+          <a class="admin-menu-item" href="admin-predictions.html">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Dự đoán AI
+            <span class="admin-menu-badge">3</span>
+          </a>
+          <a class="admin-menu-item" href="admin-categories.html">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            Danh mục & Tag
+          </a>
+        </div>
+        <div class="admin-menu-group">
+          <div class="admin-menu-label">Hệ thống</div>
+          <a class="admin-menu-item active" href="admin-job-monitor.html">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Job Monitor
+          </a>
+          <a class="admin-menu-item" href="#">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Cài đặt
+          </a>
+        </div>
+        <div class="admin-menu-group">
+          <div class="admin-menu-label">Tài khoản</div>
+          <div class="admin-menu-item" style="cursor:default;opacity:0.6;">
+            <div class="user-avatar" style="width:24px;height:24px;font-size:11px;">A</div>
+            Admin · admin@footballblog.vn
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ADMIN MAIN -->
+    <main class="admin-main">
+      <div class="admin-main-scroll">
+
+        <!-- Page header -->
+        <div class="admin-page-header">
+          <div>
+            <div class="admin-page-title">Job Monitor</div>
+            <div class="admin-page-sub">Hangfire jobs · API quota · Telegram status · Cập nhật: 08/04/2026 14:32:17</div>
+          </div>
+          <div class="admin-header-actions">
+            <button class="btn btn-ghost" onclick="refreshPage()">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              Làm mới
+            </button>
+            <a href="#" class="btn btn-secondary">Hangfire Dashboard ↗</a>
+          </div>
+        </div>
+
+        <!-- API Quota cards -->
+        <div class="quota-card">
+          <div class="quota-header">
+            <div class="quota-title">API Quota — Hôm nay (08/04/2026)</div>
+            <div class="quota-reset">Reset lúc 00:00 UTC · Còn 9h 28m</div>
+          </div>
+          <div class="quota-grid">
+            <div class="quota-item">
+              <div class="quota-item-label">Football API (api-football.com)</div>
+              <div class="quota-item-val warn">47<span style="font-size:14px;color:var(--muted);font-weight:400;"> / 100</span></div>
+              <div class="quota-item-sub">53 request còn lại hôm nay</div>
+            </div>
+            <div class="quota-item">
+              <div class="quota-item-label">Claude API (Anthropic)</div>
+              <div class="quota-item-val ok">1.2M<span style="font-size:14px;color:var(--muted);font-weight:400;"> tokens</span></div>
+              <div class="quota-item-sub">Hôm nay · Budget: $5.00</div>
+            </div>
+            <div class="quota-item">
+              <div class="quota-item-label">Telegram Bot</div>
+              <div class="quota-item-val ok">12<span style="font-size:14px;color:var(--muted);font-weight:400;"> messages</span></div>
+              <div class="quota-item-sub">Hôm nay · 3 channels</div>
+            </div>
+          </div>
+          <div class="quota-bar-wrap">
+            <div class="quota-bar-labels">
+              <span>Football API sử dụng hôm nay</span>
+              <span>47%</span>
+            </div>
+            <div class="quota-bar"><div class="quota-bar-fill warn" style="width:47%"></div></div>
+          </div>
+          <div style="font-size:10px;color:#f59e0b;margin-top:6px;">⚠ Còn 53 requests — hệ thống sẽ tự tắt polling khi ≤ 20 requests còn lại</div>
+        </div>
+
+        <!-- Job status summary -->
+        <div class="job-status-cards">
+          <div class="stat-card accent">
+            <div class="stat-card-label">Đang chạy</div>
+            <div class="stat-card-value">1</div>
+            <div class="stat-card-delta"><span class="running-dot"></span> LiveScorePollingJob</div>
+            <div class="stat-card-icon">⚡</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Thành công hôm nay</div>
+            <div class="stat-card-value" style="color:#4ade80;">28</div>
+            <div class="stat-card-delta up">↑ 4 so với hôm qua</div>
+            <div class="stat-card-icon">✓</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Thất bại hôm nay</div>
+            <div class="stat-card-value" style="color:#f87171;">2</div>
+            <div class="stat-card-delta down">GeneratePredictionJob · 06:12</div>
+            <div class="stat-card-icon">✗</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Job tiếp theo</div>
+            <div class="stat-card-value" style="font-size:18px;">14:45</div>
+            <div class="stat-card-delta">FetchUpcomingMatchesJob (cron 6h)</div>
+            <div class="stat-card-icon">⏱</div>
+          </div>
+        </div>
+
+        <!-- Telegram status -->
+        <div class="telegram-card">
+          <div class="telegram-icon">✈</div>
+          <div class="telegram-info">
+            <div class="telegram-title">Telegram Bot — @FootballBlogBot</div>
+            <div class="telegram-sub">12 messages hôm nay · 3 channels · Cuối cùng: 14:01 (Man City vs Arsenal prediction)</div>
+          </div>
+          <div class="telegram-status">
+            <span class="live-dot" style="width:7px;height:7px;"></span>
+            Đang hoạt động
+          </div>
+        </div>
+
+        <!-- Manual trigger buttons -->
+        <div class="trigger-section">
+          <div class="trigger-section-title">Trigger thủ công</div>
+          <div class="trigger-buttons">
+            <button class="trigger-btn primary" onclick="triggerJob('fetch-matches')">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.07-5"/></svg>
+              Fetch Matches Now
+            </button>
+            <button class="trigger-btn" onclick="triggerJob('gen-prediction')">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Run Predictions
+            </button>
+            <button class="trigger-btn" onclick="triggerJob('fetch-context')">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+              Fetch Match Context
+            </button>
+            <button class="trigger-btn" onclick="triggerJob('send-telegram')">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Send Telegram
+            </button>
+            <button class="trigger-btn" onclick="triggerJob('live-poll')">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              Live Score Poll
+            </button>
+          </div>
+        </div>
+
+        <!-- Active jobs table -->
+        <div class="data-table-wrap section-gap">
+          <div class="data-table-toolbar">
+            <div class="data-table-toolbar-title">Jobs đang chạy / đã lên lịch</div>
+            <div class="chip chip-running"><span class="running-dot" style="width:5px;height:5px;"></span> 1 Active</div>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Job Name</th>
+                <th>Trạng thái</th>
+                <th>Lần chạy cuối</th>
+                <th>Lần chạy tiếp</th>
+                <th>Cron</th>
+                <th>Thời lượng</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div style="font-weight:600;">LiveScorePollingJob</div>
+                  <div class="td-muted">Cập nhật live score qua SignalR</div>
+                </td>
+                <td><span class="chip chip-running"><span class="running-dot" style="width:5px;height:5px;margin-right:2px;"></span>Đang chạy</span></td>
+                <td class="td-muted">14:32:00</td>
+                <td class="next-run">14:32:30</td>
+                <td class="td-muted">*/30s</td>
+                <td class="dur">~1.2s</td>
+              </tr>
+              <tr>
+                <td>
+                  <div style="font-weight:600;">FetchUpcomingMatchesJob</div>
+                  <div class="td-muted">Lấy trận 48h tới từ Football API</div>
+                </td>
+                <td><span class="chip chip-scheduled">Đã lên lịch</span></td>
+                <td class="td-muted">08:30:00</td>
+                <td class="next-run">14:45:00</td>
+                <td class="td-muted">0 */6 * * *</td>
+                <td class="dur">~4.3s</td>
+              </tr>
+              <tr>
+                <td>
+                  <div style="font-weight:600;">FetchMatchContextJob</div>
+                  <div class="td-muted">Lấy h2h, form, lineup, referee stats</div>
+                </td>
+                <td><span class="chip chip-scheduled">Đã lên lịch</span></td>
+                <td class="td-muted">08:30:15</td>
+                <td class="next-run">14:45:15</td>
+                <td class="td-muted">0 */6 * * *</td>
+                <td class="dur">~12.7s</td>
+              </tr>
+              <tr>
+                <td>
+                  <div style="font-weight:600;">GeneratePredictionJob</div>
+                  <div class="td-muted">Gọi Claude AI phân tích trận đấu</div>
+                </td>
+                <td><span class="chip chip-scheduled">Đã lên lịch</span></td>
+                <td class="td-muted">08:31:00</td>
+                <td class="next-run">14:46:00</td>
+                <td class="td-muted">0 */6 * * *</td>
+                <td class="dur">~28.4s</td>
+              </tr>
+              <tr>
+                <td>
+                  <div style="font-weight:600;">UpdatePredictionResultJob</div>
+                  <div class="td-muted">So sánh dự đoán vs kết quả sau FT</div>
+                </td>
+                <td><span class="chip chip-scheduled">Đã lên lịch</span></td>
+                <td class="td-muted">13:15:00</td>
+                <td class="next-run">15:15:00</td>
+                <td class="td-muted">0 * * * *</td>
+                <td class="dur">~2.1s</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Job history table -->
+        <div class="data-table-wrap">
+          <div class="data-table-toolbar">
+            <div class="data-table-toolbar-title">Lịch sử jobs — 20 lần gần nhất</div>
+            <select class="filter-select" style="max-width:160px;">
+              <option>Tất cả jobs</option>
+              <option>FetchUpcomingMatchesJob</option>
+              <option>GeneratePredictionJob</option>
+              <option>LiveScorePollingJob</option>
+              <option>UpdatePredictionResultJob</option>
+            </select>
+            <select class="filter-select" style="max-width:130px;">
+              <option>Tất cả trạng thái</option>
+              <option>Thành công</option>
+              <option>Thất bại</option>
+            </select>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Thời gian</th>
+                <th>Job</th>
+                <th>Trạng thái</th>
+                <th>Thời lượng</th>
+                <th>Chi tiết</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="td-muted">14:32:00</td>
+                <td style="font-weight:600;font-size:11px;">LiveScorePollingJob</td>
+                <td><span class="chip chip-running"><span class="running-dot" style="width:5px;height:5px;margin-right:2px;"></span>Đang chạy</span></td>
+                <td class="dur">1.2s</td>
+                <td class="td-muted">4 live matches · 12 events updated</td>
+              </tr>
+              <tr>
+                <td class="td-muted">14:01:32</td>
+                <td style="font-weight:600;font-size:11px;">PublishPredictionJob</td>
+                <td><span class="chip chip-success">Thành công</span></td>
+                <td class="dur">3.8s</td>
+                <td class="td-muted">Blog post created · Telegram sent</td>
+              </tr>
+              <tr>
+                <td class="td-muted">14:01:05</td>
+                <td style="font-weight:600;font-size:11px;">GeneratePredictionJob</td>
+                <td><span class="chip chip-success">Thành công</span></td>
+                <td class="dur">31.2s</td>
+                <td class="td-muted">Man City vs Arsenal · Confidence: 82%</td>
+              </tr>
+              <tr class="error-row">
+                <td class="td-muted">06:12:44</td>
+                <td style="font-weight:600;font-size:11px;">GeneratePredictionJob</td>
+                <td><span class="chip chip-failed">Thất bại</span></td>
+                <td class="dur">62.1s</td>
+                <td>
+                  <span class="error-toggle" onclick="toggleError(this)">Xem lỗi ▼</span>
+                  <div class="error-detail" style="display:none;">
+                    Anthropic.Exceptions.RateLimitException: Rate limit exceeded (529).<br>
+                    at AnthropicClient.CompletionsAsync(CompletionRequest)<br>
+                    at GeneratePredictionJob.ExecuteAsync(JobCancellationToken)<br>
+                    Retried 3x · Match: Chelsea vs Liverpool (GW33)
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-muted">08:31:00</td>
+                <td style="font-weight:600;font-size:11px;">GeneratePredictionJob</td>
+                <td><span class="chip chip-success">Thành công</span></td>
+                <td class="dur">44.7s</td>
+                <td class="td-muted">3 predictions generated · 2 published</td>
+              </tr>
+              <tr>
+                <td class="td-muted">08:30:15</td>
+                <td style="font-weight:600;font-size:11px;">FetchMatchContextJob</td>
+                <td><span class="chip chip-success">Thành công</span></td>
+                <td class="dur">12.7s</td>
+                <td class="td-muted">5 matches · 18 API calls used</td>
+              </tr>
+              <tr>
+                <td class="td-muted">08:30:00</td>
+                <td style="font-weight:600;font-size:11px;">FetchUpcomingMatchesJob</td>
+                <td><span class="chip chip-success">Thành công</span></td>
+                <td class="dur">4.3s</td>
+                <td class="td-muted">12 matches fetched · 5 new</td>
+              </tr>
+              <tr class="error-row">
+                <td class="td-muted">06:12:01</td>
+                <td style="font-weight:600;font-size:11px;">FetchMatchContextJob</td>
+                <td><span class="chip chip-warn">Cảnh báo</span></td>
+                <td class="dur">8.3s</td>
+                <td>
+                  <span class="error-toggle" onclick="toggleError(this)">Xem cảnh báo ▼</span>
+                  <div class="error-detail" style="display:none;color:#fbbf24;">
+                    Warning: API quota 80/100 — approaching daily limit.<br>
+                    FetchMatchContextJob reduced scope to priority leagues only.<br>
+                    Skipped: Championship (5 matches), Ligue 2 (3 matches)
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-muted">02:30:00</td>
+                <td style="font-weight:600;font-size:11px;">FetchUpcomingMatchesJob</td>
+                <td><span class="chip chip-success">Thành công</span></td>
+                <td class="dur">5.1s</td>
+                <td class="td-muted">8 matches fetched · 2 new</td>
+              </tr>
+              <tr>
+                <td class="td-muted">13:15:00</td>
+                <td style="font-weight:600;font-size:11px;">UpdatePredictionResultJob</td>
+                <td><span class="chip chip-success">Thành công</span></td>
+                <td class="dur">2.1s</td>
+                <td class="td-muted">3 predictions updated · Telegram edited</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="pagination">
+            <span style="font-size:11px;color:var(--muted);margin-right:auto;">Hiển thị 10 / 247 lần chạy</span>
+            <button class="page-btn">‹</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">›</button>
+          </div>
+        </div>
+
+      </div><!-- /admin-main-scroll -->
+    </main>
+  </div><!-- /admin-body-area -->
+</div><!-- /admin-wrap -->
+
+<script src="assets/common.js"></script>
+<script>
+  function toggleError(el) {
+    const detail = el.nextElementSibling;
+    const isHidden = detail.style.display === 'none';
+    detail.style.display = isHidden ? 'block' : 'none';
+    el.textContent = isHidden
+      ? el.textContent.replace('▼', '▲')
+      : el.textContent.replace('▲', '▼');
+  }
+
+  function triggerJob(jobName) {
+    // Mock trigger feedback
+    const labels = {
+      'fetch-matches': 'FetchUpcomingMatchesJob',
+      'gen-prediction': 'GeneratePredictionJob',
+      'fetch-context': 'FetchMatchContextJob',
+      'send-telegram': 'PublishPredictionJob (Telegram)',
+      'live-poll': 'LiveScorePollingJob',
+    };
+    alert('Trigger: ' + (labels[jobName] || jobName) + '\n\nJob đã được đưa vào queue. Kiểm tra Hangfire Dashboard để theo dõi.');
+  }
+
+  function refreshPage() {
+    // Mock refresh — in real app: fetch latest job status via API
+    const sub = document.querySelector('.admin-page-sub');
+    const now = new Date();
+    const time = now.toLocaleTimeString('vi-VN', { hour12: false });
+    const date = now.toLocaleDateString('vi-VN');
+    sub.textContent = 'Hangfire jobs · API quota · Telegram status · Cập nhật: ' + date + ' ' + time;
+  }
+</script>
+</body>
+</html>

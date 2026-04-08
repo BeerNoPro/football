@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dự đoán AI — FootballBlog</title>
+  <link rel="stylesheet" href="assets/common.css">
+  <style>
+    /* ===== PREDICTIONS PAGE SPECIFIC ===== */
+
+    /* Page header */
+    .pred-page-header {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #0f1a0a 0%, #141f0c 60%, #141414 100%);
+    }
+    .pred-page-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .pred-page-title h1 {
+      font-size: 20px;
+      font-weight: 900;
+      color: #fff;
+    }
+    .pred-page-sub {
+      font-size: 11px;
+      color: var(--muted2);
+    }
+
+    /* Filter bar */
+    .pred-filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      overflow-x: auto;
+    }
+    .pred-filter-bar::-webkit-scrollbar { display: none; }
+    .filter-chip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border2);
+      background: var(--bg);
+      color: var(--muted2);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .filter-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-chip.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+    .filter-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+    .conf-label { font-size: 10px; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+
+    /* Accuracy banner */
+    .accuracy-banner {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 10px 16px;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .acc-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+    }
+    .acc-val { font-size: 18px; font-weight: 900; color: var(--accent); }
+    .acc-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
+    .acc-divider { width: 1px; height: 32px; background: var(--border2); }
+    .acc-desc { flex: 1; }
+    .acc-desc-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+    .acc-desc-sub { font-size: 10px; color: var(--muted); }
+
+    /* Featured prediction card */
+    .featured-pred {
+      margin: 14px 16px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--bg-card);
+      border: 1px solid var(--border2);
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .featured-pred:hover { border-color: rgba(200,240,77,0.4); }
+    .featured-pred-header {
+      padding: 14px 16px 12px;
+      background: linear-gradient(135deg, #0d1f2d 0%, #0f2a3a 100%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .fp-league { font-size: 9px; font-weight: 700; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.5px; }
+    .fp-time { font-size: 10px; color: var(--accent); font-weight: 600; margin-top: 2px; }
+    .fp-match {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    .fp-team {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+    .fp-team-icon { font-size: 28px; }
+    .fp-team-name { font-size: 11px; font-weight: 700; color: #fff; white-space: nowrap; }
+    .fp-vs { font-size: 16px; font-weight: 900; color: var(--muted); }
+    .featured-pred-body { padding: 14px 16px; }
+    .fp-pred-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .fp-score-pred {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .fp-score-val {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--accent);
+      letter-spacing: 2px;
+    }
+    .fp-outcome-badge {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .fp-outcome-badge.home-win { background: rgba(200,240,77,0.12); color: var(--accent); border: 1px solid rgba(200,240,77,0.25); }
+    .fp-outcome-badge.draw { background: rgba(255,255,255,0.06); color: var(--muted2); border: 1px solid var(--border2); }
+    .fp-outcome-badge.away-win { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+    .fp-conf-wrap { flex: 1; }
+    .fp-conf-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-bottom: 5px; }
+    .fp-conf-label span:last-child { color: var(--accent); font-weight: 700; }
+    .conf-bar { height: 5px; border-radius: 3px; background: var(--bg-dark); overflow: hidden; }
+    .conf-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #86c20d, #c8f04d); transition: width 0.3s; }
+    .conf-bar-fill.medium { background: linear-gradient(90deg, #d97706, #f59e0b); }
+    .conf-bar-fill.low { background: linear-gradient(90deg, #dc2626, #ef4444); }
+    .fp-mini-stats { display: flex; gap: 8px; flex-wrap: wrap; }
+    .mini-stat {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 9px;
+      font-size: 10px;
+      color: var(--muted2);
+    }
+    .mini-stat strong { color: var(--text); font-weight: 700; }
+    .mini-stat.yes strong { color: #4ade80; }
+    .mini-stat.no strong { color: #f87171; }
+    .fp-analysis { font-size: 11px; color: var(--muted2); line-height: 1.6; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .fp-read-more { font-size: 11px; color: var(--accent); font-weight: 600; margin-top: 8px; display: inline-block; }
+
+    /* Prediction section (by league) */
+    .pred-section { border-bottom: 1px solid var(--border); }
+    .pred-section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      background: var(--bg-dark);
+      cursor: pointer;
+      user-select: none;
+    }
+    .pred-section-header:hover { background: #0a0a0a; }
+    .pred-count {
+      margin-left: auto;
+      background: var(--accent-dim);
+      color: var(--accent);
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 8px;
+    }
+
+    /* Prediction card (list item) */
+    .pred-card {
+      padding: 12px 16px;
+      border-top: 1px solid #161616;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .pred-card:hover { background: rgba(255,255,255,0.02); }
+    .pred-card-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .pred-card-time { font-size: 10px; color: var(--accent); font-weight: 600; min-width: 50px; }
+    .pred-card-teams {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .pred-card-teams .vs { color: var(--muted); font-weight: 400; font-size: 10px; }
+    .pred-card-score {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--accent);
+      letter-spacing: 2px;
+      min-width: 52px;
+      text-align: center;
+    }
+    .pred-outcome-sm {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .pred-outcome-sm.hw { background: rgba(200,240,77,0.1); color: var(--accent); }
+    .pred-outcome-sm.draw { background: rgba(255,255,255,0.05); color: var(--muted2); }
+    .pred-outcome-sm.aw { background: rgba(239,68,68,0.08); color: #f87171; }
+    .pred-card-bottom {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pred-conf-mini { display: flex; align-items: center; gap: 6px; flex: 1; }
+    .conf-bar-sm { flex: 1; height: 3px; border-radius: 2px; background: var(--bg-dark); overflow: hidden; max-width: 100px; }
+    .conf-bar-sm-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #86c20d, #c8f04d); }
+    .conf-bar-sm-fill.medium { background: linear-gradient(90deg, #d97706, #f59e0b); }
+    .conf-bar-sm-fill.low { background: linear-gradient(90deg, #dc2626, #ef4444); }
+    .conf-pct { font-size: 10px; font-weight: 700; color: var(--accent); }
+    .conf-pct.medium { color: #f59e0b; }
+    .conf-pct.low { color: #f87171; }
+    .mini-stats-row { display: flex; gap: 6px; }
+    .stat-tag {
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--bg-dark);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .stat-tag.yes { color: #4ade80; border-color: rgba(74,222,128,0.15); }
+    .stat-tag.no { color: #f87171; border-color: rgba(239,68,68,0.15); }
+    .pred-link { font-size: 10px; color: var(--accent); font-weight: 600; margin-left: auto; white-space: nowrap; }
+
+    /* Bottom accuracy section */
+    .accuracy-footer {
+      padding: 16px;
+      background: var(--bg-dark);
+      border-top: 1px solid var(--border);
+    }
+    .accuracy-footer-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+    .acc-month-row { display: flex; gap: 16px; flex-wrap: wrap; }
+    .acc-month-stat { display: flex; flex-direction: column; gap: 2px; }
+    .acc-month-val { font-size: 18px; font-weight: 900; color: var(--accent); }
+    .acc-month-sub { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.3px; }
+    .acc-progress-row { margin-top: 10px; }
+    .acc-progress-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+    .acc-bar { height: 4px; border-radius: 2px; background: var(--border2); overflow: hidden; }
+    .acc-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #86c20d, #c8f04d); }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- =========================================
+       LEFT SIDEBAR
+  ========================================= -->
+  <aside class="left-sidebar">
+    <div class="logo-wrap">
+      <div class="logo">
+        <span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span>
+      </div>
+      <div class="logo-sub">Kết quả &amp; Nhận định AI</div>
+    </div>
+    <div class="left-search">
+      <div class="search-input-wrap">
+        <svg class="search-icon" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Tìm giải đấu, đội bóng..." oninput="filterLeagues(this.value)" />
+      </div>
+    </div>
+    <div class="league-tree" id="league-tree">
+
+      <!-- Vietnam -->
+      <div class="country-group" id="cg-vn">
+        <div class="country-header" onclick="toggleCountry('cg-vn')">
+          <span class="country-flag">🇻🇳</span>
+          <span class="country-name">Việt Nam</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <div class="league-item" data-league="vleague1" onclick="selectLeague(this,'vleague1')">V.League 1</div>
+          <div class="league-item" data-league="vleague2" onclick="selectLeague(this,'vleague2')">V.League 2</div>
+          <div class="league-item" data-league="vcup" onclick="selectLeague(this,'vcup')">Cúp Quốc gia</div>
+        </div>
+      </div>
+
+      <!-- England -->
+      <div class="country-group" id="cg-eng">
+        <div class="country-header" onclick="toggleCountry('cg-eng')">
+          <span class="country-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+          <span class="country-name">Anh</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <div class="league-item" data-league="epl" onclick="selectLeague(this,'epl')">Premier League</div>
+          <div class="league-item" data-league="championship" onclick="selectLeague(this,'championship')">Championship</div>
+          <div class="league-item" data-league="facup" onclick="selectLeague(this,'facup')">FA Cup</div>
+        </div>
+      </div>
+
+      <!-- UEFA -->
+      <div class="country-group" id="cg-uefa">
+        <div class="country-header" onclick="toggleCountry('cg-uefa')">
+          <span class="country-flag">🏆</span>
+          <span class="country-name">UEFA</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <div class="league-item" data-league="ucl" onclick="selectLeague(this,'ucl')">Champions League</div>
+          <div class="league-item" data-league="uel" onclick="selectLeague(this,'uel')">Europa League</div>
+          <div class="league-item" data-league="uecl" onclick="selectLeague(this,'uecl')">Conference League</div>
+        </div>
+      </div>
+
+      <!-- Germany -->
+      <div class="country-group" id="cg-de">
+        <div class="country-header" onclick="toggleCountry('cg-de')">
+          <span class="country-flag">🇩🇪</span>
+          <span class="country-name">Đức</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <div class="league-item" data-league="bund" onclick="selectLeague(this,'bund')">Bundesliga</div>
+          <div class="league-item" data-league="bund2" onclick="selectLeague(this,'bund2')">2. Bundesliga</div>
+        </div>
+      </div>
+
+      <!-- Spain -->
+      <div class="country-group" id="cg-es">
+        <div class="country-header" onclick="toggleCountry('cg-es')">
+          <span class="country-flag">🇪🇸</span>
+          <span class="country-name">Tây Ban Nha</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <div class="league-item" data-league="laliga" onclick="selectLeague(this,'laliga')">La Liga</div>
+          <div class="league-item" data-league="laliga2" onclick="selectLeague(this,'laliga2')">La Liga 2</div>
+          <div class="league-item" data-league="cdr" onclick="selectLeague(this,'cdr')">Copa del Rey</div>
+        </div>
+      </div>
+
+      <!-- Italy -->
+      <div class="country-group" id="cg-it">
+        <div class="country-header" onclick="toggleCountry('cg-it')">
+          <span class="country-flag">🇮🇹</span>
+          <span class="country-name">Ý</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <div class="league-item" data-league="seriea" onclick="selectLeague(this,'seriea')">Serie A</div>
+          <div class="league-item" data-league="serieb" onclick="selectLeague(this,'serieb')">Serie B</div>
+          <div class="league-item" data-league="coppait" onclick="selectLeague(this,'coppait')">Coppa Italia</div>
+        </div>
+      </div>
+
+      <!-- France -->
+      <div class="country-group" id="cg-fr">
+        <div class="country-header" onclick="toggleCountry('cg-fr')">
+          <span class="country-flag">🇫🇷</span>
+          <span class="country-name">Pháp</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <div class="league-item" data-league="ligue1" onclick="selectLeague(this,'ligue1')">Ligue 1</div>
+          <div class="league-item" data-league="ligue2" onclick="selectLeague(this,'ligue2')">Ligue 2</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="left-bottom">
+      <button class="settings-btn">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Cài đặt
+      </button>
+      <div class="user-row">
+        <div class="user-avatar">A</div>
+        <div class="user-info">
+          <div class="user-name">Admin</div>
+          <div class="user-email">admin@footballblog.vn</div>
+        </div>
+        <button class="logout-btn" title="Đăng xuất">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- =========================================
+       CENTER COLUMN — AI Predictions
+  ========================================= -->
+  <main class="main-col">
+    <div class="main-scroll">
+
+      <!-- Page header -->
+      <div class="pred-page-header">
+        <div class="pred-page-title">
+          <div class="ai-badge" style="font-size:10px;padding:4px 10px;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 0 2h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1 0-2h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
+            Claude AI
+          </div>
+          <h1>Dự đoán Trận đấu</h1>
+        </div>
+        <div class="pred-page-sub">Phân tích tự động bởi Claude AI · Cập nhật 24h trước mỗi trận · Tháng 4/2026</div>
+      </div>
+
+      <!-- Accuracy banner -->
+      <div class="accuracy-banner">
+        <div class="acc-stat">
+          <div class="acc-val">68%</div>
+          <div class="acc-label">Chính xác</div>
+        </div>
+        <div class="acc-divider"></div>
+        <div class="acc-stat">
+          <div class="acc-val">42</div>
+          <div class="acc-label">Dự đoán</div>
+        </div>
+        <div class="acc-divider"></div>
+        <div class="acc-stat">
+          <div class="acc-val">73%</div>
+          <div class="acc-label">Kết quả đúng</div>
+        </div>
+        <div class="acc-divider"></div>
+        <div class="acc-stat">
+          <div class="acc-val">51%</div>
+          <div class="acc-label">Tỉ số đúng</div>
+        </div>
+        <div class="acc-divider"></div>
+        <div class="acc-desc">
+          <div class="acc-desc-title">Tháng 4/2026 — 28 ngày</div>
+          <div class="acc-desc-sub">Claude Opus 4.6 · 42 trận đã phân tích</div>
+        </div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="pred-filter-bar">
+        <button class="filter-chip active" onclick="setFilterChip(this)">Tất cả</button>
+        <button class="filter-chip" onclick="setFilterChip(this)">Premier League</button>
+        <button class="filter-chip" onclick="setFilterChip(this)">Champions League</button>
+        <button class="filter-chip" onclick="setFilterChip(this)">V.League 1</button>
+        <button class="filter-chip" onclick="setFilterChip(this)">Bundesliga</button>
+        <div class="filter-sep"></div>
+        <span class="conf-label">Độ tin cậy:</span>
+        <button class="filter-chip" onclick="setFilterChip(this)">≥ 75%</button>
+        <button class="filter-chip" onclick="setFilterChip(this)">≥ 50%</button>
+      </div>
+
+      <!-- Scrollable content -->
+      <div class="matches-list">
+
+        <!-- FEATURED PREDICTION -->
+        <div class="featured-pred">
+          <div class="featured-pred-header">
+            <div>
+              <div class="fp-league">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League — GW 33</div>
+              <div class="fp-time">Thứ Ba, 15/04/2026 · 02:00 ICT</div>
+            </div>
+            <div class="fp-match">
+              <div class="fp-team">
+                <div class="fp-team-icon">🔵</div>
+                <div class="fp-team-name">Man City</div>
+              </div>
+              <div class="fp-vs">VS</div>
+              <div class="fp-team">
+                <div class="fp-team-icon">🔴</div>
+                <div class="fp-team-name">Arsenal</div>
+              </div>
+            </div>
+            <div class="ai-badge">⭐ Nổi bật</div>
+          </div>
+          <div class="featured-pred-body">
+            <div class="fp-pred-row">
+              <div class="fp-score-pred">
+                <div class="fp-score-val">2 – 1</div>
+              </div>
+              <div class="fp-outcome-badge home-win">Man City thắng</div>
+              <div style="flex:1;"></div>
+              <div style="text-align:right;">
+                <div style="font-size:9px;color:var(--muted);margin-bottom:3px;">PHÂN TÍCH BỞI</div>
+                <div class="ai-badge">Claude Opus 4.6</div>
+              </div>
+            </div>
+            <div class="fp-conf-wrap">
+              <div class="fp-conf-label">
+                <span>Độ tin cậy</span>
+                <span>82%</span>
+              </div>
+              <div class="conf-bar"><div class="conf-bar-fill" style="width:82%"></div></div>
+            </div>
+            <div class="fp-mini-stats" style="margin-top:10px;">
+              <div class="mini-stat yes"><strong>Có</strong> Over 2.5 Goals</div>
+              <div class="mini-stat yes"><strong>Có</strong> Cả 2 đội ghi bàn</div>
+              <div class="mini-stat"><strong>3–4</strong> Thẻ vàng</div>
+              <div class="mini-stat"><strong>9+</strong> Góc</div>
+            </div>
+            <div class="fp-analysis">
+              Man City đang trong chuỗi 5 trận thắng liên tiếp tại Etihad với phong độ tấn công vượt trội — trung bình 2.6 bàn/trận. Arsenal thiếu Saka và Havertz do chấn thương khiến hàng công suy yếu đáng kể. Dữ liệu H2H 5 trận gần nhất cho thấy Man City thắng 4/5, cả 4 trận đều có Over 2.5. Referee Mike Dean có phong cách cởi mở — chỉ 0.8 thẻ đỏ/10 trận.
+            </div>
+            <a class="fp-read-more" href="post-detail.html">Xem phân tích đầy đủ →</a>
+          </div>
+        </div>
+
+        <!-- PREMIER LEAGUE PREDICTIONS -->
+        <div class="pred-section" id="pred-epl">
+          <div class="pred-section-header" onclick="toggleLg(this)">
+            <div class="lg-icon">🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
+            <span class="lg-name">England — Premier League</span>
+            <span class="lg-round">GW 33</span>
+            <span class="lg-chevron">▾</span>
+            <span class="pred-count">3 dự đoán</span>
+          </div>
+          <div class="lg-matches">
+
+            <!-- Man City vs Arsenal (featured, abbreviated) -->
+            <div class="pred-card">
+              <div class="pred-card-top">
+                <div class="pred-card-time">02:00</div>
+                <div class="pred-card-teams">
+                  <span>Man City</span><span class="vs">vs</span><span>Arsenal</span>
+                </div>
+                <div class="pred-card-score">2 – 1</div>
+                <div class="pred-outcome-sm hw">MCY thắng</div>
+              </div>
+              <div class="pred-card-bottom">
+                <div class="pred-conf-mini">
+                  <div class="conf-bar-sm"><div class="conf-bar-sm-fill" style="width:82%"></div></div>
+                  <span class="conf-pct">82%</span>
+                </div>
+                <div class="mini-stats-row">
+                  <div class="stat-tag yes">Over 2.5</div>
+                  <div class="stat-tag yes">BTTS</div>
+                  <div class="stat-tag">3–4 thẻ</div>
+                </div>
+                <a class="pred-link" href="post-detail.html">Phân tích →</a>
+              </div>
+            </div>
+
+            <!-- Chelsea vs Liverpool -->
+            <div class="pred-card">
+              <div class="pred-card-top">
+                <div class="pred-card-time">22:00</div>
+                <div class="pred-card-teams">
+                  <span>Chelsea</span><span class="vs">vs</span><span>Liverpool</span>
+                </div>
+                <div class="pred-card-score">1 – 2</div>
+                <div class="pred-outcome-sm aw">LIV thắng</div>
+              </div>
+              <div class="pred-card-bottom">
+                <div class="pred-conf-mini">
+                  <div class="conf-bar-sm"><div class="conf-bar-sm-fill medium" style="width:61%"></div></div>
+                  <span class="conf-pct medium">61%</span>
+                </div>
+                <div class="mini-stats-row">
+                  <div class="stat-tag yes">Over 2.5</div>
+                  <div class="stat-tag no">Không BTTS</div>
+                  <div class="stat-tag">5+ góc</div>
+                </div>
+                <a class="pred-link" href="post-detail.html">Phân tích →</a>
+              </div>
+            </div>
+
+            <!-- Tottenham vs Man United -->
+            <div class="pred-card">
+              <div class="pred-card-top">
+                <div class="pred-card-time">22:00</div>
+                <div class="pred-card-teams">
+                  <span>Tottenham</span><span class="vs">vs</span><span>Man United</span>
+                </div>
+                <div class="pred-card-score">1 – 1</div>
+                <div class="pred-outcome-sm draw">Hòa</div>
+              </div>
+              <div class="pred-card-bottom">
+                <div class="pred-conf-mini">
+                  <div class="conf-bar-sm"><div class="conf-bar-sm-fill low" style="width:48%"></div></div>
+                  <span class="conf-pct low">48%</span>
+                </div>
+                <div class="mini-stats-row">
+                  <div class="stat-tag">Under 2.5</div>
+                  <div class="stat-tag yes">BTTS</div>
+                  <div class="stat-tag">2–3 thẻ</div>
+                </div>
+                <a class="pred-link" href="post-detail.html">Phân tích →</a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- CHAMPIONS LEAGUE PREDICTIONS -->
+        <div class="pred-section" id="pred-ucl">
+          <div class="pred-section-header" onclick="toggleLg(this)">
+            <div class="lg-icon">🏆</div>
+            <span class="lg-name">UEFA — Champions League</span>
+            <span class="lg-round">Bán kết</span>
+            <span class="lg-chevron">▾</span>
+            <span class="pred-count">2 dự đoán</span>
+          </div>
+          <div class="lg-matches">
+            <div class="pred-card">
+              <div class="pred-card-top">
+                <div class="pred-card-time">02:00</div>
+                <div class="pred-card-teams">
+                  <span>Real Madrid</span><span class="vs">vs</span><span>Bayern Munich</span>
+                </div>
+                <div class="pred-card-score">2 – 0</div>
+                <div class="pred-outcome-sm hw">Real thắng</div>
+              </div>
+              <div class="pred-card-bottom">
+                <div class="pred-conf-mini">
+                  <div class="conf-bar-sm"><div class="conf-bar-sm-fill" style="width:78%"></div></div>
+                  <span class="conf-pct">78%</span>
+                </div>
+                <div class="mini-stats-row">
+                  <div class="stat-tag yes">Over 2.5</div>
+                  <div class="stat-tag no">Không BTTS</div>
+                  <div class="stat-tag">4–5 góc</div>
+                </div>
+                <a class="pred-link" href="post-detail.html">Phân tích →</a>
+              </div>
+            </div>
+            <div class="pred-card">
+              <div class="pred-card-top">
+                <div class="pred-card-time">02:00</div>
+                <div class="pred-card-teams">
+                  <span>PSG</span><span class="vs">vs</span><span>Inter Milan</span>
+                </div>
+                <div class="pred-card-score">1 – 1</div>
+                <div class="pred-outcome-sm draw">Hòa</div>
+              </div>
+              <div class="pred-card-bottom">
+                <div class="pred-conf-mini">
+                  <div class="conf-bar-sm"><div class="conf-bar-sm-fill medium" style="width:55%"></div></div>
+                  <span class="conf-pct medium">55%</span>
+                </div>
+                <div class="mini-stats-row">
+                  <div class="stat-tag">Under 2.5</div>
+                  <div class="stat-tag yes">BTTS</div>
+                  <div class="stat-tag">3–4 thẻ</div>
+                </div>
+                <a class="pred-link" href="post-detail.html">Phân tích →</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- V.LEAGUE PREDICTIONS -->
+        <div class="pred-section" id="pred-vl1">
+          <div class="pred-section-header" onclick="toggleLg(this)">
+            <div class="lg-icon">🇻🇳</div>
+            <span class="lg-name">Vietnam — V.League 1</span>
+            <span class="lg-round">Vòng 16</span>
+            <span class="lg-chevron">▾</span>
+            <span class="pred-count">3 dự đoán</span>
+          </div>
+          <div class="lg-matches">
+            <div class="pred-card">
+              <div class="pred-card-top">
+                <div class="pred-card-time">18:00</div>
+                <div class="pred-card-teams">
+                  <span>Hà Nội FC</span><span class="vs">vs</span><span>TPHCM FC</span>
+                </div>
+                <div class="pred-card-score">2 – 0</div>
+                <div class="pred-outcome-sm hw">Hà Nội thắng</div>
+              </div>
+              <div class="pred-card-bottom">
+                <div class="pred-conf-mini">
+                  <div class="conf-bar-sm"><div class="conf-bar-sm-fill" style="width:76%"></div></div>
+                  <span class="conf-pct">76%</span>
+                </div>
+                <div class="mini-stats-row">
+                  <div class="stat-tag no">Under 2.5</div>
+                  <div class="stat-tag no">Không BTTS</div>
+                  <div class="stat-tag">2–3 thẻ</div>
+                </div>
+                <a class="pred-link" href="post-detail.html">Phân tích →</a>
+              </div>
+            </div>
+            <div class="pred-card">
+              <div class="pred-card-top">
+                <div class="pred-card-time">18:00</div>
+                <div class="pred-card-teams">
+                  <span>Bình Dương</span><span class="vs">vs</span><span>HAGL</span>
+                </div>
+                <div class="pred-card-score">1 – 1</div>
+                <div class="pred-outcome-sm draw">Hòa</div>
+              </div>
+              <div class="pred-card-bottom">
+                <div class="pred-conf-mini">
+                  <div class="conf-bar-sm"><div class="conf-bar-sm-fill medium" style="width:59%"></div></div>
+                  <span class="conf-pct medium">59%</span>
+                </div>
+                <div class="mini-stats-row">
+                  <div class="stat-tag">Under 2.5</div>
+                  <div class="stat-tag yes">BTTS</div>
+                  <div class="stat-tag">3–4 thẻ</div>
+                </div>
+                <a class="pred-link" href="post-detail.html">Phân tích →</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Accuracy footer -->
+        <div class="accuracy-footer">
+          <div class="accuracy-footer-title">Thống kê độ chính xác — Tháng 4/2026</div>
+          <div class="acc-month-row">
+            <div class="acc-month-stat">
+              <div class="acc-month-val" style="color:#4ade80;">68%</div>
+              <div class="acc-month-sub">Kết quả W/D/L</div>
+            </div>
+            <div class="acc-month-stat">
+              <div class="acc-month-val">51%</div>
+              <div class="acc-month-sub">Tỉ số đúng</div>
+            </div>
+            <div class="acc-month-stat">
+              <div class="acc-month-val" style="color:#4ade80;">72%</div>
+              <div class="acc-month-sub">Over/Under</div>
+            </div>
+            <div class="acc-month-stat">
+              <div class="acc-month-val" style="color:#f59e0b;">65%</div>
+              <div class="acc-month-sub">BTTS</div>
+            </div>
+            <div class="acc-month-stat">
+              <div class="acc-month-val">42</div>
+              <div class="acc-month-sub">Tổng dự đoán</div>
+            </div>
+          </div>
+          <div class="acc-progress-row">
+            <div class="acc-progress-label"><span>Tỉ lệ chính xác kết quả (W/D/L)</span><span>68%</span></div>
+            <div class="acc-bar"><div class="acc-bar-fill" style="width:68%"></div></div>
+          </div>
+        </div>
+
+      </div><!-- /matches-list -->
+    </div><!-- /main-scroll -->
+  </main>
+
+  <!-- =========================================
+       RIGHT SIDEBAR — AI Blog
+  ========================================= -->
+  <aside class="right-sidebar">
+    <div class="right-header">
+      <span class="right-title">Bài phân tích AI</span>
+      <div class="ai-badge">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 0 2h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1 0-2h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2zm-5 9a5 5 0 0 0-5 5v1h14v-1a5 5 0 0 0-5-5H7zm3 2a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm4 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg>
+        AI Agent
+      </div>
+    </div>
+    <div class="right-tabs">
+      <button class="right-tab active" onclick="setRightTab(this)">Mới nhất</button>
+      <button class="right-tab" onclick="setRightTab(this)">Nổi bật</button>
+      <button class="right-tab" onclick="setRightTab(this)">Đã kết thúc</button>
+    </div>
+    <div class="right-scroll">
+      <div class="post-featured">
+        <div class="post-featured-img" style="background: linear-gradient(135deg, #0f2d1a 0%, #1a4a2e 100%);">
+          <span style="font-size:48px;opacity:0.4;">🏆</span>
+          <div class="match-label">
+            <span>Real Madrid vs Bayern</span>
+            <span style="color:var(--accent);">82% tin cậy</span>
+          </div>
+        </div>
+        <div class="post-featured-body">
+          <div class="post-tag">🤖 AI Phân tích · Champions League</div>
+          <div class="post-title">Real Madrid vs Bayern: Vinicius Jr. chìa khóa phá lưới hàng thủ Die Roten</div>
+          <div class="post-excerpt">Real đang trong trạng thái peak với Vinicius Jr. và Bellingham đều thi đấu xuất sắc. Bayern thiếu Neuer và Musiala sẽ là bất lợi lớn...</div>
+          <div class="post-meta">
+            <span class="post-time">2 giờ trước</span>
+            <span class="post-read">Đọc thêm →</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="post-item">
+        <div class="post-thumb" style="background: linear-gradient(135deg, #1a1a3e, #0f2860);">🔵</div>
+        <div class="post-item-body">
+          <div class="post-item-tag">🤖 AI · Premier League</div>
+          <div class="post-item-title">Man City vs Arsenal: Thống kê chỉ ra cơ hội chiến thắng áp đảo cho The Citizens</div>
+          <div class="post-item-meta">Hôm nay 02:00 · 1 giờ trước</div>
+        </div>
+        <div class="pred-score">
+          <div class="ps-val">2-1</div>
+          <div class="ps-label">Dự<br>đoán</div>
+        </div>
+      </div>
+
+      <div class="post-item">
+        <div class="post-thumb" style="background: linear-gradient(135deg, #1a3a0a, #2d5a0f);">🇻🇳</div>
+        <div class="post-item-body">
+          <div class="post-item-tag">🤖 AI · V.League 1</div>
+          <div class="post-item-title">Hà Nội FC vs TPHCM: Sức mạnh sân nhà và phong độ áp đảo của Hà Nội</div>
+          <div class="post-item-meta">Hôm nay 18:00 · 3 giờ trước</div>
+        </div>
+        <div class="pred-score">
+          <div class="ps-val">2-0</div>
+          <div class="ps-label">Dự<br>đoán</div>
+        </div>
+      </div>
+
+      <div class="post-item">
+        <div class="post-thumb" style="background: linear-gradient(135deg, #2d0a0a, #4a1010);">🔴</div>
+        <div class="post-item-body">
+          <div class="post-item-tag">🤖 AI · Champions League</div>
+          <div class="post-item-title">PSG vs Inter Milan: Trận đấu cân bằng, hòa là kịch bản hợp lý nhất</div>
+          <div class="post-item-meta">Hôm nay 02:00 · 4 giờ trước</div>
+        </div>
+        <div class="pred-score">
+          <div class="ps-val">1-1</div>
+          <div class="ps-label">Dự<br>đoán</div>
+        </div>
+      </div>
+
+      <div class="post-item">
+        <div class="post-thumb" style="background: linear-gradient(135deg, #2d1a0a, #4a3010);">🏅</div>
+        <div class="post-item-body">
+          <div class="post-item-tag">🤖 AI · V.League 1</div>
+          <div class="post-item-title">Bình Dương vs HAGL: Thế trận cân bằng, chờ đột phá ở hiệp 2</div>
+          <div class="post-item-meta">Hôm nay 18:00 · 5 giờ trước</div>
+        </div>
+        <div class="pred-score">
+          <div class="ps-val">1-1</div>
+          <div class="ps-label">Dự<br>đoán</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+</div><!-- /app -->
+
+<script src="assets/common.js"></script>
+<script>
+  function setFilterChip(el) {
+    el.closest('.pred-filter-bar').querySelectorAll('.filter-chip').forEach(c => {
+      if (c.closest('.pred-filter-bar') === el.closest('.pred-filter-bar')) c.classList.remove('active');
+    });
+    el.classList.add('active');
+  }
+</script>
+</body>
+</html>

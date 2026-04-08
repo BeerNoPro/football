@@ -10,14 +10,33 @@ function toggleCountry(id) {
 
 // Left sidebar: select league → highlight + scroll center to that league
 function selectLeague(el, leagueId) {
+  // If we're on league page, navigate to different league
+  if (window.location.pathname.includes('league-page.html')) {
+    window.location.href = 'league-page.html?league=' + leagueId;
+    return;
+  }
+
+  // If we're on home page, just highlight and show ALL leagues (no filtering)
+  // Remove active class from all league items
   document.querySelectorAll('.league-item').forEach(i => i.classList.remove('active'));
+
+  // Add active class to selected item
   el.classList.add('active');
+
+  // Show ALL league groups (no hiding)
+  document.querySelectorAll('.lg').forEach(lg => {
+    lg.style.display = 'block';
+  });
+
+  // Scroll to selected league group
   const target = document.getElementById('m-' + leagueId);
   if (target) {
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     target.style.outline = '1px solid rgba(200,240,77,0.3)';
     setTimeout(() => target.style.outline = '', 1200);
   }
+
+  console.log('Highlighted league:', leagueId);
 }
 
 // Left sidebar: live search filter

@@ -175,31 +175,103 @@
       </div>
     </div>
     <div class="league-tree" id="league-tree">
+
+      <!-- Vietnam -->
+      <div class="country-group" id="cg-vn">
+        <div class="country-header" onclick="toggleCountry('cg-vn')">
+          <span class="country-flag">🇻🇳</span>
+          <span class="country-name">Việt Nam</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <div class="league-item" data-league="vleague1" onclick="selectLeague(this, 'vleague1')">V.League 1 <span class="league-live-count">2</span></div>
+          <div class="league-item" data-league="vleague2" onclick="selectLeague(this, 'vleague2')">V.League 2</div>
+          <div class="league-item" data-league="vcup" onclick="selectLeague(this, 'vcup')">Cúp Quốc gia</div>
+        </div>
+      </div>
+
+      <!-- England -->
       <div class="country-group" id="cg-eng">
         <div class="country-header" onclick="toggleCountry('cg-eng')">
-          <span class="country-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span><span class="country-name">Anh</span><span class="country-chevron">▾</span>
+          <span class="country-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+          <span class="country-name">Anh</span>
+          <span class="country-chevron">▾</span>
         </div>
         <div class="sub-leagues">
           <div class="league-item" data-league="epl" onclick="selectLeague(this, 'epl')">Premier League <span class="league-live-count">1</span></div>
           <div class="league-item" data-league="championship" onclick="selectLeague(this, 'championship')">Championship</div>
+          <div class="league-item" data-league="facup" onclick="selectLeague(this, 'facup')">FA Cup</div>
         </div>
       </div>
-      <div class="country-group" id="cg-vn">
-        <div class="country-header" onclick="toggleCountry('cg-vn')">
-          <span class="country-flag">🇻🇳</span><span class="country-name">Việt Nam</span><span class="country-chevron">▾</span>
-        </div>
-        <div class="sub-leagues">
-          <div class="league-item" data-league="vleague1" onclick="selectLeague(this, 'vleague1')">V.League 1 <span class="league-live-count">2</span></div>
-        </div>
-      </div>
+
+      <!-- UEFA -->
       <div class="country-group" id="cg-uefa">
         <div class="country-header" onclick="toggleCountry('cg-uefa')">
-          <span class="country-flag">🏆</span><span class="country-name">UEFA</span><span class="country-chevron">▾</span>
+          <span class="country-flag">🏆</span>
+          <span class="country-name">UEFA</span>
+          <span class="country-chevron">▾</span>
         </div>
         <div class="sub-leagues">
-          <div class="league-item" data-league="ucl" onclick="selectLeague(this, 'ucl')">Champions League</div>
+          <div class="league-item" data-league="ucl" onclick="selectLeague(this, 'ucl')">Champions League <span class="league-live-count">1</span></div>
+          <div class="league-item" data-league="uel" onclick="selectLeague(this, 'uel')">Europa League</div>
+          <div class="league-item" data-league="uecl" onclick="selectLeague(this, 'uecl')">Conference League</div>
         </div>
       </div>
+
+      <!-- Germany -->
+      <div class="country-group" id="cg-de">
+        <div class="country-header" onclick="toggleCountry('cg-de')">
+          <span class="country-flag">🇩🇪</span>
+          <span class="country-name">Đức</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <div class="league-item" data-league="bund" onclick="selectLeague(this, 'bund')">Bundesliga</div>
+          <div class="league-item" data-league="bund2" onclick="selectLeague(this, 'bund2')">2. Bundesliga</div>
+        </div>
+      </div>
+
+      <!-- Spain -->
+      <div class="country-group" id="cg-es">
+        <div class="country-header" onclick="toggleCountry('cg-es')">
+          <span class="country-flag">🇪🇸</span>
+          <span class="country-name">Tây Ban Nha</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <div class="league-item" data-league="laliga" onclick="selectLeague(this, 'laliga')">La Liga</div>
+          <div class="league-item" data-league="laliga2" onclick="selectLeague(this, 'laliga2')">La Liga 2</div>
+          <div class="league-item" data-league="cdr" onclick="selectLeague(this, 'cdr')">Copa del Rey</div>
+        </div>
+      </div>
+
+      <!-- Italy -->
+      <div class="country-group" id="cg-it">
+        <div class="country-header" onclick="toggleCountry('cg-it')">
+          <span class="country-flag">🇮🇹</span>
+          <span class="country-name">Ý</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <div class="league-item" data-league="seriea" onclick="selectLeague(this, 'seriea')">Serie A</div>
+          <div class="league-item" data-league="serieb" onclick="selectLeague(this, 'serieb')">Serie B</div>
+          <div class="league-item" data-league="coppait" onclick="selectLeague(this, 'coppait')">Coppa Italia</div>
+        </div>
+      </div>
+
+      <!-- France -->
+      <div class="country-group" id="cg-fr">
+        <div class="country-header" onclick="toggleCountry('cg-fr')">
+          <span class="country-flag">🇫🇷</span>
+          <span class="country-name">Pháp</span>
+          <span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <div class="league-item" data-league="ligue1" onclick="selectLeague(this, 'ligue1')">Ligue 1</div>
+          <div class="league-item" data-league="ligue2" onclick="selectLeague(this, 'ligue2')">Ligue 2</div>
+        </div>
+      </div>
+
     </div>
     <div class="left-bottom">
       <button class="settings-btn">

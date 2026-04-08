@@ -1,7 +1,7 @@
 # Plan: Static HTML Prototypes — All Pages
 
 ## Context
-Dự án Football Blog cần prototype HTML tĩnh cho toàn bộ luồng trang trước khi tách Blazor component. Hiện chỉ có `combined-home.html` (P1). Cần build thêm 10 trang (P2–P6 public + A1–A6 admin). Để tiết kiệm token và dễ maintain, tách design tokens + shared components ra file chung thay vì inline mỗi file.
+Dự án Football Blog cần prototype HTML tĩnh cho toàn bộ luồng trang trước khi tách Blazor component. Hiện chỉ có `home.html` (P1). Cần build thêm 10 trang (P2–P6 public + A1–A6 admin). Để tiết kiệm token và dễ maintain, tách design tokens + shared components ra file chung thay vì inline mỗi file.
 
 ---
 
@@ -13,7 +13,7 @@ FootballBlog.Web/wwwroot/prototype/
     common.css          ← design tokens + shared component styles
     common.js           ← shared JS: tab switch, sidebar toggle, search
     admin-common.css    ← admin layout styles (top nav + sidebar 2 cột)
-  combined-home.html    ← cập nhật: import từ assets/
+  home.html    ← cập nhật: import từ assets/
   match-detail.html     ← P2
   post-detail.html      ← P3
   league-page.html      ← P4
@@ -31,7 +31,7 @@ FootballBlog.Web/wwwroot/prototype/
 
 ## Step 1 — Tạo `assets/common.css`
 
-Extract từ `combined-home.html`:
+Extract từ `home.html`:
 - CSS custom properties (tất cả `--bg`, `--accent`, `--text`, v.v.)
 - Base reset: `* { box-sizing: border-box; margin: 0; padding: 0 }`
 - Scrollbar custom styles
@@ -43,7 +43,7 @@ Extract từ `combined-home.html`:
 
 ## Step 2 — Tạo `assets/common.js`
 
-Extract từ `combined-home.html`:
+Extract từ `home.html`:
 - `toggleCountry(id)` — expand/collapse sidebar country group
 - `selectLeague(el, id)` — highlight league + scroll
 - `filterLeagues(q)` — live search sidebar
@@ -68,7 +68,7 @@ Layout riêng cho admin (2 cột: sidebar trái + main):
 - `.admin-menu-item`, `.admin-menu-group`
 - `.stat-card`, `.data-table`, `.form-field`, `.btn-primary`, `.btn-danger`
 
-## Step 4 — Cập nhật `combined-home.html`
+## Step 4 — Cập nhật `home.html`
 
 Thay `<style>` block bằng:
 ```html
@@ -153,7 +153,7 @@ Giữ lại CSS đặc thù của home (hero banner, 3-col grid, match toolbar) 
 ## Thứ Tự Build
 
 1. `assets/common.css` + `assets/common.js` + `assets/admin-common.css`
-2. Cập nhật `combined-home.html` import assets
+2. Cập nhật `home.html` import assets
 3. P2 `match-detail.html`
 4. P3 `post-detail.html`
 5. P4 `league-page.html`
@@ -171,7 +171,7 @@ Giữ lại CSS đặc thù của home (hero banner, 3-col grid, match toolbar) 
 ## Verification
 
 - Mở từng file qua Live Server (VSCode) — kiểm tra layout không vỡ
-- Verify `combined-home.html` sau khi refactor trông giống hệt bản gốc
+- Verify `home.html` sau khi refactor trông giống hệt bản gốc
 - Kiểm tra JS interactions: tab switch, sidebar toggle, search filter hoạt động
 - Kiểm tra cross-file: màu sắc, typography, spacing nhất quán giữa các trang
 - Click flow thử: Home → Match Detail → back → click bài → Post Detail

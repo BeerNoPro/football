@@ -41,7 +41,7 @@ Không dùng Figma. UI được thiết kế trực tiếp bằng cách:
 
 ## Design System (Dark Theme)
 
-File tham chiếu chính: `prototype/combined-home.html`
+File tham chiếu chính: `prototype/home.html`
 
 ### Color Tokens
 ```css
@@ -69,7 +69,7 @@ File tham chiếu chính: `prototype/combined-home.html`
 height: 100vh, overflow: hidden, mỗi cột scroll độc lập
 ```
 
-### Thành phần tái sử dụng đã có trong combined-home.html
+### Thành phần tái sử dụng đã có trong home.html
 - **Left sidebar**: search + country tree (collapse/expand) + settings + user/logout
 - **Hero banner**: gradient dark + accent tag + title
 - **Match toolbar**: live pill + search + filter dropdown
@@ -85,11 +85,11 @@ height: 100vh, overflow: hidden, mỗi cột scroll độc lập
 
 | File | Vai trò | Ghi chú |
 |------|---------|---------|
-| `prototype/combined-home.html` | **File chính — reference** | Style FootballBeer + data FlashScore + AI blog |
+| `prototype/home.html` | **File chính — reference** | Style FootballBeer + data FlashScore + AI blog |
 | `prototype/footballbeer-home.html` | Bản nháp style gốc | Lấy từ ảnh Figma community |
 | `prototype/flashscore-home.html` | Bản nháp data gốc | Clone flashscore.vn layout |
 
-> Khi tạo trang mới, **copy style từ combined-home.html** làm base, không bắt đầu từ scratch.
+> Khi tạo trang mới, **copy style từ home.html** làm base, không bắt đầu từ scratch.
 
 ---
 

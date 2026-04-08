@@ -9,7 +9,11 @@
       "Skill(update-config)",
       "Skill(update-config:*)",
       "WebFetch(domain:www.flashscore.vn)",
-      "WebFetch(domain:www.api-football.com)"
+      "WebFetch(domain:www.api-football.com)",
+      "WebFetch(domain:www.flashscore.com)",
+      "WebFetch(domain:www.sofascore.com)",
+      "WebFetch(domain:www.whoscored.com)",
+      "WebSearch"
     ]
   }
 }
