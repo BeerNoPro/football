@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Soạn bài viết — FootballBlog Admin</title>
+  <link rel="stylesheet" href="assets/common.css">
+  <link rel="stylesheet" href="assets/admin-common.css">
+  <style>
+    body { overflow: hidden; }
+
+    /* Editor layout: main form + sidebar panel */
+    .editor-body {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    /* Rich text toolbar */
+    .rte-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      background: var(--bg-dark);
+    }
+    .rte-btn {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 5px;
+      border: none;
+      background: none;
+      color: var(--muted2);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.12s;
+    }
+    .rte-btn:hover { background: var(--bg-card); color: var(--text); }
+    .rte-btn.active { background: var(--accent-dim); color: var(--accent); }
+    .rte-divider { width: 1px; height: 20px; background: var(--border2); margin: 0 4px; }
+
+    .rte-area {
+      min-height: 320px;
+      padding: 16px;
+      color: var(--muted2);
+      font-size: 14px;
+      line-height: 1.7;
+      outline: none;
+      cursor: text;
+    }
+
+    /* Tag input chips */
+    .tag-input-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 6px 10px;
+      min-height: 38px;
+      transition: border-color 0.15s;
+    }
+    .tag-input-wrap:focus-within { border-color: var(--accent); }
+    .tag-chip-input {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(200,240,77,0.2);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 20px;
+    }
+    .tag-chip-remove {
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      font-size: 12px;
+      padding: 0;
+      opacity: 0.7;
+    }
+    .tag-chip-remove:hover { opacity: 1; }
+    .tag-input-field {
+      border: none;
+      background: none;
+      outline: none;
+      color: var(--text);
+      font-size: 12px;
+      min-width: 80px;
+      font-family: inherit;
+    }
+    .tag-input-field::placeholder { color: var(--muted); }
+
+    /* SEO preview */
+    .seo-preview {
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .seo-preview-url { font-size: 11px; color: var(--live); margin-bottom: 3px; word-break: break-all; }
+    .seo-preview-title { font-size: 14px; color: #60a5fa; font-weight: 600; margin-bottom: 3px; cursor: pointer; }
+    .seo-preview-title:hover { text-decoration: underline; }
+    .seo-preview-desc { font-size: 12px; color: var(--muted2); line-height: 1.5; }
+    .char-count { font-size: 10px; color: var(--muted); text-align: right; margin-top: 3px; }
+
+    /* Image upload */
+    .img-upload-area {
+      border: 2px dashed var(--border2);
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .img-upload-area:hover { border-color: var(--accent); }
+    .img-upload-icon { font-size: 24px; margin-bottom: 6px; opacity: 0.4; }
+    .img-upload-text { font-size: 11px; color: var(--muted); }
+    .img-preview {
+      width: 100%;
+      height: 100px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #0f1923, #1a3a5c);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      position: relative;
+    }
+    .img-preview-remove {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 22px;
+      height: 22px;
+      background: rgba(0,0,0,0.7);
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Sidebar card */
+    .editor-sidebar-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .editor-sidebar-card-header {
+      padding: 10px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted2);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-dark);
+    }
+    .editor-sidebar-card-body { padding: 14px; }
+
+    /* Toggle switch */
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .toggle-label { font-size: 12px; color: var(--text); }
+    .toggle-switch {
+      position: relative;
+      width: 36px;
+      height: 20px;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: var(--border2);
+      border-radius: 20px;
+      transition: 0.2s;
+    }
+    .toggle-slider::before {
+      position: absolute;
+      content: '';
+      height: 14px;
+      width: 14px;
+      left: 3px;
+      bottom: 3px;
+      background: var(--muted);
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+    .toggle-switch input:checked + .toggle-slider { background: var(--accent); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(16px); background: #111; }
+  </style>
+</head>
+<body class="admin-body">
+<div class="admin-wrap">
+
+  <!-- Top Nav -->
+  <nav class="admin-topnav">
+    <div class="logo-wrap">
+      <div class="logo"><span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span></div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-left:12px;">
+      <a href="admin-posts.html" style="color:var(--muted);text-decoration:none;">Bài viết</a>
+      <span style="margin:0 6px;">›</span>
+      <span style="color:var(--text)">Soạn bài mới</span>
+    </div>
+    <div class="admin-topnav-spacer"></div>
+    <div class="admin-topnav-actions">
+      <button class="topnav-btn" onclick="location.href='admin-posts.html'">← Quay lại</button>
+      <button class="topnav-btn">Lưu nháp</button>
+      <button class="topnav-btn primary" onclick="location.href='admin-posts.html'">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Xuất bản
+      </button>
+    </div>
+  </nav>
+
+  <div class="admin-body-area">
+    <!-- No sidebar for editor — more space -->
+    <main class="admin-main">
+      <div class="admin-main-scroll">
+        <div class="editor-body">
+
+          <!-- MAIN EDITOR AREA -->
+          <div>
+
+            <!-- Title -->
+            <div class="form-field">
+              <input class="form-input" type="text" placeholder="Tiêu đề bài viết..." style="font-size:20px;font-weight:700;padding:14px 16px;border-radius:10px;" value="Man City vs Arsenal: Pháo thủ khó cản tại Etihad — AI dự đoán 2-0" />
+            </div>
+
+            <!-- Slug -->
+            <div class="form-field">
+              <label class="form-label">Slug (URL)</label>
+              <div style="display:flex;gap:8px;">
+                <input class="form-input" type="text" value="man-city-vs-arsenal-pháo-thủ-khó-cản" style="flex:1;" />
+                <button class="btn btn-ghost" style="white-space:nowrap;flex-shrink:0;">↺ Tạo lại</button>
+              </div>
+              <div class="form-hint">footballblog.vn/post/<strong style="color:var(--muted2)">man-city-vs-arsenal-pháo-thủ-khó-cản</strong></div>
+            </div>
+
+            <!-- Category + Tags row -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+              <div class="form-field" style="margin:0">
+                <label class="form-label">Danh mục</label>
+                <select class="form-select">
+                  <option>Premier League</option>
+                  <option>Champions League</option>
+                  <option>V.League 1</option>
+                  <option>La Liga</option>
+                  <option>Bundesliga</option>
+                  <option>Serie A</option>
+                </select>
+              </div>
+              <div class="form-field" style="margin:0">
+                <label class="form-label">Trận đấu liên kết</label>
+                <select class="form-select">
+                  <option>Man City vs Arsenal (07/04)</option>
+                  <option>Tottenham vs Man United (07/04)</option>
+                  <option>Newcastle vs Everton (07/04)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Tags input -->
+            <div class="form-field">
+              <label class="form-label">Tags</label>
+              <div class="tag-input-wrap">
+                <div class="tag-chip-input">Premier League <button class="tag-chip-remove">×</button></div>
+                <div class="tag-chip-input">Man City <button class="tag-chip-remove">×</button></div>
+                <div class="tag-chip-input">Arsenal <button class="tag-chip-remove">×</button></div>
+                <div class="tag-chip-input">AI Nhận định <button class="tag-chip-remove">×</button></div>
+                <div class="tag-chip-input">Dự đoán tỷ số <button class="tag-chip-remove">×</button></div>
+                <input class="tag-input-field" type="text" placeholder="Thêm tag..." />
+              </div>
+            </div>
+
+            <!-- Rich text editor -->
+            <div class="form-field">
+              <label class="form-label">Nội dung bài viết</label>
+              <div style="background:var(--bg-card);border:1px solid var(--border2);border-radius:8px;overflow:hidden;">
+
+                <div class="rte-toolbar">
+                  <button class="rte-btn active" title="Bold"><b>B</b></button>
+                  <button class="rte-btn" title="Italic"><i>I</i></button>
+                  <button class="rte-btn" title="Underline"><u>U</u></button>
+                  <div class="rte-divider"></div>
+                  <button class="rte-btn" title="Heading 2" style="font-size:11px;width:auto;padding:0 6px;">H2</button>
+                  <button class="rte-btn" title="Heading 3" style="font-size:11px;width:auto;padding:0 6px;">H3</button>
+                  <div class="rte-divider"></div>
+                  <button class="rte-btn" title="Bullet list">≡</button>
+                  <button class="rte-btn" title="Numbered list">1.</button>
+                  <button class="rte-btn" title="Quote" style="font-size:16px;">"</button>
+                  <div class="rte-divider"></div>
+                  <button class="rte-btn" title="Insert link">🔗</button>
+                  <button class="rte-btn" title="Insert image">🖼️</button>
+                  <button class="rte-btn" title="Insert table">⊞</button>
+                  <div class="rte-divider"></div>
+                  <button class="rte-btn" title="Undo">↩</button>
+                  <button class="rte-btn" title="Redo">↪</button>
+                </div>
+
+                <div class="rte-area" contenteditable="true">
+                  <p>Đêm nay lúc 20:00 ICT, <strong>Etihad Stadium</strong> sẽ là đấu trường cho cuộc đối đầu đỉnh cao giữa Manchester City và Arsenal...</p>
+
+                  <h2>Phân tích phong độ gần đây</h2>
+                  <p>Manchester City đang trải qua giai đoạn ổn định ấn tượng với 5 chiến thắng liên tiếp...</p>
+
+                  <blockquote style="border-left:3px solid var(--accent);padding:10px 16px;background:var(--accent-dim);border-radius:0 8px 8px 0;color:var(--text);font-style:italic;margin:12px 0;">"Man City tại Etihad là pháo đài bất khả xâm phạm" — AI Analysis</blockquote>
+
+                  <p>Ngược lại, Arsenal vừa trải qua kết quả không như ý khi hòa 1-1 trước Newcastle...</p>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Excerpt -->
+            <div class="form-field">
+              <label class="form-label">Mô tả ngắn (Excerpt)</label>
+              <textarea class="form-textarea" rows="3" placeholder="Mô tả ngắn hiển thị trên listing page...">Claude AI phân tích chi tiết lợi thế sân nhà và form phong độ của Man City. Dự đoán Man City thắng 2-0 với độ tin cậy 74%.</textarea>
+              <div class="char-count">148 / 200 ký tự</div>
+            </div>
+
+          </div>
+
+          <!-- SIDEBAR PANELS -->
+          <div>
+
+            <!-- Publish -->
+            <div class="editor-sidebar-card">
+              <div class="editor-sidebar-card-header">Xuất bản</div>
+              <div class="editor-sidebar-card-body">
+                <div class="toggle-wrap">
+                  <span class="toggle-label">Tự động xuất bản</span>
+                  <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                </div>
+                <div class="form-field" style="margin-bottom:10px;">
+                  <label class="form-label" style="margin-bottom:4px;">Ngày xuất bản</label>
+                  <input class="form-input" type="datetime-local" value="2025-04-07T18:00" />
+                </div>
+                <div class="form-field" style="margin-bottom:12px;">
+                  <label class="form-label" style="margin-bottom:4px;">Trạng thái</label>
+                  <select class="form-select">
+                    <option>Bản nháp</option>
+                    <option selected>Chờ xuất bản</option>
+                    <option>Đã xuất bản</option>
+                  </select>
+                </div>
+                <div style="display:flex;gap:8px;">
+                  <button class="btn btn-ghost" style="flex:1;">Lưu nháp</button>
+                  <button class="btn btn-primary" style="flex:1;" onclick="location.href='admin-posts.html'">Xuất bản</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Featured image -->
+            <div class="editor-sidebar-card">
+              <div class="editor-sidebar-card-header">Ảnh đại diện</div>
+              <div class="editor-sidebar-card-body">
+                <div class="img-preview">
+                  🏆
+                  <button class="img-preview-remove">✕</button>
+                </div>
+                <div style="display:flex;gap:6px;margin-top:8px;">
+                  <button class="btn btn-ghost" style="flex:1;font-size:11px;">Thay ảnh</button>
+                  <button class="btn btn-ghost" style="flex:1;font-size:11px;">Xóa</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- AI Prediction data -->
+            <div class="editor-sidebar-card">
+              <div class="editor-sidebar-card-header">🤖 Dữ liệu AI Prediction</div>
+              <div class="editor-sidebar-card-body">
+                <div class="form-field">
+                  <label class="form-label">Tỷ số dự đoán</label>
+                  <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;">
+                    <input class="form-input" type="text" value="2" style="text-align:center;font-size:18px;font-weight:700;" />
+                    <span style="color:var(--muted);font-weight:700;">–</span>
+                    <input class="form-input" type="text" value="0" style="text-align:center;font-size:18px;font-weight:700;" />
+                  </div>
+                </div>
+                <div class="form-field">
+                  <label class="form-label">Độ tin cậy (%)</label>
+                  <input class="form-input" type="number" value="74" min="0" max="100" />
+                </div>
+                <div class="form-field" style="margin-bottom:0;">
+                  <label class="form-label">Model AI</label>
+                  <select class="form-select">
+                    <option>Claude claude-opus-4-6</option>
+                    <option>Gemini 2.0 Flash</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- SEO -->
+            <div class="editor-sidebar-card">
+              <div class="editor-sidebar-card-header">SEO Preview</div>
+              <div class="editor-sidebar-card-body">
+                <div class="seo-preview">
+                  <div class="seo-preview-url">footballblog.vn › post › man-city-vs-arsenal</div>
+                  <div class="seo-preview-title">Man City vs Arsenal: Pháo thủ khó cản tại Etihad</div>
+                  <div class="seo-preview-desc">Claude AI phân tích chi tiết lợi thế sân nhà. Dự đoán Man City thắng 2-0 với độ tin cậy 74%.</div>
+                </div>
+                <div class="form-field" style="margin-top:12px;margin-bottom:0;">
+                  <label class="form-label">Meta title</label>
+                  <input class="form-input" type="text" value="Man City vs Arsenal: AI dự đoán 2-0 — FootballBlog" />
+                  <div class="char-count">54 / 60 ký tự</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+  </div>
+</div>
+<script src="assets/common.js"></script>
+</body>
+</html>

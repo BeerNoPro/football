@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Premier League — Bài viết — FootballBlog</title>
+  <link rel="stylesheet" href="assets/common.css">
+  <style>
+    /* ===== CATEGORY / TAG LISTING PAGE ===== */
+
+    /* Tag header */
+    .tag-header {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      background: var(--bg-card);
+    }
+    .tag-header-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .tag-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      background: var(--bg-dark);
+      border: 1px solid var(--border2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .tag-info { flex: 1; }
+    .tag-name { font-size: 18px; font-weight: 900; color: #fff; }
+    .tag-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .tag-filter-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tag-filter-label { font-size: 11px; color: var(--muted); }
+    .sort-select {
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 7px;
+      padding: 5px 10px;
+      color: var(--muted);
+      font-size: 11px;
+      cursor: pointer;
+      outline: none;
+      font-family: inherit;
+    }
+    .sort-select:focus { border-color: rgba(200,240,77,0.3); }
+    .sort-select option { background: var(--bg-card); }
+    .tag-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+    .tag-chip {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 20px;
+      border: 1px solid var(--border2);
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tag-chip.active { background: var(--accent-dim); border-color: rgba(200,240,77,0.3); color: var(--accent); }
+    .tag-chip:hover:not(.active) { border-color: var(--border); color: var(--text); }
+
+    /* Post grid scroll */
+    .posts-scroll { flex: 1; overflow-y: auto; }
+    .posts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      padding: 16px;
+    }
+
+    /* Post card */
+    .post-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    .post-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+    .post-card-img {
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      position: relative;
+    }
+    .post-card-ai-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(200,240,77,0.25);
+      color: var(--accent);
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+    .post-card-pred {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 4px 8px;
+      text-align: center;
+    }
+    .post-card-pred-val { font-size: 13px; font-weight: 900; color: var(--accent); }
+    .post-card-pred-lbl { font-size: 8px; color: var(--muted); }
+    .post-card-body { padding: 12px; }
+    .post-card-tag {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+    .post-card-tag-item {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .post-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .post-card-excerpt {
+      font-size: 11px;
+      color: var(--muted2);
+      line-height: 1.5;
+      margin-bottom: 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .post-card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .post-card-time { font-size: 10px; color: var(--muted); }
+    .post-card-read { font-size: 10px; color: var(--accent); font-weight: 600; }
+    .post-card-views {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    /* Pagination */
+    .pagination-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .pg-btn {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 7px;
+      border: 1px solid var(--border2);
+      background: none;
+      color: var(--muted);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .pg-btn:hover { background: var(--bg-card); color: var(--text); }
+    .pg-btn.active { background: var(--accent-dim); border-color: rgba(200,240,77,0.3); color: var(--accent); font-weight: 700; }
+    .pg-btn:disabled { opacity: 0.3; cursor: default; }
+
+    /* Related tags section */
+    .related-tags {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .related-tags-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; flex-shrink: 0; }
+    .related-tag {
+      font-size: 11px;
+      color: var(--muted2);
+      background: var(--bg-card);
+      border: 1px solid var(--border2);
+      padding: 3px 10px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+    .related-tag:hover { border-color: var(--accent); color: var(--accent); }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="left-sidebar">
+    <div class="logo-wrap">
+      <div class="logo"><span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span></div>
+      <div class="logo-sub">Kết quả &amp; Nhận định AI</div>
+    </div>
+    <div class="left-search">
+      <div class="search-input-wrap">
+        <svg class="search-icon" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Tìm giải đấu, đội bóng..." oninput="filterLeagues(this.value)" />
+      </div>
+    </div>
+    <div class="league-tree" id="league-tree">
+      <div class="country-group" id="cg-eng">
+        <div class="country-header" onclick="toggleCountry('cg-eng')">
+          <span class="country-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span><span class="country-name">Anh</span><span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <div class="league-item active" data-league="epl" onclick="selectLeague(this, 'epl')">Premier League <span class="league-live-count">1</span></div>
+          <div class="league-item" data-league="championship" onclick="selectLeague(this, 'championship')">Championship</div>
+        </div>
+      </div>
+      <div class="country-group" id="cg-vn">
+        <div class="country-header" onclick="toggleCountry('cg-vn')">
+          <span class="country-flag">🇻🇳</span><span class="country-name">Việt Nam</span><span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <div class="league-item" data-league="vleague1" onclick="selectLeague(this, 'vleague1')">V.League 1 <span class="league-live-count">2</span></div>
+        </div>
+      </div>
+      <div class="country-group" id="cg-uefa">
+        <div class="country-header" onclick="toggleCountry('cg-uefa')">
+          <span class="country-flag">🏆</span><span class="country-name">UEFA</span><span class="country-chevron">▾</span>
+        </div>
+        <div class="sub-leagues">
+          <div class="league-item" data-league="ucl" onclick="selectLeague(this, 'ucl')">Champions League</div>
+        </div>
+      </div>
+    </div>
+    <div class="left-bottom">
+      <button class="settings-btn">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Cài đặt
+      </button>
+      <div class="user-row">
+        <div class="user-avatar">A</div>
+        <div class="user-info"><div class="user-name">Admin</div><div class="user-email">admin@footballblog.vn</div></div>
+        <button class="logout-btn"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CENTER COLUMN -->
+  <main class="main-col">
+
+    <!-- Tag header -->
+    <div class="tag-header">
+      <div class="tag-header-top">
+        <div class="tag-icon">🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
+        <div class="tag-info">
+          <div class="tag-name">Premier League</div>
+          <div class="tag-sub">48 bài viết · Cập nhật 2 giờ trước</div>
+        </div>
+      </div>
+      <div class="tag-filter-row">
+        <span class="tag-filter-label">Lọc:</span>
+        <div class="tag-chips">
+          <button class="tag-chip active">Tất cả</button>
+          <button class="tag-chip">🤖 AI Nhận định</button>
+          <button class="tag-chip">📊 Phân tích</button>
+          <button class="tag-chip">📰 Tin tức</button>
+        </div>
+        <select class="sort-select" style="margin-left:auto">
+          <option>Mới nhất</option>
+          <option>Nhiều đọc nhất</option>
+          <option>Nổi bật</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Related tags -->
+    <div class="related-tags">
+      <span class="related-tags-label">Tags:</span>
+      <a class="related-tag" href="#">Man City</a>
+      <a class="related-tag" href="#">Arsenal</a>
+      <a class="related-tag" href="#">Liverpool</a>
+      <a class="related-tag" href="#">Chelsea</a>
+      <a class="related-tag" href="#">Haaland</a>
+      <a class="related-tag" href="#">Salah</a>
+      <a class="related-tag" href="#">Dự đoán tỷ số</a>
+    </div>
+
+    <!-- Post grid -->
+    <div class="posts-scroll">
+      <div class="posts-grid">
+
+        <div class="post-card" onclick="location.href='post-detail.html'">
+          <div class="post-card-img" style="background:linear-gradient(135deg,#0f1923,#1a3a5c);">🏆
+            <span class="post-card-ai-badge">🤖 AI</span>
+            <div class="post-card-pred"><div class="post-card-pred-val">2-0</div><div class="post-card-pred-lbl">dự đoán</div></div>
+          </div>
+          <div class="post-card-body">
+            <div class="post-card-tag"><span class="post-card-tag-item">AI Nhận định</span><span style="color:var(--muted);font-size:9px">· PL GW32</span></div>
+            <div class="post-card-title">Man City vs Arsenal: Pháo thủ khó cản tại Etihad</div>
+            <div class="post-card-excerpt">Claude AI phân tích chi tiết lợi thế sân nhà và form phong độ của Man City trước trận đại chiến.</div>
+            <div class="post-card-meta">
+              <span class="post-card-time">2 giờ trước</span>
+              <span class="post-card-views"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>2,847</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="post-card" onclick="location.href='post-detail.html'">
+          <div class="post-card-img" style="background:linear-gradient(135deg,#1a0a2d,#3a1a5c);">⚽
+            <span class="post-card-ai-badge">🤖 AI</span>
+            <div class="post-card-pred"><div class="post-card-pred-val">2-1</div><div class="post-card-pred-lbl">dự đoán</div></div>
+          </div>
+          <div class="post-card-body">
+            <div class="post-card-tag"><span class="post-card-tag-item">AI Nhận định</span><span style="color:var(--muted);font-size:9px">· PL GW32</span></div>
+            <div class="post-card-title">Tottenham vs Man United: Cuộc chiến vào top 4</div>
+            <div class="post-card-excerpt">Spurs đang hồi sinh dưới tay HLV Postecoglou. AI dự đoán chủ nhà thắng 2-1 với độ tin cậy 62%.</div>
+            <div class="post-card-meta">
+              <span class="post-card-time">4 giờ trước</span>
+              <span class="post-card-views"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>1,203</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="post-card" onclick="location.href='post-detail.html'">
+          <div class="post-card-img" style="background:linear-gradient(135deg,#1a1a0a,#3a3a10);">🏅
+            <span class="post-card-ai-badge">📊</span>
+          </div>
+          <div class="post-card-body">
+            <div class="post-card-tag"><span class="post-card-tag-item">Phân tích</span><span style="color:var(--muted);font-size:9px">· PL</span></div>
+            <div class="post-card-title">Chelsea 2-1 Liverpool: Kết quả ngược chỉ số xG</div>
+            <div class="post-card-excerpt">Phân tích sau trận: Liverpool kiểm soát bóng 62% nhưng vẫn thua. Điều gì đã xảy ra?</div>
+            <div class="post-card-meta">
+              <span class="post-card-time">1 ngày trước</span>
+              <span class="post-card-views"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>4,512</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="post-card" onclick="location.href='post-detail.html'">
+          <div class="post-card-img" style="background:linear-gradient(135deg,#0a1a0a,#1a3a1a);">🔴
+            <span class="post-card-ai-badge">🤖 AI</span>
+            <div class="post-card-pred"><div class="post-card-pred-val">1-1</div><div class="post-card-pred-lbl">kết quả</div></div>
+          </div>
+          <div class="post-card-body">
+            <div class="post-card-tag"><span class="post-card-tag-item">AI Nhận định</span><span style="color:var(--muted);font-size:9px">· PL GW31</span></div>
+            <div class="post-card-title">Arsenal 1-1 Newcastle: Điểm đáng quý hay cơ hội bỏ lỡ?</div>
+            <div class="post-card-excerpt">Hòa với Newcastle khi Man City thắng: bước ngoặt trong cuộc đua vô địch của Pháo thủ?</div>
+            <div class="post-card-meta">
+              <span class="post-card-time">4 ngày trước</span>
+              <span class="post-card-views"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>891</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="post-card" onclick="location.href='post-detail.html'">
+          <div class="post-card-img" style="background:linear-gradient(135deg,#1a0a10,#3a1a20);">⚡
+            <span class="post-card-ai-badge">📊</span>
+          </div>
+          <div class="post-card-body">
+            <div class="post-card-tag"><span class="post-card-tag-item">Phân tích</span><span style="color:var(--muted);font-size:9px">· PL</span></div>
+            <div class="post-card-title">Saka & Ødegaard: Cặp đôi vàng tạo nên Arsenal mới</div>
+            <div class="post-card-excerpt">23 bàn + 22 kiến tạo giữa hai người trong nửa mùa. Con số khủng khiếp đứng sau Arsenal 2025.</div>
+            <div class="post-card-meta">
+              <span class="post-card-time">5 ngày trước</span>
+              <span class="post-card-views"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>3,102</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="post-card" onclick="location.href='post-detail.html'">
+          <div class="post-card-img" style="background:linear-gradient(135deg,#0a1a2a,#1a3a5a);">🏆
+            <span class="post-card-ai-badge">🤖 AI</span>
+            <div class="post-card-pred"><div class="post-card-pred-val">3-1</div><div class="post-card-pred-lbl">kết quả</div></div>
+          </div>
+          <div class="post-card-body">
+            <div class="post-card-tag"><span class="post-card-tag-item">AI Nhận định</span><span style="color:var(--muted);font-size:9px">· PL GW30</span></div>
+            <div class="post-card-title">Man City 3-0 Man United: Derby thành Manchester một chiều</div>
+            <div class="post-card-excerpt">AI dự đoán đúng: Haaland lập hat-trick, De Bruyne kiến tạo 2. Derby không cân sức.</div>
+            <div class="post-card-meta">
+              <span class="post-card-time">1 tuần trước</span>
+              <span class="post-card-views"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>8,741</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-wrap">
+        <button class="pg-btn" disabled>‹</button>
+        <button class="pg-btn active">1</button>
+        <button class="pg-btn">2</button>
+        <button class="pg-btn">3</button>
+        <span style="font-size:12px;color:var(--muted);padding:0 4px;">...</span>
+        <button class="pg-btn">6</button>
+        <button class="pg-btn">›</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- RIGHT SIDEBAR -->
+  <aside class="right-sidebar">
+    <div class="right-header">
+      <div class="right-title">AI Blog</div>
+      <div class="ai-badge">🤖 AI Agent</div>
+    </div>
+    <div class="right-tabs">
+      <button class="right-tab active" onclick="setRightTab(this)">Nổi bật</button>
+      <button class="right-tab" onclick="setRightTab(this)">Hôm nay</button>
+    </div>
+    <div class="right-scroll">
+      <div class="post-featured" onclick="location.href='post-detail.html'">
+        <div class="post-featured-img" style="background:linear-gradient(135deg,#0f1923,#1a3a5c);">🏆
+          <div class="match-label"><span>Man City vs Arsenal</span><span style="color:var(--accent)">2-0 dự đoán</span></div>
+        </div>
+        <div class="post-featured-body">
+          <div class="post-tag">🤖 AI · PL GW32</div>
+          <div class="post-title">Man City vs Arsenal: AI dự đoán Haaland nổ súng sớm</div>
+          <div class="post-excerpt">Phân tích toàn diện: form, chiến thuật, H2H. Man City ưu thế vượt trội tại Etihad.</div>
+          <div class="post-meta"><span class="post-time">2 giờ trước</span><span class="post-read">Đọc tiếp →</span></div>
+        </div>
+      </div>
+      <div class="post-item"><div class="post-thumb" style="background:linear-gradient(135deg,#1a0a2d,#3a1a5c);">⚽</div><div class="post-item-body"><div class="post-item-tag">🤖 AI · PL GW32</div><div class="post-item-title">Tottenham vs Man United: Cuộc chiến top 4</div><div class="post-item-meta">4 giờ trước</div></div><div class="pred-score"><div class="ps-val">2-1</div><div class="ps-label">AI<br>dự đoán</div></div></div>
+      <div class="post-item"><div class="post-thumb" style="background:linear-gradient(135deg,#1a1a0a,#3a3a10);">📊</div><div class="post-item-body"><div class="post-item-tag">Phân tích · PL</div><div class="post-item-title">Chelsea 2-1 Liverpool: Kết quả ngược chỉ số</div><div class="post-item-meta">1 ngày trước</div></div><div class="pred-score" style="opacity:0.5;"><div class="ps-val">1-2</div><div class="ps-label">Kết<br>quả</div></div></div>
+      <div class="post-item"><div class="post-thumb" style="background:linear-gradient(135deg,#0a1a0a,#1a3a1a);">⚡</div><div class="post-item-body"><div class="post-item-tag">Phân tích · PL</div><div class="post-item-title">Saka & Ødegaard: Cặp đôi vàng của Arsenal</div><div class="post-item-meta">5 ngày trước</div></div><div class="pred-score"><div class="ps-val">🔥</div><div class="ps-label">Nổi<br>bật</div></div></div>
+    </div>
+  </aside>
+
+</div>
+<script src="assets/common.js"></script>
+</body>
+</html>
