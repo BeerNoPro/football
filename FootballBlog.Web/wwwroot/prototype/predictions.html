@@ -538,7 +538,7 @@
         <div class="pred-section" id="pred-epl">
           <div class="pred-section-header" onclick="toggleLg(this)">
             <div class="lg-icon">🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
-            <span class="lg-name">England — Premier League</span>
+            <a class="lg-name lg-name-link" href="league-page.html?league=epl" onclick="event.stopPropagation()">England — Premier League</a>
             <span class="lg-round">GW 33</span>
             <span class="lg-chevron">▾</span>
             <span class="pred-count">3 dự đoán</span>
@@ -624,7 +624,7 @@
         <div class="pred-section" id="pred-ucl">
           <div class="pred-section-header" onclick="toggleLg(this)">
             <div class="lg-icon">🏆</div>
-            <span class="lg-name">UEFA — Champions League</span>
+            <a class="lg-name lg-name-link" href="league-page.html?league=ucl" onclick="event.stopPropagation()">UEFA — Champions League</a>
             <span class="lg-round">Bán kết</span>
             <span class="lg-chevron">▾</span>
             <span class="pred-count">2 dự đoán</span>
@@ -681,7 +681,7 @@
         <div class="pred-section" id="pred-vl1">
           <div class="pred-section-header" onclick="toggleLg(this)">
             <div class="lg-icon">🇻🇳</div>
-            <span class="lg-name">Vietnam — V.League 1</span>
+            <a class="lg-name lg-name-link" href="league-page.html?league=vleague1" onclick="event.stopPropagation()">Vietnam — V.League 1</a>
             <span class="lg-round">Vòng 16</span>
             <span class="lg-chevron">▾</span>
             <span class="pred-count">3 dự đoán</span>
@@ -861,6 +861,7 @@
 
 </div><!-- /app -->
 
+<script src="assets/render.js"></script>
 <script src="assets/common.js"></script>
 <script>
   function setFilterChip(el) {
@@ -869,6 +870,7 @@
     });
     el.classList.add('active');
   }
+  initPredictionsPage();
 </script>
 </body>
 </html>

@@ -155,7 +155,8 @@ body {
 .league-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
 .league-item.active {
   color: var(--accent);
-  background: var(--accent-dim);
+  background: rgba(200,240,77,0.13);
+  border-left-color: var(--accent);
 }
 .league-item.active::before { background: var(--accent); }
 .league-live-count {
@@ -301,8 +302,16 @@ body {
 /* Live dot + animation */
 .live-dot { width: 6px; height: 6px; background: var(--live); border-radius: 50%; animation: livepulse 1.5s ease-in-out infinite; display: inline-block; flex-shrink: 0; }
 
+/* Match row team name — span clickable */
+.match-row .tn {
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.match-row .tn:hover { color: var(--accent); }
+
 /* Reset link styling for interactive elements */
-.match-row a,
 .team-cell a,
 .player-cell a,
 .scorer-name a,
@@ -320,10 +329,6 @@ body {
 }
 
 /* Reset <a> used directly as interactive components */
-a.match-row {
-  text-decoration: none;
-  color: inherit;
-}
 a.league-item {
   text-decoration: none;
 }
@@ -374,7 +379,9 @@ a.post-item {
 }
 .lg-header:hover { background: #0a0a0a; }
 .lg-icon { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
-.lg-name { flex: 1; font-size: 11px; font-weight: 700; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.5px; }
+.lg-name { flex: 1; font-size: 11px; font-weight: 700; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.5px; text-decoration: none; }
+.lg-name-link { cursor: pointer; transition: color 0.15s; }
+.lg-name-link:hover { color: var(--accent); }
 .lg-round { font-size: 10px; color: var(--muted); }
 .lg-chevron { font-size: 9px; color: var(--muted); transition: transform 0.2s; }
 .lg.collapsed .lg-chevron { transform: rotate(-90deg); }
@@ -559,11 +566,11 @@ a.post-item {
 }
 .main-scroll {
   flex: 1;
-  overflow-y: auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
-.matches-list { flex: 1; overflow-y: auto; }
+.matches-list { flex: 1; min-height: 0; overflow-y: auto; }
 
 /* Match toolbar */
 .match-toolbar {

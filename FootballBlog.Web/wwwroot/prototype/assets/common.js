@@ -16,19 +16,14 @@ function selectLeague(el, leagueId) {
   const isHome = path.includes('home.html') || path === '/' || path.endsWith('/index.html');
 
   if (!isHome) {
-    // Any non-home page: navigate to the league page
-    window.location.href = 'league-page.html?league=' + leagueId;
+    // Bất kỳ trang nào → về home và highlight league đó
+    window.location.href = 'home.html?league=' + leagueId;
     return;
   }
 
-  // --- Home page: filter behavior ---
-
-  // Toggle: click active league again → deselect and show all
+  // Toggle: click active league again → deselect
   if (el.classList.contains('active')) {
     el.classList.remove('active');
-    document.querySelectorAll('.lg').forEach(lg => lg.style.display = 'block');
-    const matchList = document.querySelector('.matches-list');
-    if (matchList) matchList.scrollTop = 0;
     return;
   }
 
@@ -36,14 +31,32 @@ function selectLeague(el, leagueId) {
   document.querySelectorAll('.league-item').forEach(i => i.classList.remove('active'));
   el.classList.add('active');
 
-  // Filter center column: show only selected league group
-  document.querySelectorAll('.lg').forEach(lg => {
-    lg.style.display = (lg.id === 'm-' + leagueId) ? 'block' : 'none';
-  });
+  // Scroll center column to show the league group at top
+  const target = document.getElementById('m-' + leagueId);
+  if (target) {
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
 
-  // Scroll match list to top
-  const matchList = document.querySelector('.matches-list');
-  if (matchList) matchList.scrollTop = 0;
+// Đọc ?league= từ URL và auto-highlight + scroll sau khi render xong
+function applyLeagueParam() {
+  const params = new URLSearchParams(window.location.search);
+  const leagueId = params.get('league');
+  if (!leagueId) return;
+
+  const leagueEl = document.querySelector(`.league-item[data-league="${leagueId}"]`);
+  if (leagueEl) {
+    document.querySelectorAll('.league-item').forEach(i => i.classList.remove('active'));
+    leagueEl.classList.add('active');
+    // Expand country group nếu đang collapsed
+    const cg = leagueEl.closest('.country-group');
+    if (cg) cg.classList.remove('collapsed');
+  }
+
+  const target = document.getElementById('m-' + leagueId);
+  if (target) {
+    setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+  }
 }
 
 // Left sidebar: live search filter

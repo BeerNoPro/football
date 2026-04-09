@@ -70,9 +70,21 @@ IFootballApiClient      — [Phase 4] wrapper api-football.com + rate limit
 
 ## Cleanup Sau Khi Implement
 
-Khi implement xong một feature từ plan file trong `.claude/plans/`:
-1. Xóa file plan đó — source code là source of truth, plan đã implement là dead weight
-2. Nếu plan chỉ implement một phần, ghi chú phần còn lại vào TODO.md rồi xóa plan
+**Bắt buộc sau khi hoàn thành bất kỳ task/plan nào:**
+
+```bash
+# Xóa plan đã hoàn tất (chạy ngay, không hỏi lại)
+rm .claude/plans/<plan-file>.md
+
+# Xóa nhiều plan thừa cùng lúc
+rm .claude/plans/file1.md .claude/plans/file2.md
+```
+
+Quy tắc:
+1. **Plan đã implement xong** → xóa ngay bằng bash, không cần xin phép
+2. **Plan implement một phần** → ghi phần còn lại vào TODO.md rồi xóa plan
+3. **Plan trùng nội dung nhau** → giữ 1 cái mới nhất, xóa các bản cũ
+4. **Plan là "analysis/reference" không còn dùng** → xóa, nội dung quan trọng đã nằm trong code/TODO
 
 Khi thêm config/rule mới vào `.claude/`:
 - Kiểm tra xem thông tin đó đã có ở file khác chưa (CLAUDE.md, rules/, commands/)

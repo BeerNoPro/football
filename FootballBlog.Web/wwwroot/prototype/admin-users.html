@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Người dùng — FootballBlog Admin</title>
+  <link rel="stylesheet" href="assets/common.css">
+  <link rel="stylesheet" href="assets/admin-common.css">
+  <style>
+    body { overflow: hidden; }
+
+    /* Two-panel layout: table left + form right */
+    .users-layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 0;
+      flex: 1;
+      overflow: hidden;
+      height: 100%;
+    }
+    .users-layout.no-panel {
+      grid-template-columns: 1fr;
+    }
+
+    /* Left: table panel */
+    .users-table-panel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-right: 1px solid var(--border);
+    }
+
+    /* Right: detail/form panel */
+    .users-form-panel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+    .users-form-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .users-form-title { font-size: 14px; font-weight: 700; color: var(--text); }
+    .users-form-scroll { flex: 1; overflow-y: auto; padding: 20px; }
+
+    /* User avatar (large) */
+    .user-avatar-lg {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      border: 2px solid rgba(200,240,77,0.3);
+      color: var(--accent);
+      font-size: 20px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Role badge in table */
+    .chip-admin  { background: rgba(167,139,250,0.12); color: #a78bfa; border: 1px solid rgba(167,139,250,0.25); }
+    .chip-author { background: rgba(251,191,36,0.10);  color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+    .chip-active   { background: rgba(74,222,128,0.10); color: var(--live); border: 1px solid rgba(74,222,128,0.2); }
+    .chip-inactive { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border2); }
+
+    /* Row highlight when selected */
+    .data-table tr.selected td { background: rgba(200,240,77,0.04); }
+    .data-table tr.selected td:first-child { border-left: 2px solid var(--accent); }
+
+    /* Activity bar */
+    .activity-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      width: 80px;
+    }
+    .activity-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    /* Permissions section */
+    .perm-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .perm-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: all 0.12s;
+      font-size: 12px;
+      color: var(--muted2);
+    }
+    .perm-item.checked { border-color: rgba(200,240,77,0.3); color: var(--text); }
+    .perm-checkbox {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      border: 1.5px solid var(--border2);
+      background: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 9px;
+      color: transparent;
+      transition: all 0.12s;
+    }
+    .perm-item.checked .perm-checkbox {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #111;
+    }
+
+    /* Recent activity mini list */
+    .activity-list { list-style: none; padding: 0; margin: 0; }
+    .activity-item {
+      display: flex;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      margin-top: 3px;
+      flex-shrink: 0;
+    }
+    .activity-dot.muted { background: var(--muted); }
+    .activity-text { flex: 1; line-height: 1.4; }
+    .activity-time { color: var(--muted); white-space: nowrap; }
+
+    /* Password reset warning */
+    .warning-box {
+      background: rgba(251,191,36,0.06);
+      border: 1px solid rgba(251,191,36,0.2);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 11px;
+      color: #fbbf24;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+  </style>
+</head>
+<body class="admin-body">
+<div class="admin-wrap">
+
+  <!-- Top Nav -->
+  <nav class="admin-topnav">
+    <div class="logo-wrap">
+      <div class="logo"><span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span></div>
+    </div>
+    <div class="admin-topnav-spacer"></div>
+    <div class="admin-topnav-actions">
+      <button class="topnav-btn" onclick="location.href='home.html'">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        Xem trang chủ
+      </button>
+      <button class="topnav-btn primary" onclick="openNewUser()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Thêm người dùng
+      </button>
+      <div class="user-row" style="padding:4px 8px;border-radius:8px;cursor:pointer;" onmouseover="this.style.background='var(--bg-card)'" onmouseout="this.style.background='none'">
+        <div class="user-avatar" style="width:26px;height:26px;font-size:11px;">A</div>
+        <div class="user-info"><div class="user-name">Admin</div></div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="admin-body-area">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-scroll">
+        <div class="admin-menu-group">
+          <div class="admin-menu-label">Tổng quan</div>
+          <a class="admin-menu-item" href="admin-dashboard.html">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Dashboard
+          </a>
+        </div>
+        <div class="admin-menu-group">
+          <div class="admin-menu-label">Nội dung</div>
+          <a class="admin-menu-item" href="admin-posts.html">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Bài viết
+          </a>
+          <a class="admin-menu-item" href="admin-predictions.html">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            AI Predictions
+          </a>
+          <a class="admin-menu-item" href="admin-categories.html">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            Categories &amp; Tags
+          </a>
+        </div>
+        <div class="admin-menu-group">
+          <div class="admin-menu-label">Hệ thống</div>
+          <a class="admin-menu-item active" href="admin-users.html">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Người dùng
+            <span class="admin-menu-badge">4</span>
+          </a>
+          <a class="admin-menu-item" href="admin-matches.html">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            Trận đấu
+          </a>
+          <a class="admin-menu-item" href="admin-job-monitor.html">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Job Monitor
+          </a>
+          <a class="admin-menu-item" href="admin-settings.html">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Cài đặt
+          </a>
+          <a class="admin-menu-item" href="admin-login.html" style="color:#f87171">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Đăng xuất
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="admin-main" style="overflow:hidden;">
+
+      <!-- Stats bar -->
+      <div style="display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;">
+        <div style="flex:1;padding:14px 20px;border-right:1px solid var(--border);">
+          <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.4px;">Tổng tài khoản</div>
+          <div style="font-size:24px;font-weight:900;color:var(--text);line-height:1.2;margin-top:2px;">4</div>
+        </div>
+        <div style="flex:1;padding:14px 20px;border-right:1px solid var(--border);">
+          <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.4px;">Admin</div>
+          <div style="font-size:24px;font-weight:900;color:#a78bfa;line-height:1.2;margin-top:2px;">1</div>
+        </div>
+        <div style="flex:1;padding:14px 20px;border-right:1px solid var(--border);">
+          <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.4px;">Author</div>
+          <div style="font-size:24px;font-weight:900;color:#fbbf24;line-height:1.2;margin-top:2px;">3</div>
+        </div>
+        <div style="flex:1;padding:14px 20px;">
+          <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.4px;">Active hôm nay</div>
+          <div style="font-size:24px;font-weight:900;color:var(--live);line-height:1.2;margin-top:2px;">2</div>
+        </div>
+      </div>
+
+      <!-- Two-panel body -->
+      <div class="users-layout" id="usersLayout">
+
+        <!-- Left: table -->
+        <div class="users-table-panel">
+
+          <div class="data-table-toolbar">
+            <div class="admin-search">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="Tìm theo tên, email..." />
+            </div>
+            <select class="filter-select">
+              <option>Tất cả vai trò</option>
+              <option>Admin</option>
+              <option>Author</option>
+            </select>
+            <select class="filter-select">
+              <option>Tất cả trạng thái</option>
+              <option>Active</option>
+              <option>Inactive</option>
+            </select>
+          </div>
+
+          <div style="flex:1;overflow-y:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Người dùng</th>
+                  <th>Vai trò</th>
+                  <th>Trạng thái</th>
+                  <th>Bài viết</th>
+                  <th>Đăng nhập cuối</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+
+                <!-- Row 1: Admin — selected -->
+                <tr class="selected" onclick="selectUser(this, 'admin')" style="cursor:pointer;">
+                  <td>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <div class="user-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;border:1.5px solid rgba(200,240,77,0.3);">A</div>
+                      <div>
+                        <div style="font-weight:600;font-size:13px;">Admin</div>
+                        <div class="td-muted">admin@footballblog.vn</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="chip chip-admin">Admin</span></td>
+                  <td><span class="chip chip-active">● Active</span></td>
+                  <td>
+                    <div style="font-weight:600;">41</div>
+                    <div class="activity-bar" style="margin-top:4px;"><div class="activity-bar-fill" style="width:82%;"></div></div>
+                  </td>
+                  <td class="td-muted">Vừa xong</td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="btn-icon" title="Chỉnh sửa" onclick="event.stopPropagation();selectUser(document.querySelector('tr.selected'),'admin')">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      </button>
+                      <button class="btn-icon" title="Reset mật khẩu" onclick="event.stopPropagation()">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 2 -->
+                <tr onclick="selectUser(this, 'hung')" style="cursor:pointer;">
+                  <td>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <div class="user-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;background:rgba(167,139,250,0.12);border:1.5px solid rgba(167,139,250,0.25);color:#a78bfa;">H</div>
+                      <div>
+                        <div style="font-weight:600;font-size:13px;">Hùng Phạm</div>
+                        <div class="td-muted">hung@footballblog.vn</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="chip chip-author">Author</span></td>
+                  <td><span class="chip chip-active">● Active</span></td>
+                  <td>
+                    <div style="font-weight:600;">28</div>
+                    <div class="activity-bar" style="margin-top:4px;"><div class="activity-bar-fill" style="width:56%;"></div></div>
+                  </td>
+                  <td class="td-muted">2 giờ trước</td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="btn-icon" title="Chỉnh sửa" onclick="event.stopPropagation();selectUser(this.closest('tr'),'hung')">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      </button>
+                      <button class="btn-icon" title="Reset mật khẩu" onclick="event.stopPropagation()">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                      </button>
+                      <button class="btn-icon danger" title="Vô hiệu hoá" onclick="event.stopPropagation()">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 3 -->
+                <tr onclick="selectUser(this, 'minh')" style="cursor:pointer;">
+                  <td>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <div class="user-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;background:rgba(251,191,36,0.1);border:1.5px solid rgba(251,191,36,0.25);color:#fbbf24;">M</div>
+                      <div>
+                        <div style="font-weight:600;font-size:13px;">Minh Trần</div>
+                        <div class="td-muted">minh@footballblog.vn</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="chip chip-author">Author</span></td>
+                  <td><span class="chip chip-active">● Active</span></td>
+                  <td>
+                    <div style="font-weight:600;">15</div>
+                    <div class="activity-bar" style="margin-top:4px;"><div class="activity-bar-fill" style="width:30%;"></div></div>
+                  </td>
+                  <td class="td-muted">1 ngày trước</td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="btn-icon" title="Chỉnh sửa">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      </button>
+                      <button class="btn-icon" title="Reset mật khẩu">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                      </button>
+                      <button class="btn-icon danger" title="Vô hiệu hoá">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 4: Inactive -->
+                <tr onclick="selectUser(this, 'lan')" style="cursor:pointer;opacity:0.7;">
+                  <td>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <div class="user-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;background:var(--bg-card);border:1.5px solid var(--border2);color:var(--muted);">L</div>
+                      <div>
+                        <div style="font-weight:600;font-size:13px;">Lan Nguyễn</div>
+                        <div class="td-muted">lan@footballblog.vn</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="chip chip-author">Author</span></td>
+                  <td><span class="chip chip-inactive">Inactive</span></td>
+                  <td>
+                    <div style="font-weight:600;">6</div>
+                    <div class="activity-bar" style="margin-top:4px;"><div class="activity-bar-fill" style="width:12%;background:var(--muted);"></div></div>
+                  </td>
+                  <td class="td-muted">14 ngày trước</td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="btn-icon" title="Kích hoạt lại">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+        <!-- Right: edit form -->
+        <div class="users-form-panel">
+          <div class="users-form-header">
+            <div class="users-form-title" id="formTitle">Chỉnh sửa tài khoản</div>
+            <button class="btn-icon" title="Đóng" onclick="closePanel()">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="users-form-scroll">
+
+            <!-- Avatar section -->
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);">
+              <div class="user-avatar-lg">A</div>
+              <div>
+                <div style="font-size:14px;font-weight:700;color:var(--text);">Admin</div>
+                <div style="font-size:11px;color:var(--muted);margin-top:2px;">Thành viên từ 01/01/2025</div>
+                <div style="margin-top:8px;display:flex;gap:6px;">
+                  <span class="chip chip-admin" style="font-size:10px;">Admin</span>
+                  <span class="chip chip-active" style="font-size:10px;">● Active</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Basic info -->
+            <div class="form-field">
+              <label class="form-label">Tên hiển thị</label>
+              <input class="form-input" type="text" value="Admin" />
+            </div>
+
+            <div class="form-field">
+              <label class="form-label">Email</label>
+              <input class="form-input" type="email" value="admin@footballblog.vn" />
+            </div>
+
+            <div class="form-field">
+              <label class="form-label">Vai trò</label>
+              <select class="form-select">
+                <option selected>Admin</option>
+                <option>Author</option>
+              </select>
+              <div class="form-hint">Admin có quyền quản lý toàn bộ hệ thống</div>
+            </div>
+
+            <!-- Permissions -->
+            <div class="form-field">
+              <label class="form-label">Quyền hạn</label>
+              <div class="perm-grid">
+                <div class="perm-item checked" onclick="togglePerm(this)">
+                  <div class="perm-checkbox">✓</div>
+                  Tạo bài viết
+                </div>
+                <div class="perm-item checked" onclick="togglePerm(this)">
+                  <div class="perm-checkbox">✓</div>
+                  Publish bài viết
+                </div>
+                <div class="perm-item checked" onclick="togglePerm(this)">
+                  <div class="perm-checkbox">✓</div>
+                  Quản lý danh mục
+                </div>
+                <div class="perm-item checked" onclick="togglePerm(this)">
+                  <div class="perm-checkbox">✓</div>
+                  Xem AI predictions
+                </div>
+                <div class="perm-item checked" onclick="togglePerm(this)">
+                  <div class="perm-checkbox">✓</div>
+                  Quản lý người dùng
+                </div>
+                <div class="perm-item checked" onclick="togglePerm(this)">
+                  <div class="perm-checkbox">✓</div>
+                  Cài đặt hệ thống
+                </div>
+              </div>
+            </div>
+
+            <!-- Reset password -->
+            <div class="form-field">
+              <label class="form-label">Đặt lại mật khẩu</label>
+              <div class="warning-box" style="margin-bottom:8px;">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Người dùng sẽ nhận link đặt lại qua email và bị đăng xuất khỏi tất cả thiết bị
+              </div>
+              <button class="btn btn-ghost" style="width:100%;justify-content:center;">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Gửi link đặt lại mật khẩu
+              </button>
+            </div>
+
+            <!-- Activity -->
+            <div class="form-field">
+              <label class="form-label">Hoạt động gần đây</label>
+              <ul class="activity-list">
+                <li class="activity-item">
+                  <div class="activity-dot"></div>
+                  <span class="activity-text">Publish bài: <strong style="color:var(--text)">Man City vs Arsenal — Nhận định AI vòng 33</strong></span>
+                  <span class="activity-time">2 phút trước</span>
+                </li>
+                <li class="activity-item">
+                  <div class="activity-dot"></div>
+                  <span class="activity-text">Đăng nhập từ 192.168.1.100</span>
+                  <span class="activity-time">14:20</span>
+                </li>
+                <li class="activity-item">
+                  <div class="activity-dot muted"></div>
+                  <span class="activity-text">Cập nhật category: Premier League</span>
+                  <span class="activity-time">Hôm qua</span>
+                </li>
+                <li class="activity-item">
+                  <div class="activity-dot muted"></div>
+                  <span class="activity-text">Manual trigger: GeneratePredictionJob</span>
+                  <span class="activity-time">Hôm qua</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Action buttons -->
+            <div style="display:flex;gap:10px;margin-top:4px;">
+              <button class="btn btn-primary" style="flex:1;">Lưu thay đổi</button>
+              <button class="btn btn-danger" title="Chỉ áp dụng nếu không phải Admin cuối cùng">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                Vô hiệu hoá
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+  function selectUser(row, userId) {
+    document.querySelectorAll('.data-table tr').forEach(r => r.classList.remove('selected'));
+    row.classList.add('selected');
+    // In real Blazor: load user details via API
+    // For prototype: panel is always visible showing "Admin" data
+    document.getElementById('formTitle').textContent = 'Chỉnh sửa tài khoản';
+  }
+
+  function closePanel() {
+    document.getElementById('usersLayout').classList.add('no-panel');
+    document.querySelector('.users-form-panel').style.display = 'none';
+  }
+
+  function openNewUser() {
+    const layout = document.getElementById('usersLayout');
+    layout.classList.remove('no-panel');
+    document.querySelector('.users-form-panel').style.display = 'flex';
+    document.getElementById('formTitle').textContent = 'Thêm người dùng mới';
+    document.querySelectorAll('.data-table tr').forEach(r => r.classList.remove('selected'));
+  }
+
+  function togglePerm(el) {
+    el.classList.toggle('checked');
+  }
+</script>
+
+</body>
+</html>

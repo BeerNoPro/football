@@ -34,6 +34,7 @@ async function initHomePage() {
     if (matchesList) renderMatches(matchesList, matches);
     if (rightScroll) renderPosts(rightScroll, posts);
     updateLivePill(matches.liveCount);
+    applyLeagueParam();
   } catch (e) {
     console.error('[initHomePage]', e);
   }
@@ -142,6 +143,19 @@ async function initCategoryPage() {
 }
 
 /**
+ * Post detail page — loads sidebar leagues only (main content is hardcoded)
+ */
+async function initPostDetailPage() {
+  try {
+    const leagues = await fetchData('leagues');
+    const leagueTree = document.querySelector('.league-tree');
+    if (leagueTree) renderLeagueTree(leagueTree, leagues);
+  } catch (e) {
+    console.error('[initPostDetailPage]', e);
+  }
+}
+
+/**
  * Search results page
  */
 async function initSearchPage() {
@@ -163,8 +177,7 @@ async function initSearchPage() {
 /**
  * Renders the left sidebar league tree.
  * @param {HTMLElement} container  — #league-tree element
- * @param {Array}       leagues    — MOCK_LEAGUES (List<LeagueSidebarDto>)
- * @param {string}      activePage — 'home' | other (controls click behavior)
+ * @param {Array}       leagues    — data from leagues.json (List<LeagueSidebarDto>)
  */
 function renderLeagueTree(container, leagues) {
   container.innerHTML = leagues.map((g, i) => {
@@ -196,7 +209,7 @@ function renderLeagueTree(container, leagues) {
 /**
  * Renders the full matches list.
  * @param {HTMLElement} container — .matches-list element
- * @param {Object}      data      — MOCK_MATCHES (MatchDayDto)
+ * @param {Object}      data      — data from matches.json (MatchDayDto)
  */
 function renderMatches(container, data) {
   container.innerHTML = data.byLeague.map(lg => renderLeagueGroup(lg)).join('');
@@ -208,7 +221,7 @@ function renderLeagueGroup(lg) {
     <div class="lg" id="m-${lg.leagueId}">
       <div class="lg-header" onclick="toggleLg(this)">
         <div class="lg-icon">${lg.countryFlag}</div>
-        <span class="lg-name">${lg.country} — ${lg.leagueName}</span>
+        <a class="lg-name lg-name-link" href="league-page.html?league=${lg.leagueId}" onclick="event.stopPropagation()">${lg.country} — ${lg.leagueName}</a>
         <span class="lg-round">${lg.round}</span>
         <span class="lg-chevron">▾</span>
       </div>
@@ -239,19 +252,19 @@ function renderMatchRow(m) {
     : `<span class="badge-sch">${m.kickoff}</span>`;
 
   return `
-    <a class="match-row" href="${m.detailUrl}">
+    <div class="match-row" onclick="location.href='${m.detailUrl}'">
       ${timeHtml}
       <div class="mr-home${liveClass}">
-        <span class="tn">${m.homeTeam.name}</span>
+        <span class="tn" onclick="event.stopPropagation(); location.href='${m.homeTeam.url || 'team-profile.html'}'">${m.homeTeam.name}</span>
         <div class="tl">${m.homeTeam.logo}</div>
       </div>
       ${scoreHtml}
       <div class="mr-away${liveClass}">
         <div class="tl">${m.awayTeam.logo}</div>
-        <span class="tn">${m.awayTeam.name}</span>
+        <span class="tn" onclick="event.stopPropagation(); location.href='${m.awayTeam.url || 'team-profile.html'}'">${m.awayTeam.name}</span>
       </div>
       <div class="mr-status">${badge}</div>
-    </a>`;
+    </div>`;
 }
 
 /* ---- POSTS: Right sidebar ---- */
@@ -259,7 +272,7 @@ function renderMatchRow(m) {
 /**
  * Renders AI prediction posts.
  * @param {HTMLElement} container — .right-scroll element
- * @param {Object}      data      — MOCK_POSTS (PredictionPostListDto)
+ * @param {Object}      data      — data from posts.json (PredictionPostListDto)
  */
 function renderPosts(container, data) {
   const featuredHtml = data.featured ? renderFeaturedPost(data.featured) : '';
