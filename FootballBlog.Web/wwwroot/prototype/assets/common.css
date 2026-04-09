@@ -318,6 +318,20 @@ body {
 .player-cell:hover {
   background: rgba(255,255,255,0.025);
 }
+
+/* Reset <a> used directly as interactive components */
+a.match-row {
+  text-decoration: none;
+  color: inherit;
+}
+a.league-item {
+  text-decoration: none;
+}
+a.post-featured,
+a.post-item {
+  text-decoration: none;
+  color: inherit;
+}
 @keyframes livepulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(0.85)} }
 
 /* ===== LEAGUE PAGE ===== */

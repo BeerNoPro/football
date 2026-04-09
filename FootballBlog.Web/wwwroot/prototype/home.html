@@ -6,251 +6,69 @@
   <title>FootballBlog — Kết quả & Nhận định bóng đá</title>
   <link rel="stylesheet" href="assets/common.css">
   <style>
-    /* ===== HOME-SPECIFIC STYLES ===== */
-
     /* Hero */
     .hero {
-      height: 200px;
-      flex-shrink: 0;
-      position: relative;
+      height: 200px; flex-shrink: 0; position: relative;
       overflow: hidden;
       background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 60%, #16213e 100%);
     }
-    .hero-bg {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      overflow: hidden;
-    }
-    .hero-number {
-      font-size: 180px;
-      font-weight: 900;
-      color: rgba(255,255,255,0.04);
-      line-height: 1;
-      letter-spacing: -10px;
-      padding-right: 20px;
-      user-select: none;
-    }
-    .hero-content {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 20px 24px;
-      background: linear-gradient(to right, rgba(0,0,0,0.7) 0%, transparent 70%);
-    }
-    .hero-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: var(--accent-glow);
-      border: 1px solid rgba(200,240,77,0.3);
-      color: var(--accent);
-      font-size: 10px;
-      font-weight: 700;
-      padding: 3px 9px;
-      border-radius: 20px;
-      margin-bottom: 8px;
-      width: fit-content;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+    .hero-bg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: flex-end; overflow: hidden; }
+    .hero-number { font-size: 180px; font-weight: 900; color: rgba(255,255,255,0.04); line-height: 1; letter-spacing: -10px; padding-right: 20px; user-select: none; }
+    .hero-content { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px 24px; background: linear-gradient(to right, rgba(0,0,0,0.7) 0%, transparent 70%); }
+    .hero-tag { display: inline-flex; align-items: center; gap: 5px; background: var(--accent-glow); border: 1px solid rgba(200,240,77,0.3); color: var(--accent); font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px; margin-bottom: 8px; width: fit-content; text-transform: uppercase; letter-spacing: 0.5px; }
     .hero-title { font-size: 26px; font-weight: 900; color: #fff; line-height: 1.1; margin-bottom: 4px; }
     .hero-sub { font-size: 12px; color: rgba(255,255,255,0.5); }
-    .hero-dots {
-      position: absolute;
-      bottom: 16px;
-      right: 20px;
-      display: flex;
-      gap: 5px;
-    }
-    .hero-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.3);
-      cursor: pointer;
-    }
+    .hero-dots { position: absolute; bottom: 16px; right: 20px; display: flex; gap: 5px; }
+    .hero-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; }
     .hero-dot.active { background: var(--accent); width: 18px; border-radius: 3px; }
-
     /* Match panel */
     .match-panel { background: var(--bg-card); flex: 1; display: flex; flex-direction: column; }
-
   </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- =========================================
-       LEFT SIDEBAR
-  ========================================= -->
+  <!-- ===== LEFT SIDEBAR ===== -->
   <aside class="left-sidebar">
-
-    <!-- Logo -->
-    <div class="logo-wrap">
-      <div class="logo">
-        <span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span>
-      </div>
+    <a href="home.html" class="logo-wrap" style="display:block;text-decoration:none;">
+      <div class="logo"><span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span></div>
       <div class="logo-sub">Kết quả &amp; Nhận định AI</div>
-    </div>
-
-    <!-- Search -->
+    </a>
     <div class="left-search">
       <div class="search-input-wrap">
         <svg class="search-icon" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input type="text" placeholder="Tìm giải đấu, đội bóng..." oninput="filterLeagues(this.value)" />
       </div>
     </div>
-
-    <!-- League tree -->
-    <div class="league-tree" id="league-tree">
-
-      <!-- Vietnam -->
-      <div class="country-group" id="cg-vn">
-        <div class="country-header" onclick="toggleCountry('cg-vn')">
-          <span class="country-flag">🇻🇳</span>
-          <span class="country-name">Việt Nam</span>
-          <span class="country-chevron">▾</span>
-        </div>
-        <div class="sub-leagues">
-          <a class="league-item" href="league-page.html" data-league="vleague1" onclick="selectLeague(this, 'vleague1'); event.preventDefault();">
-            V.League 1
-            <span class="league-live-count">2</span>
-          </a>
-          <a class="league-item" href="league-page.html" data-league="vleague2" onclick="selectLeague(this, 'vleague2'); event.preventDefault();">V.League 2</a>
-          <a class="league-item" href="league-page.html" data-league="vcup" onclick="selectLeague(this, 'vcup'); event.preventDefault();">Cúp Quốc gia</a>
-        </div>
-      </div>
-
-      <!-- England -->
-      <div class="country-group" id="cg-eng">
-        <div class="country-header" onclick="toggleCountry('cg-eng')">
-          <span class="country-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
-          <span class="country-name">Anh</span>
-          <span class="country-chevron">▾</span>
-        </div>
-        <div class="sub-leagues">
-          <a class="league-item" href="league-page.html" data-league="epl" onclick="selectLeague(this, 'epl')">
-            Premier League
-            <span class="league-live-count">1</span>
-          </a>
-          <a class="league-item" href="league-page.html" data-league="championship" onclick="selectLeague(this, 'championship')">Championship</a>
-          <a class="league-item" href="league-page.html" data-league="facup" onclick="selectLeague(this, 'facup')">FA Cup</a>
-        </div>
-      </div>
-
-      <!-- UEFA -->
-      <div class="country-group" id="cg-uefa">
-        <div class="country-header" onclick="toggleCountry('cg-uefa')">
-          <span class="country-flag">🏆</span>
-          <span class="country-name">UEFA</span>
-          <span class="country-chevron">▾</span>
-        </div>
-        <div class="sub-leagues">
-          <a class="league-item" href="league-page.html" data-league="ucl" onclick="selectLeague(this, 'ucl')">
-            Champions League
-            <span class="league-live-count">1</span>
-          </a>
-          <a class="league-item" href="league-page.html" data-league="uel" onclick="selectLeague(this, 'uel')">Europa League</a>
-          <a class="league-item" href="league-page.html" data-league="uecl" onclick="selectLeague(this, 'uecl')">Conference League</a>
-        </div>
-      </div>
-
-      <!-- Germany -->
-      <div class="country-group" id="cg-de">
-        <div class="country-header" onclick="toggleCountry('cg-de')">
-          <span class="country-flag">🇩🇪</span>
-          <span class="country-name">Đức</span>
-          <span class="country-chevron">▾</span>
-        </div>
-        <div class="sub-leagues">
-          <a class="league-item" href="league-page.html" data-league="bund" onclick="selectLeague(this, 'bund')">Bundesliga</a>
-          <a class="league-item" href="league-page.html" data-league="bund2" onclick="selectLeague(this, 'bund2')">2. Bundesliga</a>
-        </div>
-      </div>
-
-      <!-- Spain -->
-      <div class="country-group" id="cg-es">
-        <div class="country-header" onclick="toggleCountry('cg-es')">
-          <span class="country-flag">🇪🇸</span>
-          <span class="country-name">Tây Ban Nha</span>
-          <span class="country-chevron">▾</span>
-        </div>
-        <div class="sub-leagues">
-          <a class="league-item" href="league-page.html" data-league="laliga" onclick="selectLeague(this, 'laliga')">La Liga</a>
-          <a class="league-item" href="league-page.html" data-league="laliga2" onclick="selectLeague(this, 'laliga2')">La Liga 2</a>
-          <a class="league-item" href="league-page.html" data-league="cdr" onclick="selectLeague(this, 'cdr')">Copa del Rey</a>
-        </div>
-      </div>
-
-      <!-- Italy -->
-      <div class="country-group" id="cg-it">
-        <div class="country-header" onclick="toggleCountry('cg-it')">
-          <span class="country-flag">🇮🇹</span>
-          <span class="country-name">Ý</span>
-          <span class="country-chevron">▾</span>
-        </div>
-        <div class="sub-leagues">
-          <a class="league-item" href="league-page.html" data-league="seriea" onclick="selectLeague(this, 'seriea')">Serie A</a>
-          <a class="league-item" href="league-page.html" data-league="serieb" onclick="selectLeague(this, 'serieb')">Serie B</a>
-          <a class="league-item" href="league-page.html" data-league="coppait" onclick="selectLeague(this, 'coppait')">Coppa Italia</a>
-        </div>
-      </div>
-
-      <!-- France -->
-      <div class="country-group" id="cg-fr">
-        <div class="country-header" onclick="toggleCountry('cg-fr')">
-          <span class="country-flag">🇫🇷</span>
-          <span class="country-name">Pháp</span>
-          <span class="country-chevron">▾</span>
-        </div>
-        <div class="sub-leagues">
-          <a class="league-item" href="league-page.html" data-league="ligue1" onclick="selectLeague(this, 'ligue1')">Ligue 1</a>
-          <a class="league-item" href="league-page.html" data-league="ligue2" onclick="selectLeague(this, 'ligue2')">Ligue 2</a>
-        </div>
-      </div>
-
-    </div><!-- /league-tree -->
-
-    <!-- Bottom: settings + user -->
+    <!-- League tree — populated by renderLeagueTree() -->
+    <div class="league-tree" id="league-tree"></div>
     <div class="left-bottom">
       <button class="settings-btn">
         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         Cài đặt
       </button>
-      <div class="user-row">
+      <div class="user-row" onclick="location.href='admin-dashboard.html'" style="cursor:pointer;" title="Vào Admin Panel">
         <div class="user-avatar">A</div>
         <div class="user-info">
           <div class="user-name">Admin</div>
           <div class="user-email">admin@footballblog.vn</div>
         </div>
-        <button class="logout-btn" title="Đăng xuất">
+        <button class="logout-btn" title="Đăng nhập / Admin" onclick="event.stopPropagation(); location.href='admin-login.html'">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         </button>
       </div>
     </div>
-
   </aside>
 
-  <!-- =========================================
-       CENTER COLUMN
-  ========================================= -->
+  <!-- ===== CENTER COLUMN ===== -->
   <main class="main-col">
     <div class="main-scroll">
 
       <!-- Hero -->
       <div class="hero">
-        <div class="hero-bg">
-          <div class="hero-number">2025</div>
-        </div>
+        <div class="hero-bg"><div class="hero-number">2025</div></div>
         <div class="hero-content">
-          <div class="hero-tag">
-            <span class="live-dot"></span>
-            V.League 1 — Mùa giải 2025
-          </div>
+          <div class="hero-tag"><span class="live-dot"></span> V.League 1 — Mùa giải 2025</div>
           <div class="hero-title">Kết quả & Lịch thi đấu</div>
           <div class="hero-sub">Cập nhật trực tiếp · Nhận định AI · Dự đoán tỷ số</div>
         </div>
@@ -268,11 +86,11 @@
         <div class="match-toolbar">
           <div class="live-pill">
             <span class="live-dot"></span>
-            Live <strong>4</strong>
+            Live <strong>0</strong>
           </div>
           <div class="match-search-bar">
             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input type="text" placeholder="Tìm trận đấu..." />
+            <input type="text" placeholder="Tìm trận đấu..." onkeydown="if(event.key==='Enter'&&this.value.trim()) location.href='search-results.html?q='+encodeURIComponent(this.value)" />
           </div>
           <div class="filter-btn">
             Tất cả
@@ -285,10 +103,10 @@
           <div class="tabs">
             <button class="tab-btn" onclick="setTab(this)">Lịch đấu</button>
             <button class="tab-btn active" onclick="setTab(this)">
-              Trực tiếp
-              <span class="tab-badge">4</span>
+              Trực tiếp <span class="tab-badge">0</span>
             </button>
             <button class="tab-btn" onclick="setTab(this)">Kết quả</button>
+            <button class="tab-btn" onclick="location.href='predictions.html'">🤖 Dự đoán AI</button>
           </div>
           <div class="date-bar">
             <button class="date-nav">‹</button>
@@ -302,490 +120,14 @@
           </div>
         </div>
 
-        <!-- Match list -->
-        <div class="matches-list">
+        <!-- Match list — populated by renderMatches() -->
+        <div class="matches-list" id="matches-list"></div>
 
-          <!-- V.League 1 -->
-          <div class="lg" id="m-vleague1">
-            <div class="lg-header" onclick="toggleLg(this)">
-              <div class="lg-icon">🇻🇳</div>
-              <span class="lg-name">Vietnam — V.League 1</span>
-              <span class="lg-round">Vòng 15</span>
-              <span class="lg-chevron">▾</span>
-            </div>
-            <div class="lg-matches">
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">17:00</div>
-                <div class="mr-home"><span class="tn">Hà Nội FC</span><div class="tl">🏅</div></div>
-                <div class="score-c has-score">1 – 2</div>
-                <div class="mr-away"><div class="tl">🟡</div><span class="tn">HAGL</span></div>
-                <div class="mr-status"><span class="badge-ft">KT</span></div>
-              </a>
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time is-live">65'</div>
-                <div class="mr-home live-team"><span class="tn">TPHCM FC</span><div class="tl">🔴</div></div>
-                <div class="score-c is-live-score">0 – 0</div>
-                <div class="mr-away live-team"><div class="tl">🔵</div><span class="tn">Bình Dương</span></div>
-                <div class="mr-status"><span class="badge-live"><span class="live-dot" style="width:5px;height:5px;"></span>LIVE</span></div>
-              </a>
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">20:00</div>
-                <div class="mr-home"><span class="tn">Hải Phòng FC</span><div class="tl">⚓</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🔴</div><span class="tn">Viettel FC</span></div>
-                <div class="mr-status"><span class="badge-sch">20:00</span></div>
-              </a>
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">20:00</div>
-                <div class="mr-home"><span class="tn">Nam Định</span><div class="tl">🟥</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🔵</div><span class="tn">Đà Nẵng</span></div>
-                <div class="mr-status"><span class="badge-sch">20:00</span></div>
-              </a>
-            </div>
-          </div>
-
-          <!-- Premier League -->
-          <div class="lg" id="m-epl">
-            <div class="lg-header" onclick="toggleLg(this)">
-              <div class="lg-icon">🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
-              <span class="lg-name">England — Premier League</span>
-              <span class="lg-round">GW 32</span>
-              <span class="lg-chevron">▾</span>
-            </div>
-            <div class="lg-matches">
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time is-live">78'</div>
-                <div class="mr-home live-team"><span class="tn">Manchester City</span><div class="tl">🔵</div></div>
-                <div class="score-c is-live-score">1 – 0</div>
-                <div class="mr-away live-team"><div class="tl">🔴</div><span class="tn">Arsenal</span></div>
-                <div class="mr-status"><span class="badge-live"><span class="live-dot" style="width:5px;height:5px;"></span>LIVE</span></div>
-              </a>
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">20:00</div>
-                <div class="mr-home"><span class="tn">Chelsea</span><div class="tl">🔵</div></div>
-                <div class="score-c has-score">2 – 1</div>
-                <div class="mr-away"><div class="tl">🔴</div><span class="tn">Liverpool</span></div>
-                <div class="mr-status"><span class="badge-ft">KT</span></div>
-              </a>
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">22:15</div>
-                <div class="mr-home"><span class="tn">Tottenham</span><div class="tl">⚪</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🔴</div><span class="tn">Man United</span></div>
-                <div class="mr-status"><span class="badge-sch">22:15</span></div>
-              </a>
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">22:15</div>
-                <div class="mr-home"><span class="tn">Newcastle Utd</span><div class="tl">⚫</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🔵</div><span class="tn">Everton</span></div>
-                <div class="mr-status"><span class="badge-sch">22:15</span></div>
-              </a>
-            </div>
-          </div>
-
-          <!-- Champions League -->
-          <div class="lg" id="m-ucl">
-            <div class="lg-header" onclick="toggleLg(this)">
-              <div class="lg-icon">🏆</div>
-              <span class="lg-name">UEFA — Champions League</span>
-              <span class="lg-round">Tứ kết</span>
-              <span class="lg-chevron">▾</span>
-            </div>
-            <div class="lg-matches">
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">02:00</div>
-                <div class="mr-home"><span class="tn">Real Madrid</span><div class="tl">⚪</div></div>
-                <div class="score-c has-score">3 – 1</div>
-                <div class="mr-away"><div class="tl">🔴</div><span class="tn">Bayern Munich</span></div>
-                <div class="mr-status"><span class="badge-ft">KT</span></div>
-              </a>
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">02:00</div>
-                <div class="mr-home"><span class="tn">Barcelona</span><div class="tl">🔵</div></div>
-                <div class="score-c has-score">2 – 2</div>
-                <div class="mr-away"><div class="tl">🔴</div><span class="tn">PSG</span></div>
-                <div class="mr-status"><span class="badge-ft">KT</span></div>
-              </a>
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time is-live">45'</div>
-                <div class="mr-home live-team"><span class="tn">Inter Milan</span><div class="tl">🔵</div></div>
-                <div class="score-c is-live-score">1 – 0</div>
-                <div class="mr-away live-team"><div class="tl">🔴</div><span class="tn">Atlético Madrid</span></div>
-                <div class="mr-status"><span class="badge-live"><span class="live-dot" style="width:5px;height:5px;"></span>LIVE</span></div>
-              </a>
-            </div>
-          </div>
-
-          <!-- Bundesliga -->
-          <div class="lg" id="m-bund">
-            <div class="lg-header" onclick="toggleLg(this)">
-              <div class="lg-icon">🇩🇪</div>
-              <span class="lg-name">Germany — Bundesliga</span>
-              <span class="lg-round">Vòng 28</span>
-              <span class="lg-chevron">▾</span>
-            </div>
-            <div class="lg-matches">
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">21:30</div>
-                <div class="mr-home"><span class="tn">Bayern Munich</span><div class="tl">🔴</div></div>
-                <div class="score-c has-score">4 – 0</div>
-                <div class="mr-away"><div class="tl">🟡</div><span class="tn">B. Dortmund</span></div>
-                <div class="mr-status"><span class="badge-ft">KT</span></div>
-              </a>
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">21:30</div>
-                <div class="mr-home"><span class="tn">Bayer Leverkusen</span><div class="tl">🔴</div></div>
-                <div class="score-c has-score">1 – 1</div>
-                <div class="mr-away"><div class="tl">🔴</div><span class="tn">RB Leipzig</span></div>
-                <div class="mr-status"><span class="badge-ft">KT</span></div>
-              </a>
-            </div>
-          </div>
-
-          <!-- La Liga -->
-          <div class="lg" id="m-laliga">
-            <div class="lg-header" onclick="toggleLg(this)">
-              <div class="lg-icon">🇪🇸</div>
-              <span class="lg-name">Spain — La Liga</span>
-              <span class="lg-round">Vòng 31</span>
-              <span class="lg-chevron">▾</span>
-            </div>
-            <div class="lg-matches">
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">22:00</div>
-                <div class="mr-home"><span class="tn">Atlético Madrid</span><div class="tl">🔴</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🔵</div><span class="tn">Real Sociedad</span></div>
-                <div class="mr-status"><span class="badge-sch">22:00</span></div>
-              </a>
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">00:30</div>
-                <div class="mr-home"><span class="tn">Sevilla</span><div class="tl">🔴</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🟡</div><span class="tn">Villarreal</span></div>
-                <div class="mr-status"><span class="badge-sch">00:30</span></div>
-              </a>
-            </div>
-          </div>
-
-          <!-- V.League 2 -->
-          <div class="lg" id="m-vleague2">
-            <div class="lg-header" onclick="toggleLg(this)">
-              <div class="lg-icon">🇻🇳</div>
-              <span class="lg-name">Vietnam — V.League 2</span>
-              <span class="lg-round">Vòng 12</span>
-              <span class="lg-chevron">▾</span>
-            </div>
-            <div class="lg-matches">
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">18:00</div>
-                <div class="mr-home"><span class="tn">Phù Đổng</span><div class="tl">🟢</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🔵</div><span class="tn">Đà Nẵng II</span></div>
-                <div class="mr-status"><span class="badge-sch">18:00</span></div>
-              </a>
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">19:30</div>
-                <div class="mr-home"><span class="tn">Quảng Nam</span><div class="tl">🟡</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🔴</div><span class="tn">Long An</span></div>
-                <div class="mr-status"><span class="badge-sch">19:30</span></div>
-              </a>
-            </div>
-          </div>
-
-          <!-- Cúp Quốc gia -->
-          <div class="lg" id="m-vcup">
-            <div class="lg-header" onclick="toggleLg(this)">
-              <div class="lg-icon">🇻🇳</div>
-              <span class="lg-name">Vietnam — Cúp Quốc gia</span>
-              <span class="lg-round">Tứ kết</span>
-              <span class="lg-chevron">▾</span>
-            </div>
-            <div class="lg-matches">
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">19:00</div>
-                <div class="mr-home"><span class="tn">Hà Nội FC</span><div class="tl">🏅</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🔴</div><span class="tn">TPHCM FC</span></div>
-                <div class="mr-status"><span class="badge-sch">19:00</span></div>
-              </a>
-            </div>
-          </div>
-
-          <!-- Championship -->
-          <div class="lg" id="m-championship">
-            <div class="lg-header" onclick="toggleLg(this)">
-              <div class="lg-icon">🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
-              <span class="lg-name">England — Championship</span>
-              <span class="lg-round">Matchday 40</span>
-              <span class="lg-chevron">▾</span>
-            </div>
-            <div class="lg-matches">
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">20:45</div>
-                <div class="mr-home"><span class="tn">Leeds United</span><div class="tl">⚪</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🔵</div><span class="tn">Norwich City</span></div>
-                <div class="mr-status"><span class="badge-sch">20:45</span></div>
-              </a>
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">21:00</div>
-                <div class="mr-home"><span class="tn">Middlesbrough</span><div class="tl">🔴</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🟡</div><span class="tn">Cardiff City</span></div>
-                <div class="mr-status"><span class="badge-sch">21:00</span></div>
-              </a>
-            </div>
-          </div>
-
-          <!-- FA Cup -->
-          <div class="lg" id="m-facup">
-            <div class="lg-header" onclick="toggleLg(this)">
-              <div class="lg-icon">🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
-              <span class="lg-name">England — FA Cup</span>
-              <span class="lg-round">Semi-finals</span>
-              <span class="lg-chevron">▾</span>
-            </div>
-            <div class="lg-matches">
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">17:30</div>
-                <div class="mr-home"><span class="tn">Manchester City</span><div class="tl">🔵</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🔴</div><span class="tn">Chelsea</span></div>
-                <div class="mr-status"><span class="badge-sch">17:30</span></div>
-              </a>
-            </div>
-          </div>
-
-          <!-- Europa League -->
-          <div class="lg" id="m-uel">
-            <div class="lg-header" onclick="toggleLg(this)">
-              <div class="lg-icon">🏆</div>
-              <span class="lg-name">UEFA — Europa League</span>
-              <span class="lg-round">Round of 16</span>
-              <span class="lg-chevron">▾</span>
-            </div>
-            <div class="lg-matches">
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">21:00</div>
-                <div class="mr-home"><span class="tn">Roma</span><div class="tl">🟡</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🔴</div><span class="tn">Brighton</span></div>
-                <div class="mr-status"><span class="badge-sch">21:00</span></div>
-              </a>
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">21:00</div>
-                <div class="mr-home"><span class="tn">Marseille</span><div class="tl">🔵</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">⚪</div><span class="tn">AEK Athens</span></div>
-                <div class="mr-status"><span class="badge-sch">21:00</span></div>
-              </a>
-            </div>
-          </div>
-
-          <!-- Conference League -->
-          <div class="lg" id="m-uecl">
-            <div class="lg-header" onclick="toggleLg(this)">
-              <div class="lg-icon">🏆</div>
-              <span class="lg-name">UEFA — Conference League</span>
-              <span class="lg-round">Quarter-finals</span>
-              <span class="lg-chevron">▾</span>
-            </div>
-            <div class="lg-matches">
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">20:00</div>
-                <div class="mr-home"><span class="tn">Fiorentina</span><div class="tl">🟣</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🔵</div><span class="tn">Club Brugge</span></div>
-                <div class="mr-status"><span class="badge-sch">20:00</span></div>
-              </a>
-            </div>
-          </div>
-
-          <!-- 2. Bundesliga -->
-          <div class="lg" id="m-bund2">
-            <div class="lg-header" onclick="toggleLg(this)">
-              <div class="lg-icon">🇩🇪</div>
-              <span class="lg-name">Germany — 2. Bundesliga</span>
-              <span class="lg-round">Matchday 28</span>
-              <span class="lg-chevron">▾</span>
-            </div>
-            <div class="lg-matches">
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">19:30</div>
-                <div class="mr-home"><span class="tn">Hamburger SV</span><div class="tl">🔵</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🟡</div><span class="tn">Hertha BSC</span></div>
-                <div class="mr-status"><span class="badge-sch">19:30</span></div>
-              </a>
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">20:30</div>
-                <div class="mr-home"><span class="tn">Fortuna Düsseldorf</span><div class="tl">🔴</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">⚪</div><span class="tn">Paderborn</span></div>
-                <div class="mr-status"><span class="badge-sch">20:30</span></div>
-              </a>
-            </div>
-          </div>
-
-          <!-- La Liga 2 -->
-          <div class="lg" id="m-laliga2">
-            <div class="lg-header" onclick="toggleLg(this)">
-              <div class="lg-icon">🇪🇸</div>
-              <span class="lg-name">Spain — La Liga 2</span>
-              <span class="lg-round">Matchday 33</span>
-              <span class="lg-chevron">▾</span>
-            </div>
-            <div class="lg-matches">
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">21:00</div>
-                <div class="mr-home"><span class="tn">Albacete</span><div class="tl">⚪</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🔵</div><span class="tn">Racing Santander</span></div>
-                <div class="mr-status"><span class="badge-sch">21:00</span></div>
-              </a>
-            </div>
-          </div>
-
-          <!-- Copa del Rey -->
-          <div class="lg" id="m-cdr">
-            <div class="lg-header" onclick="toggleLg(this)">
-              <div class="lg-icon">🇪🇸</div>
-              <span class="lg-name">Spain — Copa del Rey</span>
-              <span class="lg-round">Quarter-finals</span>
-              <span class="lg-chevron">▾</span>
-            </div>
-            <div class="lg-matches">
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">21:30</div>
-                <div class="mr-home"><span class="tn">Real Madrid</span><div class="tl">⚪</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🔵</div><span class="tn">Barcelona</span></div>
-                <div class="mr-status"><span class="badge-sch">21:30</span></div>
-              </a>
-            </div>
-          </div>
-
-          <!-- Serie A -->
-          <div class="lg" id="m-seriea">
-            <div class="lg-header" onclick="toggleLg(this)">
-              <div class="lg-icon">🇮🇹</div>
-              <span class="lg-name">Italy — Serie A</span>
-              <span class="lg-round">Matchday 31</span>
-              <span class="lg-chevron">▾</span>
-            </div>
-            <div class="lg-matches">
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">20:45</div>
-                <div class="mr-home"><span class="tn">Juventus</span><div class="tl">⚪</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🔵</div><span class="tn">Napoli</span></div>
-                <div class="mr-status"><span class="badge-sch">20:45</span></div>
-              </a>
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">20:45</div>
-                <div class="mr-home"><span class="tn">AC Milan</span><div class="tl">🔴</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">⚫</div><span class="tn">Inter Milan</span></div>
-                <div class="mr-status"><span class="badge-sch">20:45</span></div>
-              </a>
-            </div>
-          </div>
-
-          <!-- Serie B -->
-          <div class="lg" id="m-serieb">
-            <div class="lg-header" onclick="toggleLg(this)">
-              <div class="lg-icon">🇮🇹</div>
-              <span class="lg-name">Italy — Serie B</span>
-              <span class="lg-round">Matchday 32</span>
-              <span class="lg-chevron">▾</span>
-            </div>
-            <div class="lg-matches">
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">18:00</div>
-                <div class="mr-home"><span class="tn">Parma</span><div class="tl">🟡</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🔵</div><span class="tn">Venezia</span></div>
-                <div class="mr-status"><span class="badge-sch">18:00</span></div>
-              </a>
-            </div>
-          </div>
-
-          <!-- Coppa Italia -->
-          <div class="lg" id="m-coppait">
-            <div class="lg-header" onclick="toggleLg(this)">
-              <div class="lg-icon">🇮🇹</div>
-              <span class="lg-name">Italy — Coppa Italia</span>
-              <span class="lg-round">Semi-finals</span>
-              <span class="lg-chevron">▾</span>
-            </div>
-            <div class="lg-matches">
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">21:00</div>
-                <div class="mr-home"><span class="tn">Fiorentina</span><div class="tl">🟣</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🔵</div><span class="tn">Atalanta</span></div>
-                <div class="mr-status"><span class="badge-sch">21:00</span></div>
-              </a>
-            </div>
-          </div>
-
-          <!-- Ligue 1 -->
-          <div class="lg" id="m-ligue1">
-            <div class="lg-header" onclick="toggleLg(this)">
-              <div class="lg-icon">🇫🇷</div>
-              <span class="lg-name">France — Ligue 1</span>
-              <span class="lg-round">Matchday 29</span>
-              <span class="lg-chevron">▾</span>
-            </div>
-            <div class="lg-matches">
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">21:00</div>
-                <div class="mr-home"><span class="tn">PSG</span><div class="tl">🔵</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🔴</div><span class="tn">Marseille</span></div>
-                <div class="mr-status"><span class="badge-sch">21:00</span></div>
-              </a>
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">21:00</div>
-                <div class="mr-home"><span class="tn">Lyon</span><div class="tl">🔵</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">⚪</div><span class="tn">Monaco</span></div>
-                <div class="mr-status"><span class="badge-sch">21:00</span></div>
-              </a>
-            </div>
-          </div>
-
-          <!-- Ligue 2 -->
-          <div class="lg" id="m-ligue2">
-            <div class="lg-header" onclick="toggleLg(this)">
-              <div class="lg-icon">🇫🇷</div>
-              <span class="lg-name">France — Ligue 2</span>
-              <span class="lg-round">Matchday 30</span>
-              <span class="lg-chevron">▾</span>
-            </div>
-            <div class="lg-matches">
-              <a class="match-row" href="match-detail.html">
-                <div class="mr-time">20:00</div>
-                <div class="mr-home"><span class="tn">Toulouse II</span><div class="tl">🟣</div></div>
-                <div class="score-c no-score">–</div>
-                <div class="mr-away"><div class="tl">🔵</div><span class="tn">Amiens</span></div>
-                <div class="mr-status"><span class="badge-sch">20:00</span></div>
-              </a>
-            </div>
-          </div>
-
-        </div><!-- /matches-list -->
       </div><!-- /match-panel -->
     </div><!-- /main-scroll -->
   </main>
 
-  <!-- =========================================
-       RIGHT SIDEBAR — AI Blog
-  ========================================= -->
+  <!-- ===== RIGHT SIDEBAR — AI Blog ===== -->
   <aside class="right-sidebar">
     <div class="right-header">
       <span class="right-title">Nhận định trận đấu</span>
@@ -794,128 +136,21 @@
         AI Agent
       </div>
     </div>
-
     <div class="right-tabs">
       <button class="right-tab active" onclick="setRightTab(this)">Nhận định</button>
       <button class="right-tab" onclick="setRightTab(this)">Dự đoán</button>
       <button class="right-tab" onclick="setRightTab(this)">Phân tích</button>
     </div>
-
-    <div class="right-scroll">
-
-      <!-- Featured post -->
-      <a class="post-featured" href="post-detail.html">
-        <div class="post-featured-img" style="background: linear-gradient(135deg, #1a1a3e 0%, #0f2860 50%, #1e3a6e 100%);">
-          <span style="font-size:48px;opacity:0.4;">⚽</span>
-          <div class="match-label">
-            <span>Man City vs Arsenal</span>
-            <span style="color:var(--live);">● LIVE 78'</span>
-          </div>
-        </div>
-        <div class="post-featured-body">
-          <div class="post-tag">🤖 AI Nhận định · Premier League</div>
-          <div class="post-title">Man City vs Arsenal: De Bruyne tung hoành, Guardiola sắp giành 3 điểm quan trọng</div>
-          <div class="post-excerpt">Với lợi thế 1-0, Man City đang kiểm soát thế trận hoàn toàn. De Bruyne và Haaland phối hợp ăn ý, Arsenal đang gặp khó ở hàng thủ khi Saliba mắc lỗi định vị...</div>
-          <div class="post-meta">
-            <span class="post-time">Cập nhật lúc 21:45</span>
-            <span class="post-read">Đọc thêm →</span>
-          </div>
-        </div>
-      </a>
-
-      <!-- Post list -->
-      <a class="post-item" href="post-detail.html">
-        <div class="post-thumb" style="background: linear-gradient(135deg, #0d2137, #1a3a5c);">🏆</div>
-        <div class="post-item-body">
-          <div class="post-item-tag">🤖 AI · Champions League</div>
-          <div class="post-item-title">Inter Milan vs Atlético: Simone Inzaghi lên kế hoạch bẫy phản công hoàn hảo</div>
-          <div class="post-item-meta">LIVE 45' · 5 phút trước</div>
-        </div>
-        <div class="pred-score">
-          <div class="ps-val">2-0</div>
-          <div class="ps-label">AI<br>dự đoán</div>
-        </div>
-      </a>
-
-      <a class="post-item" href="post-detail.html">
-        <div class="post-thumb" style="background: linear-gradient(135deg, #1a3a0a, #2d5a0f);">🇻🇳</div>
-        <div class="post-item-body">
-          <div class="post-item-tag">🤖 AI · V.League 1</div>
-          <div class="post-item-title">TPHCM FC vs Bình Dương: Trận derby miền Nam căng thẳng, 0-0 vẫn là kịch bản chưa ngã ngũ</div>
-          <div class="post-item-meta">LIVE 65' · 12 phút trước</div>
-        </div>
-        <div class="pred-score">
-          <div class="ps-val">1-1</div>
-          <div class="ps-label">AI<br>dự đoán</div>
-        </div>
-      </a>
-
-      <a class="post-item" href="post-detail.html">
-        <div class="post-thumb" style="background: linear-gradient(135deg, #2d1a0a, #5a3010);">🔴</div>
-        <div class="post-item-body">
-          <div class="post-item-tag">🤖 AI · Premier League</div>
-          <div class="post-item-title">Tottenham vs Man United 22:15: Mourinho trên sân cũ — ai sẽ phá vỡ thế đối đầu?</div>
-          <div class="post-item-meta">Lịch đấu · 1 giờ trước</div>
-        </div>
-        <div class="pred-score">
-          <div class="ps-val">2-1</div>
-          <div class="ps-label">AI<br>dự đoán</div>
-        </div>
-      </a>
-
-      <a class="post-item" href="post-detail.html">
-        <div class="post-thumb" style="background: linear-gradient(135deg, #1a0a0a, #3a1a1a);">⚪</div>
-        <div class="post-item-body">
-          <div class="post-item-tag">🤖 AI · Champions League</div>
-          <div class="post-item-title">Real Madrid 3-1 Bayern: Vinicius Jr lập cú đúp, Los Blancos thẳng tiến bán kết</div>
-          <div class="post-item-meta">Kết thúc · 3 giờ trước</div>
-        </div>
-        <div class="pred-score" style="opacity:0.5;">
-          <div class="ps-val">3-1</div>
-          <div class="ps-label">Kết<br>quả</div>
-        </div>
-      </a>
-
-      <a class="post-item" href="post-detail.html">
-        <div class="post-thumb" style="background: linear-gradient(135deg, #0a1a2d, #1a3a5c);">🔵</div>
-        <div class="post-item-body">
-          <div class="post-item-tag">🤖 AI · V.League 1</div>
-          <div class="post-item-title">Hải Phòng FC vs Viettel FC 20:00: Cuộc chiến top 3 — ai sẽ bứt phá?</div>
-          <div class="post-item-meta">Lịch đấu · 2 giờ trước</div>
-        </div>
-        <div class="pred-score">
-          <div class="ps-val">1-0</div>
-          <div class="ps-label">AI<br>dự đoán</div>
-        </div>
-      </a>
-
-      <a class="post-item" href="post-detail.html">
-        <div class="post-thumb" style="background: linear-gradient(135deg, #1a1a0a, #3a3a10);">🟡</div>
-        <div class="post-item-body">
-          <div class="post-item-tag">🤖 AI · Bundesliga</div>
-          <div class="post-item-title">Bayern 4-0 Dortmund: Der Klassiker một chiều — Kane lập hat-trick</div>
-          <div class="post-item-meta">Kết thúc · 5 giờ trước</div>
-        </div>
-        <div class="pred-score" style="opacity:0.5;">
-          <div class="ps-val">4-0</div>
-          <div class="ps-label">Kết<br>quả</div>
-        </div>
-      </a>
-
-    </div><!-- /right-scroll -->
+    <!-- Posts — populated by renderPosts() -->
+    <div class="right-scroll" id="right-scroll"></div>
   </aside>
 
 </div><!-- /app -->
 
 <script src="assets/common.js"></script>
+<script src="assets/render.js"></script>
 <script>
-  // Initialize home page: show all league groups
-  document.addEventListener('DOMContentLoaded', function() {
-    // Show all league groups by default
-    document.querySelectorAll('.lg').forEach(lg => {
-      lg.style.display = 'block';
-    });
-  });
+  document.addEventListener('DOMContentLoaded', initHomePage);
 </script>
 </body>
 </html>

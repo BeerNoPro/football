@@ -1,0 +1,76 @@
+{
+  "categories": [
+    {
+      "id": 1,
+      "name": "AI Prediction",
+      "slug": "ai-prediction",
+      "icon": "🤖",
+      "description": "Nhận định & dự đoán tỷ số bằng AI",
+      "postCount": 41,
+      "color": "#c8f04d"
+    },
+    {
+      "id": 2,
+      "name": "Phân tích",
+      "slug": "phan-tich",
+      "icon": "📊",
+      "description": "Phân tích chiến thuật & số liệu chuyên sâu",
+      "postCount": 18,
+      "color": "#60a5fa"
+    },
+    {
+      "id": 3,
+      "name": "Tin tức",
+      "slug": "tin-tuc",
+      "icon": "📰",
+      "description": "Tin chuyển nhượng, chấn thương, phát ngôn",
+      "postCount": 35,
+      "color": "#f87171"
+    },
+    {
+      "id": 4,
+      "name": "V.League",
+      "slug": "v-league",
+      "icon": "🇻🇳",
+      "description": "Tổng hợp bóng đá Việt Nam",
+      "postCount": 22,
+      "color": "#fbbf24"
+    }
+  ],
+  "tags": [
+    { "id": 1,  "name": "Premier League",    "slug": "premier-league",    "postCount": 23 },
+    { "id": 2,  "name": "V.League",          "slug": "v-league",          "postCount": 15 },
+    { "id": 3,  "name": "Champions League",  "slug": "champions-league",  "postCount": 19 },
+    { "id": 4,  "name": "Bundesliga",        "slug": "bundesliga",        "postCount": 11 },
+    { "id": 5,  "name": "La Liga",           "slug": "la-liga",           "postCount": 10 },
+    { "id": 6,  "name": "Hà Nội FC",         "slug": "ha-noi-fc",         "postCount": 8  },
+    { "id": 7,  "name": "HAGL",              "slug": "hagl",              "postCount": 6  },
+    { "id": 8,  "name": "Man City",          "slug": "man-city",          "postCount": 7  },
+    { "id": 9,  "name": "Arsenal",           "slug": "arsenal",           "postCount": 9  },
+    { "id": 10, "name": "Real Madrid",       "slug": "real-madrid",       "postCount": 12 },
+    { "id": 11, "name": "Chuyển nhượng",     "slug": "chuyen-nhuong",     "postCount": 14 },
+    { "id": 12, "name": "Chấn thương",       "slug": "chan-thuong",        "postCount": 9  }
+  ],
+  "featuredCategory": {
+    "id": 1,
+    "name": "AI Prediction",
+    "slug": "ai-prediction",
+    "icon": "🤖",
+    "description": "Nhận định & dự đoán tỷ số bằng AI — cập nhật trước mỗi trận đấu lớn",
+    "postCount": 41,
+    "recentPosts": [
+      {
+        "id": 1, "title": "Man City vs Arsenal: Guardiola sắp giành 3 điểm quan trọng",
+        "tag": "Premier League", "updatedAt": "2 giờ trước", "url": "post-detail.html"
+      },
+      {
+        "id": 2, "title": "Inter vs Atlético: Simone Inzaghi lên kế hoạch bẫy phản công",
+        "tag": "Champions League", "updatedAt": "3 giờ trước", "url": "post-detail.html"
+      },
+      {
+        "id": 3, "title": "Hải Phòng vs Viettel: Cuộc chiến top 3",
+        "tag": "V.League 1", "updatedAt": "4 giờ trước", "url": "post-detail.html"
+      }
+    ]
+  }
+}

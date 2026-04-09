@@ -1,0 +1,68 @@
+{
+  "id": 1,
+  "name": "Hà Nội FC",
+  "shortName": "HNF",
+  "logo": "🏅",
+  "founded": 2010,
+  "stadium": "Sân vận động Hàng Đẫy",
+  "capacity": 22000,
+  "city": "Hà Nội",
+  "coach": "Đặng Trần Chỉnh",
+  "leagueId": "vleague1",
+  "leagueName": "V.League 1",
+  "colors": ["#c8f04d", "#1a1a1a"],
+  "season": {
+    "played": 14,
+    "won": 10,
+    "drawn": 2,
+    "lost": 2,
+    "gf": 32,
+    "ga": 12,
+    "gd": 20,
+    "points": 32,
+    "rank": 1
+  },
+  "form": ["W", "W", "D", "W", "W"],
+  "stats": {
+    "avgGoalsScored": 2.3,
+    "avgGoalsConceded": 0.9,
+    "cleanSheets": 6,
+    "winRate": 71
+  },
+  "squad": [
+    { "id": 601, "name": "Bùi Tấn Trường",    "number": 22, "position": "GK", "nationality": "🇻🇳", "age": 37, "profileUrl": "player-profile.html" },
+    { "id": 602, "name": "Hữu Thắng",          "number": 2,  "position": "RB", "nationality": "🇻🇳", "age": 24, "profileUrl": "player-profile.html" },
+    { "id": 603, "name": "Đình Trọng",          "number": 4,  "position": "CB", "nationality": "🇻🇳", "age": 27, "profileUrl": "player-profile.html" },
+    { "id": 604, "name": "Thành Chung",         "number": 5,  "position": "CB", "nationality": "🇻🇳", "age": 26, "profileUrl": "player-profile.html" },
+    { "id": 605, "name": "Văn Hậu",             "number": 3,  "position": "LB", "nationality": "🇻🇳", "age": 25, "profileUrl": "player-profile.html" },
+    { "id": 606, "name": "Đỗ Hùng Dũng",        "number": 6,  "position": "CM", "nationality": "🇻🇳", "age": 30, "profileUrl": "player-profile.html", "isCaptain": true },
+    { "id": 607, "name": "Tuấn Anh",            "number": 8,  "position": "CM", "nationality": "🇻🇳", "age": 28, "profileUrl": "player-profile.html" },
+    { "id": 608, "name": "Quang Hải",           "number": 10, "position": "AM", "nationality": "🇻🇳", "age": 27, "profileUrl": "player-profile.html" },
+    { "id": 609, "name": "Văn Quyết",           "number": 11, "position": "LW", "nationality": "🇻🇳", "age": 32, "profileUrl": "player-profile.html" },
+    { "id": 501, "name": "Nguyễn Tiến Linh",    "number": 9,  "position": "ST", "nationality": "🇻🇳", "age": 27, "profileUrl": "player-profile.html" },
+    { "id": 610, "name": "Supachai Jaided",      "number": 7,  "position": "RW", "nationality": "🇹🇭", "age": 26, "profileUrl": "player-profile.html" }
+  ],
+  "fixtures": [
+    {
+      "id": 1001, "date": "2025-04-09", "round": "Vòng 15", "status": "FT",
+      "homeTeam": { "id": 1, "name": "Hà Nội FC", "logo": "🏅" },
+      "awayTeam": { "id": 2, "name": "HAGL",       "logo": "🟡" },
+      "score": { "home": 1, "away": 2 },
+      "detailUrl": "match-detail.html"
+    },
+    {
+      "id": 7001, "date": "2025-04-12", "round": "Tứ kết Cúp QG", "status": "SCH",
+      "homeTeam": { "id": 1, "name": "Hà Nội FC", "logo": "🏅" },
+      "awayTeam": { "id": 3, "name": "TPHCM FC",  "logo": "🔴" },
+      "score": null,
+      "detailUrl": "match-detail.html"
+    },
+    {
+      "id": 1050, "date": "2025-04-16", "round": "Vòng 16", "status": "SCH",
+      "homeTeam": { "id": 5, "name": "Hải Phòng FC", "logo": "⚓" },
+      "awayTeam": { "id": 1, "name": "Hà Nội FC",    "logo": "🏅" },
+      "score": null,
+      "detailUrl": "match-detail.html"
+    }
+  ]
+}

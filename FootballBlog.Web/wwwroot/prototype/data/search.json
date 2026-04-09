@@ -1,0 +1,97 @@
+{
+  "query": "hà nội",
+  "totalResults": 18,
+  "matches": [
+    {
+      "id": 1001,
+      "homeTeam": { "id": 1, "name": "Hà Nội FC", "logo": "🏅" },
+      "awayTeam": { "id": 2, "name": "HAGL",       "logo": "🟡" },
+      "date": "2025-04-09",
+      "kickoff": "17:00",
+      "competition": "V.League 1 - Vòng 15",
+      "status": "FT",
+      "score": { "home": 1, "away": 2 },
+      "detailUrl": "match-detail.html"
+    },
+    {
+      "id": 7001,
+      "homeTeam": { "id": 1, "name": "Hà Nội FC", "logo": "🏅" },
+      "awayTeam": { "id": 3, "name": "TPHCM FC",  "logo": "🔴" },
+      "date": "2025-04-12",
+      "kickoff": "19:00",
+      "competition": "Cúp Quốc gia - Tứ kết",
+      "status": "SCH",
+      "score": null,
+      "detailUrl": "match-detail.html"
+    }
+  ],
+  "posts": [
+    {
+      "id": 7,
+      "title": "Hà Nội FC vs HAGL: Cuộc đua vô địch căng thẳng tại vòng 15",
+      "excerpt": "Trận đấu quyết định giữa 2 ứng viên top 3. Hà Nội FC cần thắng để giữ ngôi đầu bảng...",
+      "tag": "🤖 AI Prediction",
+      "thumbEmoji": "🏅",
+      "thumbGradient": "linear-gradient(135deg, #0a1a0a, #1a3a1a)",
+      "updatedAt": "5 giờ trước",
+      "url": "post-detail.html"
+    },
+    {
+      "id": 8,
+      "title": "Phân tích chiến thuật Hà Nội FC mùa 2025: Pressing toàn sân thành công",
+      "excerpt": "HLV Đặng Trần Chỉnh đã thay đổi lối chơi như thế nào để dẫn đầu V.League 1...",
+      "tag": "📊 Phân tích",
+      "thumbEmoji": "📊",
+      "thumbGradient": "linear-gradient(135deg, #0a0a1a, #1a1a3a)",
+      "updatedAt": "1 ngày trước",
+      "url": "post-detail.html"
+    },
+    {
+      "id": 9,
+      "title": "Nguyễn Tiến Linh: Vua phá lưới V.League với 11 bàn sau 14 vòng",
+      "excerpt": "Tiền đạo số 9 của Hà Nội FC đang trên đà phá kỷ lục ghi bàn cá nhân mùa giải...",
+      "tag": "📰 Tin tức",
+      "thumbEmoji": "⚽",
+      "thumbGradient": "linear-gradient(135deg, #1a0a1a, #3a1a3a)",
+      "updatedAt": "2 ngày trước",
+      "url": "post-detail.html"
+    }
+  ],
+  "teams": [
+    {
+      "id": 1,
+      "name": "Hà Nội FC",
+      "logo": "🏅",
+      "league": "V.League 1",
+      "country": "🇻🇳",
+      "rank": 1,
+      "profileUrl": "team-profile.html"
+    }
+  ],
+  "players": [
+    {
+      "id": 501,
+      "name": "Nguyễn Tiến Linh",
+      "position": "Tiền đạo",
+      "nationality": "🇻🇳",
+      "teamName": "Hà Nội FC",
+      "teamLogo": "🏅",
+      "profileUrl": "player-profile.html"
+    },
+    {
+      "id": 606,
+      "name": "Đỗ Hùng Dũng",
+      "position": "Tiền vệ trung tâm",
+      "nationality": "🇻🇳",
+      "teamName": "Hà Nội FC",
+      "teamLogo": "🏅",
+      "profileUrl": "player-profile.html"
+    }
+  ],
+  "suggestions": [
+    "Hà Nội FC vs HAGL",
+    "Hà Nội FC lịch thi đấu",
+    "Nguyễn Tiến Linh",
+    "V.League 2025 bảng xếp hạng"
+  ]
+}

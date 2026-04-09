@@ -8,35 +8,42 @@ function toggleCountry(id) {
   document.getElementById(id).classList.toggle('collapsed');
 }
 
-// Left sidebar: select league → highlight + scroll center to that league
+// Left sidebar: select league
+// - home.html → filter center column to show only that league
+// - all other pages → navigate to league-page.html?league=X
 function selectLeague(el, leagueId) {
-  // If we're on league page, navigate to different league
-  if (window.location.pathname.includes('league-page.html')) {
+  const path = window.location.pathname;
+  const isHome = path.includes('home.html') || path === '/' || path.endsWith('/index.html');
+
+  if (!isHome) {
+    // Any non-home page: navigate to the league page
     window.location.href = 'league-page.html?league=' + leagueId;
     return;
   }
 
-  // If we're on home page, just highlight and show ALL leagues (no filtering)
-  // Remove active class from all league items
-  document.querySelectorAll('.league-item').forEach(i => i.classList.remove('active'));
+  // --- Home page: filter behavior ---
 
-  // Add active class to selected item
-  el.classList.add('active');
-
-  // Show ALL league groups (no hiding)
-  document.querySelectorAll('.lg').forEach(lg => {
-    lg.style.display = 'block';
-  });
-
-  // Scroll to selected league group
-  const target = document.getElementById('m-' + leagueId);
-  if (target) {
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    target.style.outline = '1px solid rgba(200,240,77,0.3)';
-    setTimeout(() => target.style.outline = '', 1200);
+  // Toggle: click active league again → deselect and show all
+  if (el.classList.contains('active')) {
+    el.classList.remove('active');
+    document.querySelectorAll('.lg').forEach(lg => lg.style.display = 'block');
+    const matchList = document.querySelector('.matches-list');
+    if (matchList) matchList.scrollTop = 0;
+    return;
   }
 
-  console.log('Highlighted league:', leagueId);
+  // Deselect all, activate selected
+  document.querySelectorAll('.league-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+
+  // Filter center column: show only selected league group
+  document.querySelectorAll('.lg').forEach(lg => {
+    lg.style.display = (lg.id === 'm-' + leagueId) ? 'block' : 'none';
+  });
+
+  // Scroll match list to top
+  const matchList = document.querySelector('.matches-list');
+  if (matchList) matchList.scrollTop = 0;
 }
 
 // Left sidebar: live search filter

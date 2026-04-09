@@ -1,0 +1,96 @@
+{
+  "id": 501,
+  "name": "Nguyễn Tiến Linh",
+  "displayName": "Tiến Linh",
+  "nationality": "🇻🇳",
+  "nationalityName": "Việt Nam",
+  "dateOfBirth": "1997-09-12",
+  "age": 27,
+  "position": "ST",
+  "positionLabel": "Tiền đạo",
+  "number": 9,
+  "height": "175cm",
+  "weight": "68kg",
+  "foot": "Thuận chân phải",
+  "currentTeam": {
+    "id": 1,
+    "name": "Hà Nội FC",
+    "logo": "🏅",
+    "profileUrl": "team-profile.html",
+    "joinedYear": 2022,
+    "contractUntil": "2026-12-31"
+  },
+  "nationalTeam": {
+    "caps": 58,
+    "goals": 18,
+    "lastCall": "2025-03-20"
+  },
+  "seasonStats": {
+    "season": "2025",
+    "leagueName": "V.League 1",
+    "appearances": 14,
+    "starts": 13,
+    "minutesPlayed": 1152,
+    "goals": 11,
+    "assists": 4,
+    "yellowCards": 2,
+    "redCards": 0,
+    "shotsPerGame": 3.2,
+    "keyPasses": 1.4,
+    "dribbles": 2.1,
+    "rating": 7.9
+  },
+  "careerHistory": [
+    {
+      "teamId": 1,
+      "teamName": "Hà Nội FC",
+      "teamLogo": "🏅",
+      "from": "2022",
+      "to": "nay",
+      "apps": 58,
+      "goals": 32,
+      "assists": 14,
+      "trophies": ["V.League 1 2023", "Cúp QG 2023"]
+    },
+    {
+      "teamId": 2,
+      "teamName": "HAGL",
+      "teamLogo": "🟡",
+      "from": "2018",
+      "to": "2022",
+      "apps": 91,
+      "goals": 41,
+      "assists": 22,
+      "trophies": []
+    },
+    {
+      "teamId": 9,
+      "teamName": "Bình Định U21",
+      "teamLogo": "🟠",
+      "from": "2015",
+      "to": "2018",
+      "apps": 34,
+      "goals": 12,
+      "assists": 5,
+      "trophies": []
+    }
+  ],
+  "upcomingMatches": [
+    {
+      "id": 7001,
+      "date": "2025-04-12",
+      "competition": "Cúp Quốc gia - Tứ kết",
+      "homeTeam": { "id": 1, "name": "Hà Nội FC", "logo": "🏅" },
+      "awayTeam": { "id": 3, "name": "TPHCM FC",  "logo": "🔴" },
+      "detailUrl": "match-detail.html"
+    },
+    {
+      "id": 1050,
+      "date": "2025-04-16",
+      "competition": "V.League 1 - Vòng 16",
+      "homeTeam": { "id": 5, "name": "Hải Phòng FC", "logo": "⚓" },
+      "awayTeam": { "id": 1, "name": "Hà Nội FC",    "logo": "🏅" },
+      "detailUrl": "match-detail.html"
+    }
+  ]
+}

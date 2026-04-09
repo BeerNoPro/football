@@ -1,0 +1,107 @@
+{
+  "id": 2001,
+  "leagueId": "epl",
+  "leagueName": "Premier League",
+  "leagueLogo": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+  "round": "GW 32",
+  "kickoff": "2025-04-09T19:45:00",
+  "status": "LIVE",
+  "elapsed": 78,
+  "venue": "Etihad Stadium",
+  "city": "Manchester",
+  "referee": "Michael Oliver",
+  "attendance": 53400,
+  "homeTeam": {
+    "id": 10,
+    "name": "Manchester City",
+    "shortName": "Man City",
+    "logo": "🔵",
+    "profileUrl": "team-profile.html",
+    "form": ["W", "W", "D", "W", "W"],
+    "seasonRecord": { "played": 31, "won": 21, "drawn": 6, "lost": 4, "gf": 68, "ga": 31, "points": 69, "rank": 2 }
+  },
+  "awayTeam": {
+    "id": 11,
+    "name": "Arsenal",
+    "shortName": "Arsenal",
+    "logo": "🔴",
+    "profileUrl": "team-profile.html",
+    "form": ["W", "W", "W", "D", "L"],
+    "seasonRecord": { "played": 31, "won": 22, "drawn": 5, "lost": 4, "gf": 72, "ga": 26, "points": 71, "rank": 1 }
+  },
+  "score": { "home": 1, "away": 0 },
+  "halfTimeScore": { "home": 1, "away": 0 },
+  "prediction": {
+    "postUrl": "post-detail.html",
+    "aiScore": "2-1",
+    "confidence": 72,
+    "summary": "Man City có lợi thế sân nhà và De Bruyne đang trong phong độ tốt. Arsenal thiếu vắng Saka ở hàng công."
+  },
+  "lineups": {
+    "home": {
+      "formation": "4-3-3",
+      "startingXI": [
+        { "number": 31, "name": "Ederson",       "position": "GK", "playerId": 301 },
+        { "number": 2,  "name": "K. Walker",      "position": "RB", "playerId": 302 },
+        { "number": 3,  "name": "R. Dias",         "position": "CB", "playerId": 303 },
+        { "number": 5,  "name": "M. Akanji",       "position": "CB", "playerId": 304 },
+        { "number": 7,  "name": "J. Gvardiol",     "position": "LB", "playerId": 305 },
+        { "number": 16, "name": "R. Rodri",         "position": "DM", "playerId": 306 },
+        { "number": 8,  "name": "K. De Bruyne",    "position": "CM", "playerId": 307 },
+        { "number": 47, "name": "P. Foden",        "position": "CM", "playerId": 308 },
+        { "number": 26, "name": "M. Savinho",      "position": "RW", "playerId": 309 },
+        { "number": 9,  "name": "E. Haaland",      "position": "ST", "playerId": 310, "isLive": true },
+        { "number": 10, "name": "J. Doku",         "position": "LW", "playerId": 311 }
+      ],
+      "substitutes": [
+        { "number": 17, "name": "K. De Bruyne",   "position": "CM", "playerId": 312 },
+        { "number": 25, "name": "M. Nunes",        "position": "CM", "playerId": 313 }
+      ]
+    },
+    "away": {
+      "formation": "4-3-3",
+      "startingXI": [
+        { "number": 1,  "name": "D. Raya",         "position": "GK", "playerId": 401 },
+        { "number": 4,  "name": "B. White",         "position": "RB", "playerId": 402 },
+        { "number": 12, "name": "J. Timber",        "position": "CB", "playerId": 403 },
+        { "number": 6,  "name": "G. Magalhães",     "position": "CB", "playerId": 404 },
+        { "number": 35, "name": "O. Zinchenko",     "position": "LB", "playerId": 405 },
+        { "number": 5,  "name": "T. Partey",        "position": "DM", "playerId": 406 },
+        { "number": 8,  "name": "M. Ødegaard",      "position": "CM", "playerId": 407, "isCaptain": true },
+        { "number": 29, "name": "K. Havertz",       "position": "CM", "playerId": 408 },
+        { "number": 11, "name": "G. Martinelli",    "position": "LW", "playerId": 409 },
+        { "number": 9,  "name": "Kai Havertz",      "position": "ST", "playerId": 410 },
+        { "number": 19, "name": "L. Trossard",      "position": "RW", "playerId": 411 }
+      ],
+      "substitutes": [
+        { "number": 7,  "name": "B. Saka",          "position": "RW", "playerId": 412 },
+        { "number": 24, "name": "R. Nelson",         "position": "FW", "playerId": 413 }
+      ]
+    }
+  },
+  "stats": {
+    "possession":     { "home": 58, "away": 42 },
+    "shots":          { "home": 14, "away": 8  },
+    "shotsOnTarget":  { "home": 6,  "away": 3  },
+    "corners":        { "home": 7,  "away": 4  },
+    "fouls":          { "home": 8,  "away": 13 },
+    "yellowCards":    { "home": 1,  "away": 2  },
+    "offsides":       { "home": 2,  "away": 1  },
+    "passes":         { "home": 487, "away": 341 },
+    "passAccuracy":   { "home": 89, "away": 82 }
+  },
+  "events": [
+    { "minute": 23, "type": "GOAL",   "team": "home", "player": "E. Haaland",   "assist": "K. De Bruyne", "score": "1-0" },
+    { "minute": 38, "type": "YELLOW", "team": "away", "player": "T. Partey" },
+    { "minute": 45, "type": "YELLOW", "team": "home", "player": "R. Rodri" },
+    { "minute": 61, "type": "SUB",    "team": "away", "playerOut": "K. Havertz", "playerIn": "B. Saka" },
+    { "minute": 72, "type": "YELLOW", "team": "away", "player": "G. Magalhães" }
+  ],
+  "commentary": [
+    { "minute": 78, "text": "Man City vẫn đang kiểm soát bóng tốt. Haaland tìm kiếm bàn thắng thứ 2." },
+    { "minute": 72, "text": "Thẻ vàng cho Magalhães sau pha vào bóng thô bạo với Haaland." },
+    { "minute": 61, "text": "Thay người Arsenal: Saka vào thay Havertz - nỗ lực tìm bàn gỡ." },
+    { "minute": 45, "text": "Hiệp 1 kết thúc với tỷ số 1-0 nghiêng về Man City." },
+    { "minute": 23, "text": "GOAL! Haaland đầu bóng chính xác từ đường tạt của De Bruyne. Man City dẫn 1-0!" }
+  ]
+}
