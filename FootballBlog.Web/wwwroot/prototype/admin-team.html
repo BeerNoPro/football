@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý Đội bóng — FootballBlog Admin</title>
+  <link rel="stylesheet" href="assets/common.css">
+  <link rel="stylesheet" href="assets/admin-common.css">
+  <style>
+    body { overflow: hidden; }
+
+    .filter-bar {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      padding: 14px 20px; background: var(--bg); border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .filter-select {
+      background: var(--bg-card); border: 1px solid var(--border2); color: var(--text);
+      border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer;
+    }
+    .filter-select:focus { outline: none; border-color: var(--accent); }
+    .filter-input {
+      background: var(--bg-card); border: 1px solid var(--border2); color: var(--text);
+      border-radius: 6px; padding: 6px 10px; font-size: 12px; flex: 1; min-width: 160px;
+    }
+    .filter-input::placeholder { color: var(--muted); }
+    .filter-input:focus { outline: none; border-color: var(--accent); }
+    .filter-sep { flex: 1; }
+
+    /* Stats bar */
+    .stats-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .sstat { padding: 12px 20px; border-right: 1px solid var(--border); }
+    .sstat:last-child { border-right: none; }
+    .sstat-val { font-size: 22px; font-weight: 900; color: var(--text); }
+    .sstat-val.accent { color: var(--accent); }
+    .sstat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: 600; margin-top: 2px; }
+
+    /* Table */
+    .table-wrap { flex: 1; overflow-y: auto; padding: 0 20px 20px; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table th {
+      font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase;
+      text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; background: var(--bg); z-index: 1;
+    }
+    .data-table td { padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .data-table tr:last-child td { border-bottom: none; }
+
+    .col-logo   { width: 44px; }
+    .col-name   { }
+    .col-league { width: 160px; }
+    .col-country{ width: 100px; }
+    .col-squad  { width: 80px; text-align: center; }
+    .col-status { width: 90px; }
+    .col-action { width: 120px; text-align: right; }
+
+    .team-logo {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--bg-dark); display: flex; align-items: center; justify-content: center;
+      font-size: 16px; overflow: hidden;
+    }
+    .team-logo img { width: 100%; height: 100%; object-fit: contain; }
+
+    .team-name-cell { display: flex; flex-direction: column; gap: 2px; }
+    .team-name { font-weight: 700; color: var(--text); }
+    .team-slug { font-size: 11px; color: var(--muted); font-family: monospace; }
+
+    .league-cell { font-size: 12px; color: var(--muted2); display: flex; align-items: center; gap: 5px; }
+    .country-cell { font-size: 12px; color: var(--muted2); }
+
+    .squad-cell { font-size: 13px; font-weight: 600; color: var(--text); text-align: center; }
+
+    .badge-status {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 700; padding: 2px 7px;
+      border-radius: 4px; white-space: nowrap;
+    }
+    .badge-active   { background: rgba(200,240,77,0.1); color: var(--accent); }
+    .badge-inactive { background: rgba(255,255,255,0.06); color: var(--muted); }
+
+    .action-btns { display: flex; justify-content: flex-end; gap: 4px; }
+    .act-btn {
+      font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 5px; cursor: pointer;
+      border: 1px solid var(--border2); background: var(--bg-card); color: var(--text);
+      transition: all 0.12s; white-space: nowrap;
+    }
+    .act-btn:hover { background: var(--border2); }
+    .act-btn.primary { background: rgba(200,240,77,0.1); color: var(--accent); border-color: rgba(200,240,77,0.3); }
+    .act-btn.primary:hover { background: rgba(200,240,77,0.2); }
+    .act-btn.danger { background: rgba(248,113,113,0.08); color: #f87171; border-color: rgba(248,113,113,0.2); }
+
+    /* Edit panel (slide-in) */
+    .edit-panel-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100;
+    }
+    .edit-panel-overlay.open { display: flex; align-items: flex-start; justify-content: flex-end; }
+    .edit-panel {
+      width: 420px; height: 100vh; background: var(--bg-card); border-left: 1px solid var(--border2);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .ep-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .ep-title { font-size: 14px; font-weight: 700; color: var(--text); }
+    .ep-close {
+      background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer;
+      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+      border-radius: 6px;
+    }
+    .ep-close:hover { background: var(--border); color: var(--text); }
+    .ep-body { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+    .ep-footer {
+      padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px;
+      justify-content: flex-end; flex-shrink: 0;
+    }
+
+    .form-field { display: flex; flex-direction: column; gap: 5px; }
+    .form-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; }
+    .form-input {
+      background: var(--bg); border: 1px solid var(--border2); color: var(--text);
+      border-radius: 6px; padding: 8px 10px; font-size: 13px;
+    }
+    .form-input:focus { outline: none; border-color: var(--accent); }
+    .form-select {
+      background: var(--bg); border: 1px solid var(--border2); color: var(--text);
+      border-radius: 6px; padding: 8px 10px; font-size: 13px; cursor: pointer;
+    }
+    .form-select:focus { outline: none; border-color: var(--accent); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .logo-upload {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px; border: 1px dashed var(--border2); border-radius: 8px;
+      background: var(--bg); cursor: pointer;
+    }
+    .logo-preview {
+      width: 48px; height: 48px; border-radius: 50%; background: var(--bg-dark);
+      display: flex; align-items: center; justify-content: center; font-size: 22px;
+      flex-shrink: 0;
+    }
+    .logo-upload-text { font-size: 12px; color: var(--muted); }
+    .logo-upload-text strong { display: block; color: var(--text); font-size: 13px; margin-bottom: 2px; }
+
+    .btn { font-size: 12px; font-weight: 600; padding: 7px 16px; border-radius: 6px; cursor: pointer; border: none; transition: all 0.12s; }
+    .btn-primary { background: var(--accent); color: #0d0d0d; }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-ghost { background: var(--bg); color: var(--muted); border: 1px solid var(--border2); }
+    .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+  </style>
+</head>
+<body class="admin-body">
+<div class="admin-wrap">
+
+  <!-- Top Nav -->
+  <nav class="admin-topnav">
+    <div class="logo-wrap">
+      <div class="logo"><span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span></div>
+    </div>
+    <div class="admin-topnav-spacer"></div>
+    <div class="admin-topnav-actions">
+      <button class="topnav-btn" onclick="location.href='home.html'">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        Xem trang chủ
+      </button>
+      <button class="topnav-btn primary" onclick="openEditPanel(null)">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Thêm đội
+      </button>
+      <div class="user-row" style="padding:4px 8px;border-radius:8px;cursor:pointer;" onmouseover="this.style.background='var(--bg-card)'" onmouseout="this.style.background='none'">
+        <div class="user-avatar" style="width:26px;height:26px;font-size:11px;">A</div>
+        <div class="user-info"><div class="user-name">Admin</div></div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="admin-body-area">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-scroll">
+        <div class="admin-menu-group">
+          <div class="admin-menu-label">Tổng quan</div>
+          <a class="admin-menu-item" href="admin-dashboard.html">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Dashboard
+          </a>
+        </div>
+        <div class="admin-menu-group">
+          <div class="admin-menu-label">Nội dung</div>
+          <a class="admin-menu-item" href="admin-posts.html">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Bài viết
+          </a>
+          <a class="admin-menu-item" href="admin-predictions.html">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            AI Predictions
+          </a>
+          <a class="admin-menu-item" href="admin-categories.html">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            Categories &amp; Tags
+          </a>
+        </div>
+        <div class="admin-menu-group">
+          <div class="admin-menu-label">Bóng đá</div>
+          <a class="admin-menu-item" href="admin-matches.html">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+            Trận đấu
+          </a>
+          <a class="admin-menu-item active" href="admin-team.html">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Đội bóng
+          </a>
+          <a class="admin-menu-item" href="admin-players.html">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+            Cầu thủ
+          </a>
+        </div>
+        <div class="admin-menu-group">
+          <div class="admin-menu-label">Hệ thống</div>
+          <a class="admin-menu-item" href="admin-users.html">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Users
+          </a>
+          <a class="admin-menu-item" href="admin-job-monitor.html">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Job Monitor
+          </a>
+          <a class="admin-menu-item" href="admin-settings.html">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Cài đặt
+          </a>
+          <a class="admin-menu-item" href="admin-login.html" style="color:#f87171">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Đăng xuất
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="admin-main">
+      <div class="admin-main-scroll" style="display:flex;flex-direction:column;height:100%;">
+
+        <!-- Page Header -->
+        <div class="admin-page-header">
+          <div>
+            <div class="admin-page-title">Đội bóng</div>
+            <div class="admin-page-sub">156 đội · 12 giải đấu · cập nhật lần cuối 2 giờ trước</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="topnav-btn" onclick="openEditPanel(null)">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Thêm đội
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+          <div class="sstat">
+            <div class="sstat-val">156</div>
+            <div class="sstat-label">Tổng đội</div>
+          </div>
+          <div class="sstat">
+            <div class="sstat-val accent">12</div>
+            <div class="sstat-label">Giải đấu</div>
+          </div>
+          <div class="sstat">
+            <div class="sstat-val">3.247</div>
+            <div class="sstat-label">Cầu thủ</div>
+          </div>
+          <div class="sstat">
+            <div class="sstat-val" style="color:#fbbf24">8</div>
+            <div class="sstat-label">Thiếu logo</div>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <select class="filter-select">
+            <option>Tất cả giải</option>
+            <option>Premier League</option>
+            <option>V.League 1</option>
+            <option>Champions League</option>
+            <option>La Liga</option>
+            <option>Bundesliga</option>
+          </select>
+          <select class="filter-select">
+            <option>Tất cả quốc gia</option>
+            <option>Anh</option>
+            <option>Việt Nam</option>
+            <option>Tây Ban Nha</option>
+            <option>Đức</option>
+            <option>Ý</option>
+          </select>
+          <select class="filter-select">
+            <option>Trạng thái</option>
+            <option>Đang hoạt động</option>
+            <option>Không hoạt động</option>
+          </select>
+          <input type="text" class="filter-input" placeholder="Tìm tên đội, slug..." />
+          <div class="filter-sep"></div>
+          <span style="font-size:12px;color:var(--muted)">156 kết quả</span>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="col-logo"></th>
+                <th class="col-name">Tên đội</th>
+                <th class="col-league">Giải đấu</th>
+                <th class="col-country">Quốc gia</th>
+                <th class="col-squad">Cầu thủ</th>
+                <th class="col-status">Trạng thái</th>
+                <th class="col-action">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <tr>
+                <td class="col-logo"><div class="team-logo">🔵</div></td>
+                <td class="col-name">
+                  <div class="team-name-cell">
+                    <span class="team-name">Manchester City</span>
+                    <span class="team-slug">manchester-city</span>
+                  </div>
+                </td>
+                <td class="col-league"><span class="league-cell">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</span></td>
+                <td class="col-country"><span class="country-cell">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Anh</span></td>
+                <td class="col-squad"><span class="squad-cell">27</span></td>
+                <td class="col-status"><span class="badge-status badge-active">Hoạt động</span></td>
+                <td class="col-action">
+                  <div class="action-btns">
+                    <button class="act-btn" onclick="location.href='admin-players.html?team=manchester-city'">Cầu thủ</button>
+                    <button class="act-btn primary" onclick="openEditPanel('manchester-city')">Sửa</button>
+                    <button class="act-btn danger">Xóa</button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="col-logo"><div class="team-logo">🔴</div></td>
+                <td class="col-name">
+                  <div class="team-name-cell">
+                    <span class="team-name">Arsenal</span>
+                    <span class="team-slug">arsenal</span>
+                  </div>
+                </td>
+                <td class="col-league"><span class="league-cell">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</span></td>
+                <td class="col-country"><span class="country-cell">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Anh</span></td>
+                <td class="col-squad"><span class="squad-cell">26</span></td>
+                <td class="col-status"><span class="badge-status badge-active">Hoạt động</span></td>
+                <td class="col-action">
+                  <div class="action-btns">
+                    <button class="act-btn" onclick="location.href='admin-players.html?team=arsenal'">Cầu thủ</button>
+                    <button class="act-btn primary" onclick="openEditPanel('arsenal')">Sửa</button>
+                    <button class="act-btn danger">Xóa</button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="col-logo"><div class="team-logo">🔴</div></td>
+                <td class="col-name">
+                  <div class="team-name-cell">
+                    <span class="team-name">Liverpool</span>
+                    <span class="team-slug">liverpool</span>
+                  </div>
+                </td>
+                <td class="col-league"><span class="league-cell">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</span></td>
+                <td class="col-country"><span class="country-cell">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Anh</span></td>
+                <td class="col-squad"><span class="squad-cell">25</span></td>
+                <td class="col-status"><span class="badge-status badge-active">Hoạt động</span></td>
+                <td class="col-action">
+                  <div class="action-btns">
+                    <button class="act-btn" onclick="location.href='admin-players.html?team=liverpool'">Cầu thủ</button>
+                    <button class="act-btn primary" onclick="openEditPanel('liverpool')">Sửa</button>
+                    <button class="act-btn danger">Xóa</button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="col-logo"><div class="team-logo">🔵</div></td>
+                <td class="col-name">
+                  <div class="team-name-cell">
+                    <span class="team-name">Chelsea</span>
+                    <span class="team-slug">chelsea</span>
+                  </div>
+                </td>
+                <td class="col-league"><span class="league-cell">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</span></td>
+                <td class="col-country"><span class="country-cell">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Anh</span></td>
+                <td class="col-squad"><span class="squad-cell">31</span></td>
+                <td class="col-status"><span class="badge-status badge-active">Hoạt động</span></td>
+                <td class="col-action">
+                  <div class="action-btns">
+                    <button class="act-btn" onclick="location.href='admin-players.html?team=chelsea'">Cầu thủ</button>
+                    <button class="act-btn primary" onclick="openEditPanel('chelsea')">Sửa</button>
+                    <button class="act-btn danger">Xóa</button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="col-logo"><div class="team-logo">🔵</div></td>
+                <td class="col-name">
+                  <div class="team-name-cell">
+                    <span class="team-name">Hà Nội FC</span>
+                    <span class="team-slug">ha-noi-fc</span>
+                  </div>
+                </td>
+                <td class="col-league"><span class="league-cell">🇻🇳 V.League 1</span></td>
+                <td class="col-country"><span class="country-cell">🇻🇳 Việt Nam</span></td>
+                <td class="col-squad"><span class="squad-cell">22</span></td>
+                <td class="col-status"><span class="badge-status badge-active">Hoạt động</span></td>
+                <td class="col-action">
+                  <div class="action-btns">
+                    <button class="act-btn" onclick="location.href='admin-players.html?team=ha-noi-fc'">Cầu thủ</button>
+                    <button class="act-btn primary" onclick="openEditPanel('ha-noi-fc')">Sửa</button>
+                    <button class="act-btn danger">Xóa</button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="col-logo"><div class="team-logo" style="font-size:13px;color:var(--muted)">?</div></td>
+                <td class="col-name">
+                  <div class="team-name-cell">
+                    <span class="team-name">Hoàng Anh Gia Lai</span>
+                    <span class="team-slug">hoang-anh-gia-lai</span>
+                  </div>
+                </td>
+                <td class="col-league"><span class="league-cell">🇻🇳 V.League 1</span></td>
+                <td class="col-country"><span class="country-cell">🇻🇳 Việt Nam</span></td>
+                <td class="col-squad"><span class="squad-cell">24</span></td>
+                <td class="col-status"><span class="badge-status" style="background:rgba(251,191,36,0.1);color:#fbbf24">Thiếu logo</span></td>
+                <td class="col-action">
+                  <div class="action-btns">
+                    <button class="act-btn" onclick="location.href='admin-players.html?team=hoang-anh-gia-lai'">Cầu thủ</button>
+                    <button class="act-btn primary" onclick="openEditPanel('hagl')">Sửa</button>
+                    <button class="act-btn danger">Xóa</button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="col-logo"><div class="team-logo">⚪</div></td>
+                <td class="col-name">
+                  <div class="team-name-cell">
+                    <span class="team-name">Real Madrid</span>
+                    <span class="team-slug">real-madrid</span>
+                  </div>
+                </td>
+                <td class="col-league"><span class="league-cell">🇪🇸 La Liga</span></td>
+                <td class="col-country"><span class="country-cell">🇪🇸 Tây Ban Nha</span></td>
+                <td class="col-squad"><span class="squad-cell">25</span></td>
+                <td class="col-status"><span class="badge-status badge-active">Hoạt động</span></td>
+                <td class="col-action">
+                  <div class="action-btns">
+                    <button class="act-btn" onclick="location.href='admin-players.html?team=real-madrid'">Cầu thủ</button>
+                    <button class="act-btn primary" onclick="openEditPanel('real-madrid')">Sửa</button>
+                    <button class="act-btn danger">Xóa</button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="col-logo"><div class="team-logo">🔵🔴</div></td>
+                <td class="col-name">
+                  <div class="team-name-cell">
+                    <span class="team-name">Barcelona</span>
+                    <span class="team-slug">barcelona</span>
+                  </div>
+                </td>
+                <td class="col-league"><span class="league-cell">🇪🇸 La Liga</span></td>
+                <td class="col-country"><span class="country-cell">🇪🇸 Tây Ban Nha</span></td>
+                <td class="col-squad"><span class="squad-cell">26</span></td>
+                <td class="col-status"><span class="badge-status badge-inactive">Không theo dõi</span></td>
+                <td class="col-action">
+                  <div class="action-btns">
+                    <button class="act-btn" onclick="location.href='admin-players.html?team=barcelona'">Cầu thủ</button>
+                    <button class="act-btn primary" onclick="openEditPanel('barcelona')">Sửa</button>
+                    <button class="act-btn danger">Xóa</button>
+                  </div>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+      </div><!-- /admin-main-scroll -->
+    </main>
+
+  </div><!-- /admin-body-area -->
+</div><!-- /admin-wrap -->
+
+<!-- Edit Panel -->
+<div class="edit-panel-overlay" id="editOverlay" onclick="closeEditPanel(event)">
+  <div class="edit-panel" onclick="event.stopPropagation()">
+    <div class="ep-header">
+      <span class="ep-title" id="epTitle">Thêm đội bóng</span>
+      <button class="ep-close" onclick="closeEditPanel()">✕</button>
+    </div>
+    <div class="ep-body">
+
+      <div class="logo-upload">
+        <div class="logo-preview" id="logoPreview">⚽</div>
+        <div class="logo-upload-text">
+          <strong>Logo đội bóng</strong>
+          Click để tải lên · PNG, SVG · 128×128px khuyến nghị
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label">Tên đội *</label>
+          <input type="text" class="form-input" placeholder="VD: Manchester City" id="fTeamName" />
+        </div>
+        <div class="form-field">
+          <label class="form-label">Slug *</label>
+          <input type="text" class="form-input" placeholder="manchester-city" id="fTeamSlug" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label">Quốc gia</label>
+          <select class="form-select" id="fCountry">
+            <option value="">Chọn quốc gia</option>
+            <option value="en">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Anh</option>
+            <option value="vn">🇻🇳 Việt Nam</option>
+            <option value="es">🇪🇸 Tây Ban Nha</option>
+            <option value="de">🇩🇪 Đức</option>
+            <option value="it">🇮🇹 Ý</option>
+            <option value="fr">🇫🇷 Pháp</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Giải đấu chính</label>
+          <select class="form-select" id="fLeague">
+            <option value="">Chọn giải</option>
+            <option value="epl">Premier League</option>
+            <option value="vleague1">V.League 1</option>
+            <option value="ucl">Champions League</option>
+            <option value="laliga">La Liga</option>
+            <option value="bund">Bundesliga</option>
+            <option value="seriea">Serie A</option>
+            <option value="ligue1">Ligue 1</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label">API Football ID</label>
+        <input type="text" class="form-input" placeholder="ID từ api-football.com" id="fApiId" />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label">Trạng thái</label>
+        <select class="form-select" id="fStatus">
+          <option value="active">Đang hoạt động</option>
+          <option value="inactive">Không theo dõi</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label">Ghi chú</label>
+        <textarea class="form-input" rows="2" placeholder="Ghi chú thêm..." style="resize:vertical;font-family:inherit;font-size:13px;"></textarea>
+      </div>
+
+    </div>
+    <div class="ep-footer">
+      <button class="btn btn-ghost" onclick="closeEditPanel()">Hủy</button>
+      <button class="btn btn-primary" onclick="saveTeam()">Lưu đội bóng</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openEditPanel(teamSlug) {
+    const overlay = document.getElementById('editOverlay');
+    const title   = document.getElementById('epTitle');
+    if (teamSlug) {
+      title.textContent = 'Sửa đội bóng';
+      // In real app: populate fields from API
+    } else {
+      title.textContent = 'Thêm đội bóng';
+      document.getElementById('fTeamName').value = '';
+      document.getElementById('fTeamSlug').value = '';
+    }
+    overlay.classList.add('open');
+  }
+  function closeEditPanel(e) {
+    if (!e || e.target === document.getElementById('editOverlay')) {
+      document.getElementById('editOverlay').classList.remove('open');
+    }
+  }
+  function saveTeam() {
+    // In real app: POST/PUT to API
+    alert('Đã lưu! (prototype mock)');
+    closeEditPanel();
+  }
+  // Auto-generate slug from name
+  document.getElementById('fTeamName').addEventListener('input', function() {
+    const slug = this.value.toLowerCase()
+      .replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, 'a')
+      .replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, 'e')
+      .replace(/ì|í|ị|ỉ|ĩ/g, 'i')
+      .replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, 'o')
+      .replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, 'u')
+      .replace(/ỳ|ý|ỵ|ỷ|ỹ/g, 'y')
+      .replace(/đ/g, 'd')
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-').trim();
+    document.getElementById('fTeamSlug').value = slug;
+  });
+</script>
+</body>
+</html>

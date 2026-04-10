@@ -74,9 +74,10 @@ function filterLeagues(q) {
   });
 }
 
-// Center: collapse/expand league group in match list
+// Center: collapse/expand league group in match list (works for .lg and .pred-section)
 function toggleLg(hdr) {
-  hdr.closest('.lg').classList.toggle('collapsed');
+  const parent = hdr.closest('.lg') || hdr.closest('.pred-section');
+  if (parent) parent.classList.toggle('collapsed');
 }
 
 // Generic tab switch — switches within the closest .tabs parent

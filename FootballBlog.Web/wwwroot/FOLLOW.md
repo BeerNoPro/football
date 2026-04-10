@@ -9,9 +9,9 @@
 
 | Thống kê | Giá trị |
 |----------|---------|
-| Tổng trang | 21 HTML |
+| Tổng trang | 23 HTML |
 | Public pages | 11 (bao gồm 404) |
-| Admin pages | 10 |
+| Admin pages | 12 |
 | Data JSON | 10 file |
 | Shared JS | common.js + render.js |
 | Shared CSS | common.css + admin-common.css |
@@ -21,86 +21,472 @@
 
 ---
 
-## Sơ đồ điều hướng
+## Core Business Flow: Prediction Pipeline
+
+Đây là flow nghiệp vụ chính của hệ thống — từ dữ liệu trận đấu tới bài viết public:
 
 ```
-PUBLIC SITE
-═══════════════════════════════════════════════════════════
-
-  [Logo / bất kỳ trang] ──────────────────────→ home.html
-  [Sidebar league click] ──────────────────────→ home.html?league=X
-                                                     ↓ applyLeagueParam()
-                                                  scroll + highlight
-
-  home.html
-    ├─ Tab "Dự đoán AI"  ──────→ predictions.html
-    ├─ Tab "Tin tức"     ──────→ news.html
-    ├─ Search (Enter)    ──────→ search-results.html?q=
-    ├─ Match row click   ──────→ match-detail.html
-    ├─ Team name click   ──────→ team-profile.html
-    ├─ Post card (right) ──────→ post-detail.html
-    ├─ lg-name click     ──────→ league-page.html?league=X
-    ├─ User row          ──────→ admin-dashboard.html
-    └─ Logout btn        ──────→ admin-login.html
-
-  predictions.html
-    ├─ lg-name click     ──────→ league-page.html?league=X
-    └─ "Phân tích →"     ──────→ post-detail.html
-
-  news.html
-    └─ Post card / link  ──────→ post-detail.html
-
-  league-page.html
-    └─ Match row click   ──────→ match-detail.html
-
-  match-detail.html
-    └─ League tag        ──────→ league-page.html
-
-  team-profile.html
-    ├─ Player row        ──────→ player-profile.html
-    └─ Match row         ──────→ match-detail.html
-
-  player-profile.html
-    └─ Club link         ──────→ team-profile.html
-
-  post-detail.html
-    └─ Breadcrumb        ──────→ home.html
-
-  search-results.html
-    └─ (kết quả click)   ──────→ match-detail.html / post-detail.html
-
-  category-tag.html
-    └─ Post card         ──────→ post-detail.html
-
-  404.html
-    └─ Quick links       ──────→ home / predictions / news / league / team / search / category
-
-
-ADMIN SITE
-═══════════════════════════════════════════════════════════
-
-  admin-login.html
-    └─ Submit form       ──────→ admin-dashboard.html
-
-  admin-dashboard.html
-    ├─ "Xem trang web"   ──────→ home.html
-    ├─ "Tạo bài viết"    ──────→ admin-post-editor.html
-    └─ Sidebar menu      ──────→ (tất cả admin pages)
-
-  admin-posts.html
-    └─ "Tạo / Sửa"       ──────→ admin-post-editor.html
-
-  admin-post-editor.html
-    └─ "Đăng" / Back     ──────→ admin-posts.html
-
-  admin-matches.html
-    ├─ "Xem trận"        ──────→ match-detail.html
-    └─ "Xem bài"         ──────→ post-detail.html
-
-  [Mọi admin page]
-    ├─ Logo / top nav    ──────→ home.html
-    └─ Logout            ──────→ admin-login.html
+[Football API] ─── FetchUpcomingMatchesJob (cron 6h)
+       ↓
+ admin-matches.html  ◄── trigger manual hoặc đợi cron
+       ↓
+ GeneratePredictionJob (cron 1h) ─── gọi AI (Claude/Gemini)
+       ↓
+ admin-predictions.html  ◄── xem kết quả, approve / reject / chỉnh sửa
+       ↓
+ PublishPredictionJob ─── tạo bài viết tự động
+       ↓
+ admin-posts.html  ◄── bài mới xuất hiện, có thể edit thêm
+       ↓
+ post-detail.html  ◄── public đọc bài phân tích
+       ↓
+ predictions.html  ◄── hiện prediction card + tỷ lệ dự đoán
 ```
+
+**Live Score Real-time:**
+```
+LiveScorePollingJob (30s, chỉ khi có live match)
+       ↓
+ SignalR Hub ─── push event to clients
+       ↓
+ home.html: cập nhật score + live badge tự động (không reload)
+```
+
+---
+
+## Screen Flow Map — Public Site
+
+> **Quy tắc chung (áp dụng MỌI trang):**
+> - **LEFT SIDEBAR** luôn có: Logo → home | Search → search-results?q= | League click → home?league=X (scroll) | User row → admin-dashboard | Logout → admin-login
+> - **RIGHT SIDEBAR** (chỉ trang 3-col) luôn có: Post card click → post-detail?slug=X
+
+```
+PUBLIC NAVIGATION MAP
+══════════════════════════════════════════════════════════════
+
+[Mọi trang — LEFT SIDEBAR]
+  ├─ Logo                     ──→ home.html
+  ├─ Search input (Enter)     ──→ search-results.html?q=
+  ├─ League item click        ──→ home.html?league=X + applyLeagueParam() scroll
+  └─ User row / Logout        ──→ admin-dashboard.html / admin-login.html
+
+[Mọi trang 3-col — RIGHT SIDEBAR]
+  └─ Post card click          ──→ post-detail.html?slug=X
+
+──────────────────────────────────────────────────────────────
+
+[home.html]
+  ├─ Tab "Dự đoán AI"         ──→ predictions.html
+  ├─ Tab "Tin tức"            ──→ news.html
+  ├─ Match row click          ──→ match-detail.html?match=X
+  ├─ Team name (match row)    ──→ team-profile.html?team=X
+  └─ League name (.lg-name)   ──→ league-page.html?league=X
+
+[news.html]
+  └─ Post card click          ──→ post-detail.html?slug=X
+
+[predictions.html]
+  ├─ League name link         ──→ league-page.html?league=X
+  └─ "Phân tích →"            ──→ post-detail.html?slug=X
+
+[league-page.html]
+  ├─ Match row click          ──→ match-detail.html?match=X
+  ├─ Team name                ──→ team-profile.html?team=X
+  ├─ Top scorer (player link) ──→ player-profile.html?player=X
+  └─ Featured / sidebar post  ──→ post-detail.html?slug=X
+
+[match-detail.html]
+  ├─ Breadcrumb league        ──→ league-page.html?league=X
+  └─ Team name                ──→ team-profile.html?team=X
+
+[team-profile.html]
+  ├─ Player row               ──→ player-profile.html?player=X
+  └─ Match row                ──→ match-detail.html?match=X
+
+[player-profile.html]
+  ├─ Club link                ──→ team-profile.html?team=X
+  └─ Upcoming match           ──→ match-detail.html?match=X
+
+[post-detail.html]
+  ├─ Breadcrumb               ──→ home.html
+  ├─ Tag pill                 ──→ category-tag.html?tag=X
+  └─ Inline body link         ──→ team-profile.html?team=X
+
+[search-results.html]
+  ├─ Match result             ──→ match-detail.html?match=X
+  ├─ Post result              ──→ post-detail.html?slug=X
+  └─ Team result              ──→ team-profile.html?team=X
+
+[category-tag.html]
+  ├─ Post card                ──→ post-detail.html?slug=X
+  └─ Related tag click        ──→ category-tag.html?tag=Y  (self)
+
+[404.html]
+  └─ Quick links              ──→ home / predictions / news / league / team / search / category
+```
+
+---
+
+## Screen Flow Map — Admin Site
+
+```
+ADMIN NAVIGATION MAP
+══════════════════════════════════════════════════════════════
+
+[Mọi admin page — SIDEBAR]
+  ├─ Dashboard                ──→ admin-dashboard.html
+  ├─ Bài viết                 ──→ admin-posts.html
+  ├─ Dự đoán AI               ──→ admin-predictions.html
+  ├─ Categories & Tags        ──→ admin-categories.html
+  ├─ Trận đấu                 ──→ admin-matches.html
+  ├─ Đội bóng                 ──→ admin-team.html
+  ├─ Cầu thủ                  ──→ admin-players.html
+  ├─ Users                    ──→ admin-users.html
+  ├─ Job Monitor              ──→ admin-job-monitor.html
+  ├─ Cài đặt                  ──→ admin-settings.html
+  ├─ "Xem trang web"          ──→ home.html
+  └─ Logout                   ──→ admin-login.html
+
+──────────────────────────────────────────────────────────────
+
+[admin-login.html]
+  └─ Form submit (success)    ──→ admin-dashboard.html
+
+[admin-dashboard.html]
+  ├─ "Tạo bài viết"           ──→ admin-post-editor.html (mode: create)
+  └─ Recent post row click    ──→ admin-post-editor.html?id=X (mode: edit)
+
+[admin-posts.html]
+  ├─ "Tạo bài"                ──→ admin-post-editor.html (mode: create)
+  ├─ Edit action (✏️)         ──→ admin-post-editor.html?id=X (mode: edit)
+  └─ View action (👁)         ──→ post-detail.html?slug=X  (public page, new tab)
+
+[admin-post-editor.html]
+  ├─ "Đăng" / "Lưu nháp"     ──→ admin-posts.html
+  ├─ Back / Breadcrumb        ──→ admin-posts.html
+  └─ "Preview"                ──→ post-detail.html?slug=X&preview=true  ⚠️ cần thêm button
+
+[admin-predictions.html]
+  ├─ "Tạo bài từ prediction"  ──→ admin-post-editor.html?predId=X (mode: create)
+  └─ "Xem bài"                ──→ post-detail.html?slug=X
+
+[admin-matches.html]
+  ├─ "Xem trận" (👁)          ──→ match-detail.html?match=X
+  └─ "Xem bài" (📄)           ──→ post-detail.html?slug=X
+
+[admin-team.html]
+  └─ Xem squad                ──→ admin-players.html?team=X
+
+[admin-players.html]
+  └─ Lọc theo đội             ──→ admin-players.html?team=X (self filter)
+```
+
+---
+
+## Interaction Catalog — Hành vi chi tiết từng click
+
+> **Ký hiệu:**
+> - `→ navigate` — chuyển trang (location.href)
+> - `→ navigate (tab)` — mở tab mới (window.open)
+> - `→ toggle UI` — thay đổi trạng thái DOM, không chuyển trang
+> - `→ mock` — chỉ có trong prototype (alert/console), Blazor sẽ gọi API thật
+> - `JS: fn()` — hàm JavaScript thực thi
+
+---
+
+### UNIVERSAL — Left Sidebar (mọi trang)
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| Logo click | `→ navigate` | `home.html` |
+| Search input (typing) | `→ toggle UI` · `JS: filterLeagues(q)` | Ẩn/hiện `.league-item` và `.country-group` theo từ khóa. Tự expand group đang collapse |
+| Search input (Enter) | `→ navigate` | `search-results.html?q={value}` |
+| Country group header click | `→ toggle UI` · `JS: toggleCountry(id)` | Toggle class `.collapsed` trên `.country-group` → ẩn/hiện `.sub-leagues` |
+| League item click (đang ở home.html) | `→ toggle UI` · `JS: selectLeague(el, id)` | Thêm `.active` vào `.league-item` được click. `scrollIntoView` tới `#m-{leagueId}` trong match list |
+| League item click (trang khác) | `→ navigate` · `JS: selectLeague(el, id)` | `home.html?league={id}` → sau khi load `applyLeagueParam()` tự scroll |
+| User avatar/row click | `→ navigate` | `admin-dashboard.html` |
+| Logout button click | `→ navigate` | `admin-login.html` |
+
+---
+
+### UNIVERSAL — Right Sidebar (chỉ trang 3-col)
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| Tab "Nổi bật" / "Mới nhất" | `→ toggle UI` · `JS: setRightTab(el)` | Active tab + filter danh sách post trong `.right-scroll` |
+| Featured post click | `→ navigate` | `post-detail.html?slug={slug}` |
+| Post item click | `→ navigate` | `post-detail.html?slug={slug}` |
+
+---
+
+### home.html
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| Tab "Lịch thi đấu" | `→ toggle UI` · `JS: setTab(el)` | Active tab, ở nguyên trang (default tab) |
+| Tab "Dự đoán AI" | `→ navigate` | `predictions.html` |
+| Tab "Tin tức" | `→ navigate` | `news.html` |
+| Date bar button click | `→ toggle UI` · `JS: setDate(el)` | Active date button — **prototype không filter trận theo ngày**, chỉ visual |
+| Date nav `‹` / `›` | `→ toggle UI` | Scroll `.date-bar` trái/phải |
+| Live pill badge | `→ toggle UI` · `JS: setTab(el "Live")` | Switch tab về Live (nếu có tab riêng) |
+| League group header (`.lg-header`) click | `→ toggle UI` · `JS: toggleLg(this)` | Toggle `.collapsed` trên `.lg` → ẩn/hiện `.lg-matches` |
+| League name link (`.lg-name-link`) click | `→ navigate` | `league-page.html?league={id}` · event.stopPropagation() để không trigger toggleLg |
+| Match row click | `→ navigate` | `match-detail.html?match={matchId}` |
+| Team name click (trong match row) | `→ navigate` | `team-profile.html?team={teamSlug}` |
+| Filter button | `→ toggle UI` · mock | Dropdown filter — **prototype chỉ visual**, không filter thật |
+| Match search bar | `→ toggle UI` · mock | Prototype không filter trận — Blazor sẽ filter |
+
+---
+
+### news.html
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| Filter pill click (Tất cả / Bóng đá / AI...) | `→ toggle UI` · `JS: filterNews(el, cat)` | Active pill — **prototype chỉ visual**, không filter bài |
+| Post card click (featured / grid / list) | `→ navigate` | `post-detail.html?slug={slug}` |
+| Pagination số click | `→ toggle UI` · `JS: changePage(el)` | Active page button — **prototype không load trang mới**, Blazor sẽ phân trang thật |
+
+---
+
+### predictions.html
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| League section header (`.pred-section-header`) click | `→ toggle UI` · `JS: toggleLg(this)` | Toggle `.collapsed` trên `.pred-section` → ẩn/hiện `.lg-matches` + xoay `.lg-chevron` |
+| League name link trong header | `→ navigate` · `event.stopPropagation()` | `league-page.html?league={id}` — không trigger collapse |
+| "Phân tích →" link trên pred-card | `→ navigate` | `post-detail.html?slug={slug}` |
+| Confidence bar / tỷ lệ dự đoán | `→ không có action` | Visual only |
+
+---
+
+### league-page.html
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| Tab "Lịch thi đấu" / "BXH" / "Top Scorer" | `→ toggle UI` · `JS: setDetailTab(el, 'league')` | Switch panel content, active tab |
+| Date bar | `→ toggle UI` · `JS: setDate(el)` | Visual only trong prototype |
+| League group header click | `→ toggle UI` · `JS: toggleLg(this)` | Collapse/expand fixture group |
+| League name link | `→ navigate` | Đây là trang league rồi — link này tự navigate chính trang (không có tác dụng) |
+| Match row click | `→ navigate` | `match-detail.html?match={matchId}` |
+| Team name click (BXH / match row) | `→ navigate` | `team-profile.html?team={teamSlug}` |
+| Top scorer — player name click | `→ navigate` | `player-profile.html?player={playerSlug}` |
+
+---
+
+### match-detail.html
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| Breadcrumb — giải đấu click | `→ navigate` | `league-page.html?league={id}` |
+| Breadcrumb — home click | `→ navigate` | `home.html` |
+| Team name click (header trận) | `→ navigate` | `team-profile.html?team={teamSlug}` |
+| Tabs (Đội hình / Thống kê / Timeline / Bình luận) | `→ toggle UI` · `JS: setDetailTab(el, 'match')` | Switch panel + active tab |
+| Cầu thủ trong lineup click | `→ navigate` · mock | `player-profile.html?player={slug}` — **prototype có thể chưa link, Blazor cần thêm** |
+
+---
+
+### team-profile.html
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| Tab (Đội hình / Kết quả / Lịch thi đấu / Tin tức) | `→ toggle UI` · `JS: setTab(el)` | Switch tab content |
+| Player row click | `→ navigate` | `player-profile.html?player={playerSlug}` |
+| Match row click (lịch / kết quả) | `→ navigate` | `match-detail.html?match={matchId}` |
+| League badge trên match row | `→ navigate` | `league-page.html?league={id}` |
+
+---
+
+### player-profile.html
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| Club logo / tên đội click | `→ navigate` | `team-profile.html?team={teamSlug}` |
+| Tab (Thống kê / Sự nghiệp / Tin tức) | `→ toggle UI` · `JS: setTab(el)` | Switch tab content |
+| Upcoming match row click | `→ navigate` | `match-detail.html?match={matchId}` |
+
+---
+
+### post-detail.html
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| Breadcrumb click | `→ navigate` | `home.html` |
+| Tag pill click | `→ navigate` | `category-tag.html?tag={slug}` |
+| Inline body link (tên đội) click | `→ navigate` | `team-profile.html?team={teamSlug}` |
+| Share button | `→ mock` | Prototype: không có action — Blazor: copy URL / Web Share API |
+| Related posts click | `→ navigate` | `post-detail.html?slug={slug}` |
+
+---
+
+### search-results.html
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| Search bar (Enter / Submit) | `→ navigate` | Reload `search-results.html?q={newValue}` |
+| Clear button (✕) | `→ toggle UI` | Xóa input value |
+| Filter tab (Tất cả / Trận đấu / Bài viết / Đội bóng) | `→ toggle UI` · `JS: setTabBar(el)` | Switch result type |
+| Match result card click | `→ navigate` | `match-detail.html?match={matchId}` |
+| Post result card click | `→ navigate` | `post-detail.html?slug={slug}` |
+| Team result card click | `→ navigate` | `team-profile.html?team={teamSlug}` |
+| Pagination số click | `→ toggle UI` · `JS: changePage(el)` | Active page — **prototype visual only** |
+| Suggestion chip click | `→ navigate` | Reload với query mới |
+
+---
+
+### category-tag.html
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| Tab (Tất cả / Bóng đá / Dự đoán AI...) | `→ toggle UI` · `JS: setTab(el)` | Filter post grid theo category |
+| Post card click | `→ navigate` | `post-detail.html?slug={slug}` |
+| Related tag pill click | `→ navigate` | `category-tag.html?tag={slug}` (self, khác tag) |
+| Pagination số click | `→ toggle UI` · `JS: changePage(el)` | Visual only trong prototype |
+
+---
+
+### admin-login.html
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| Form submit (username + password) | `→ navigate` · mock | `admin-dashboard.html` — prototype không validate |
+| "Quên mật khẩu" link | `→ mock` | Chưa implement |
+
+---
+
+### admin-dashboard.html
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| "Tạo bài viết" button | `→ navigate` | `admin-post-editor.html` (mode: create, không có ?id) |
+| Recent post row click | `→ navigate` | `admin-post-editor.html?id={postId}` (mode: edit) |
+| Stats card click | `→ navigate` | Trang tương ứng (posts / predictions / matches) |
+| "Xem trang web" | `→ navigate` | `home.html` |
+
+---
+
+### admin-posts.html
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| "Tạo bài" button | `→ navigate` | `admin-post-editor.html` (mode: create) |
+| Search / filter bar | `→ toggle UI` · mock | Visual filter prototype |
+| Edit action (✏️) | `→ navigate` | `admin-post-editor.html?id={postId}` |
+| View action (👁) | `→ navigate (tab)` | `post-detail.html?slug={slug}` — mở tab mới |
+| Delete action (🗑) | `→ mock` | Prototype: alert xác nhận — Blazor: DELETE API |
+| Pagination | `→ toggle UI` · mock | Visual only |
+
+---
+
+### admin-post-editor.html
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| "← Quay lại" button | `→ navigate` | `admin-posts.html` |
+| "Lưu nháp" button | `→ navigate` · mock | `admin-posts.html` — Blazor sẽ PATCH status=draft |
+| "Preview" button | `→ navigate (tab)` | `post-detail.html?preview=true` — tab mới |
+| "Xuất bản" button | `→ navigate` · mock | `admin-posts.html` — Blazor sẽ PATCH status=published |
+| Tag input (Enter) | `→ toggle UI` | Thêm tag chip vào danh sách tags |
+| Tag chip (✕) | `→ toggle UI` | Xóa tag chip |
+| Category select | `→ toggle UI` | Chọn category cho bài |
+| Image upload area click | `→ mock` | Prototype: không có file picker — Blazor: upload S3 |
+| SEO title / meta textarea | `→ toggle UI` | Cập nhật SEO preview realtime |
+
+---
+
+### admin-predictions.html
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| Row expand (▾) | `→ toggle UI` · `JS: toggleDetail(id)` | Mở rộng row xem chi tiết prediction |
+| "Tạo bài" từ prediction | `→ navigate` | `admin-post-editor.html?predId={id}` |
+| "Xem bài" link | `→ navigate (tab)` | `post-detail.html?slug={slug}` |
+| "Chạy lại" button | `→ mock` | Prototype: alert — Blazor: trigger GeneratePredictionJob cho match này |
+| "Approve" / "Reject" | `→ mock` | Prototype: toggle badge — Blazor: PATCH prediction status |
+
+---
+
+### admin-matches.html
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| "Fetch Matches" button | `→ mock` · `JS: triggerFetch()` | Prototype: alert thành công — Blazor: trigger FetchUpcomingMatchesJob |
+| "Tạo Prediction" (per row) | `→ mock` · `JS: triggerPrediction(id)` | Prototype: alert — Blazor: trigger GeneratePredictionJob cho trận này |
+| "Tạo tất cả Prediction" | `→ mock` · `JS: triggerAllPredictions()` | Prototype: alert — Blazor: bulk trigger |
+| "Xem trận" (👁) | `→ navigate (tab)` | `match-detail.html?match={matchId}` |
+| "Xem bài" (📄) | `→ navigate (tab)` | `post-detail.html?slug={slug}` |
+| Filter bar (giải / status) | `→ toggle UI` · mock | Visual filter |
+
+---
+
+### admin-team.html
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| "Thêm đội" button | `→ toggle UI` · `JS: openEditPanel(null)` | Mở slide-in panel bên phải (mode: create) |
+| "Cầu thủ" button per row | `→ navigate` | `admin-players.html?team={slug}` |
+| "Sửa" button per row | `→ toggle UI` · `JS: openEditPanel(slug)` | Mở slide-in panel (mode: edit) — prototype không pre-fill data |
+| "Xóa" button per row | `→ mock` | Prototype: alert — Blazor: DELETE API |
+| Edit panel — "Lưu" | `→ toggle UI` · `JS: saveTeam()` | Prototype: alert + đóng panel — Blazor: POST/PUT API |
+| Edit panel — "Hủy" / click overlay | `→ toggle UI` · `JS: closeEditPanel()` | Đóng slide-in panel |
+| Team name input (typing) | `→ toggle UI` | Auto-generate slug vào field slug (Vietnamese slug normalize) |
+| Filter bar | `→ toggle UI` · mock | Visual filter |
+
+---
+
+### admin-players.html
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| Team filter dropdown change | `→ navigate` · `JS: applyTeamFilter()` | `admin-players.html?team={slug}` — reload với filter |
+| "Thêm cầu thủ" button | `→ toggle UI` · `JS: openEditPanel(null)` | Mở slide-in panel (mode: create) |
+| "Sửa" button per row | `→ toggle UI` · `JS: openEditPanel(slug)` | Mở slide-in panel (mode: edit) |
+| "Xóa" button per row | `→ mock` | Prototype: alert — Blazor: DELETE API |
+| Edit panel — "Lưu" | `→ toggle UI` · `JS: savePlayer()` | Prototype: alert + đóng panel |
+| Edit panel — "Hủy" / click overlay | `→ toggle UI` · `JS: closeEditPanel()` | Đóng panel |
+| Player name input (typing) | `→ toggle UI` | Auto-generate slug |
+| Edit panel — Vị trí select | `→ toggle UI` | Thay đổi vị trí — prototype không thay đổi badge trên table |
+
+---
+
+### admin-job-monitor.html
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| "Hangfire Dashboard" link | `→ navigate (tab)` | External URL — Hangfire UI |
+| "Chạy ngay" per job | `→ mock` | Prototype: alert — Blazor: trigger job manually via Hangfire API |
+| Refresh button | `→ mock` | Prototype: reload page — Blazor: fetch job status từ API |
+
+---
+
+### admin-categories.html
+
+| Element | Action | Kết quả |
+|---------|--------|---------|
+| Category tab (Categories / Tags) | `→ toggle UI` · `JS: switchCatTab(el, tabId)` | Switch panel |
+| Category item click | `→ toggle UI` · `JS: selectCat(el)` | Highlight category + hiện detail panel bên phải |
+| "Thêm category" / "Thêm tag" | `→ toggle UI` · mock | Mở form thêm mới |
+| Edit / Delete action | `→ mock` | Prototype: alert — Blazor: PUT/DELETE API |
+
+---
+
+## URL Parameters
+
+| Trang | Param | Kiểu | Ý nghĩa |
+|-------|-------|------|---------|
+| `home.html` | `?league=X` | string slug | Scroll + highlight league X trong sidebar + match list |
+| `league-page.html` | `?league=X` | string slug | Hiện detail giải X (standings, fixtures, scorers) |
+| `predictions.html` | `?league=X` | string slug | Filter predictions theo giải |
+| `search-results.html` | `?q=` | string | Query tìm kiếm (match + post + team) |
+| `category-tag.html` | `?tag=X` | string slug | Lọc bài viết theo tag |
+| `category-tag.html` | `?cat=X` | string slug | Lọc bài viết theo category |
+| `team-profile.html` | `?team=X` | string slug | Profile đội bóng X |
+| `match-detail.html` | `?match=X` | number/slug | Chi tiết trận X |
+| `player-profile.html` | `?player=X` | number/slug | Profile cầu thủ X |
+| `post-detail.html` | `?slug=X` | string slug | Bài viết theo slug |
+| `post-detail.html` | `?preview=true` | boolean | Xem draft (chưa publish) — chỉ admin |
+| `admin-post-editor.html` | `?id=X` | number | Edit bài viết có sẵn |
+| `admin-post-editor.html` | `?predId=X` | number | Tạo bài từ prediction |
+| `admin-players.html` | `?team=X` | string slug | Filter cầu thủ theo đội |
 
 ---
 
@@ -109,7 +495,7 @@ ADMIN SITE
 | File | Tiêu đề | Layout | Data JSON | Initializer |
 |------|---------|--------|-----------|-------------|
 | `home.html` | Trang chủ | 3-col | leagues + matches + posts | `initHomePage()` |
-| `news.html` | Tin tức | 3-col | leagues + posts | inline fetch ⚠️ |
+| `news.html` | Tin tức | 3-col | leagues + posts | `initNewsPage()` |
 | `league-page.html` | Chi tiết giải | 3-col | leagues + league-detail | `initLeaguePage()` |
 | `match-detail.html` | Chi tiết trận | 3-col | leagues + match-detail | `initMatchDetailPage()` |
 | `post-detail.html` | Bài viết | 3-col | leagues | `initPostDetailPage()` |
@@ -124,18 +510,20 @@ ADMIN SITE
 
 ## Bảng trang Admin
 
-| File | Tiêu đề | Mô tả ngắn |
-|------|---------|------------|
-| `admin-login.html` | Đăng nhập | Form auth, redirect dashboard |
-| `admin-dashboard.html` | Dashboard | Stats cards, recent activity, bảng bài viết |
-| `admin-posts.html` | Bài viết | Danh sách + filter + action table |
-| `admin-post-editor.html` | Tạo/Sửa bài | Rich text editor + metadata |
-| `admin-predictions.html` | Dự đoán AI | Bảng predictions + accuracy stats |
-| `admin-categories.html` | Categories & Tags | Tree + detail panel |
-| `admin-matches.html` | Trận đấu | Danh sách trận + link post/detail |
-| `admin-users.html` | Users | CRUD user table |
-| `admin-job-monitor.html` | Job Monitor | API quota, Hangfire jobs, Telegram status |
-| `admin-settings.html` | Cài đặt | System config form |
+| File | Tiêu đề | Mô tả ngắn | Status |
+|------|---------|------------|--------|
+| `admin-login.html` | Đăng nhập | Form auth, redirect dashboard | ✅ |
+| `admin-dashboard.html` | Dashboard | Stats cards, recent activity, bảng bài viết | ✅ |
+| `admin-posts.html` | Bài viết | Danh sách + filter + action table | ✅ |
+| `admin-post-editor.html` | Tạo/Sửa bài | Rich text editor + metadata | ✅ |
+| `admin-predictions.html` | Dự đoán AI | Bảng predictions + accuracy stats | ✅ |
+| `admin-categories.html` | Categories & Tags | Tree + detail panel | ✅ |
+| `admin-matches.html` | Trận đấu | Danh sách trận + link post/detail | ✅ |
+| `admin-users.html` | Users | CRUD user table | ✅ |
+| `admin-job-monitor.html` | Job Monitor | API quota, Hangfire jobs, Telegram status | ✅ |
+| `admin-settings.html` | Cài đặt | System config form | ✅ |
+| `admin-team.html` | Đội bóng | CRUD đội (tên, logo, quốc gia, giải đấu) | ✅ |
+| `admin-players.html` | Cầu thủ | CRUD cầu thủ (tên, số áo, vị trí, đội, stats) | ✅ |
 
 ---
 
@@ -167,7 +555,7 @@ Promise.all([fetchData('leagues'), ...])  ← song song, load từ data/*.json
     ↓
 renderLeagueTree()   → .league-tree       ← left sidebar
 render{Content}()    → .matches-list      ← center main
-renderPosts()        → .right-scroll      ← right sidebar (chỉ home)
+renderPosts()        → .right-scroll      ← right sidebar (chỉ 3-col pages)
     ↓
 applyLeagueParam()                        ← home only: đọc ?league= URL param
     ↓
@@ -197,12 +585,13 @@ highlight .league-item[data-league=X]
 
 ## Shared JS — render.js
 
-**Page initializers** (9):
-`initHomePage` · `initLeaguePage` · `initMatchDetailPage` · `initTeamPage` · `initPlayerPage` · `initPredictionsPage` · `initCategoryPage` · `initPostDetailPage` · `initSearchPage`
+**Page initializers** (10):
+`initHomePage` · `initLeaguePage` · `initMatchDetailPage` · `initTeamPage` · `initPlayerPage` · `initPredictionsPage` · `initCategoryPage` · `initPostDetailPage` · `initSearchPage` · `initNewsPage`
 
-**Render functions** (10):
-`renderLeagueTree` · `renderMatches` · `renderLeagueGroup` · `renderMatchRow` · `renderPosts` · `renderFeaturedPost` · `renderPostItem` · `updateLivePill`  
-*(+ renderLeagueDetail, renderMatchDetail, renderTeam, renderPlayer, renderPredictions, renderCategory, renderSearch — inline trong từng trang)*
+**Render functions** (8 global + nhiều inline):
+`renderLeagueTree` · `renderMatches` · `renderLeagueGroup` · `renderMatchRow` · `renderPosts` · `renderFeaturedPost` · `renderPostItem` · `updateLivePill`
+
+*Inline (trong từng trang):* `renderLeagueDetail` · `renderMatchDetail` · `renderTeam` · `renderPlayer` · `renderPredictions` · `renderCategory` · `renderSearch`
 
 ---
 
@@ -226,24 +615,30 @@ highlight .league-item[data-league=X]
 
 ---
 
-## Vấn đề còn thiếu / cần review
+## Vấn đề còn thiếu / cần fix
 
-### ❌ Trang chưa tạo
-| File cần tạo | Mô tả |
-|-------------|-------|
-| `admin-team.html` | Admin CRUD đội bóng |
-| `admin-players.html` | Admin CRUD cầu thủ |
+### ✅ Trang đã tạo đủ
+Tất cả 23 trang đã có file HTML prototype.
 
-### ⚠️ Logic chưa đúng / chưa hoàn thiện
+### ⚠️ Logic còn mock trong prototype (sẽ implement ở Blazor)
 
-| Vị trí | Vấn đề |
-|--------|--------|
-| `news.html` | Dùng inline `fetchData()` thay vì `initNewsPage()` — không có trong render.js, không đồng bộ pattern |
-| `predictions.html` | `toggleLg(this)` gọi `.closest('.lg')` nhưng section dùng class `pred-section` → collapse không hoạt động |
-| `search-results.html` | Search bar không đọc `?q=` param từ URL khi load — kết quả hardcoded mock |
-| `home.html` date bar | Chọn ngày không filter match list theo ngày thực tế |
-| `render.js` | Thiếu `initNewsPage()` — nếu news.html refactor sẽ phải thêm |
+| Vị trí | Mock gì | Blazor thật sẽ làm |
+|--------|---------|-------------------|
+| `home.html` date bar | Visual only, không filter trận | Query matches theo date param |
+| `admin-matches.html` Fetch/Prediction buttons | alert() mock | Trigger Hangfire job qua API |
+| `admin-post-editor.html` image upload | Không có file picker | Upload lên S3, lưu URL |
+| `admin-predictions.html` Approve/Reject | Toggle badge visual | PATCH prediction.Status |
+| Mọi trang Delete action | alert() mock | DELETE API + reload list |
+| `news.html` filter pill | Visual only | Query posts theo category |
+| Pagination tất cả trang | Visual only (changePage active) | Server-side pagination |
+
+### ℹ️ Chưa implement (Phase 4-6, không phải prototype)
+| Tính năng | Ghi chú |
+|-----------|---------|
+| Auth session expired → redirect login | Blazor middleware xử lý, không cần prototype |
+| Role check user row (chỉ admin thấy link dashboard) | Blazor auth, không cần prototype |
+| Live score SignalR subscribe | Chỉ cần implement khi tách Blazor |
 
 ---
 
-*Cập nhật lần cuối: 2026-04-09*
+*Cập nhật lần cuối: 2026-04-10 — thêm Interaction Catalog*

@@ -156,10 +156,33 @@ async function initPostDetailPage() {
 }
 
 /**
+ * News listing page
+ */
+async function initNewsPage() {
+  try {
+    const [leagues, posts] = await Promise.all([
+      fetchData('leagues'),
+      fetchData('posts')
+    ]);
+    const leagueTree = document.querySelector('.league-tree');
+    const rightScroll = document.querySelector('.right-scroll');
+    if (leagueTree) renderLeagueTree(leagueTree, leagues);
+    if (rightScroll) renderPosts(rightScroll, posts);
+  } catch (e) {
+    console.error('[initNewsPage]', e);
+  }
+}
+
+/**
  * Search results page
  */
 async function initSearchPage() {
   try {
+    // Populate search input from ?q= URL param
+    const q = new URLSearchParams(location.search).get('q') || '';
+    const searchInput = document.querySelector('.search-hero-bar input');
+    if (searchInput && q) searchInput.value = q;
+
     const [leagues, results] = await Promise.all([
       fetchData('leagues'),
       fetchData('search')
