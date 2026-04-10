@@ -35,6 +35,27 @@ async function initHomePage() {
     if (rightScroll) renderPosts(rightScroll, posts);
     updateLivePill(matches.liveCount);
     applyLeagueParam();
+
+    // Cache posts for tab filtering
+    window.__homePosts = posts;
+
+    // Tab filter: Nhận định=LIVE, Dự đoán=SCH, Phân tích=FT
+    document.addEventListener('rightTabChange', (e) => {
+      const tab = e.detail;
+      const rs = document.querySelector('.right-scroll');
+      if (!rs || !window.__homePosts) return;
+      const all = window.__homePosts;
+      let filtered;
+      if (tab === 'Dự đoán') {
+        filtered = { featured: null, items: all.items.filter(p => p.match.status === 'SCH') };
+      } else if (tab === 'Phân tích') {
+        filtered = { featured: null, items: all.items.filter(p => p.match.status === 'FT') };
+      } else {
+        // Nhận định — live + featured
+        filtered = { featured: all.featured, items: all.items.filter(p => p.match.status === 'LIVE') };
+      }
+      renderPosts(rs, filtered);
+    });
   } catch (e) {
     console.error('[initHomePage]', e);
   }

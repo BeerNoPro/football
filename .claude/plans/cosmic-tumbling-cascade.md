@@ -84,42 +84,28 @@ Fix: Thêm onclick handlers cho league items trong sidebar.
 
 ---
 
-## Files cần sửa (theo thứ tự ưu tiên)
+## Trạng thái thực hiện
 
-### Pass 1 — Admin sidebar fix (6 files)
-1. `admin-dashboard.html` — thêm: Trận đấu, Đội bóng, Cầu thủ, Users; sửa Cài đặt → `admin-settings.html`
-2. `admin-posts.html` — thêm: Trận đấu, Đội bóng, Cầu thủ, Users; sửa Cài đặt
-3. `admin-predictions.html` — thêm: Trận đấu, Đội bóng, Cầu thủ, Users; sửa Cài đặt
-4. `admin-categories.html` — thêm: Trận đấu, Đội bóng, Cầu thủ, Users; sửa Cài đặt
-5. `admin-job-monitor.html` — thêm: Trận đấu, Đội bóng, Cầu thủ, Users; sửa Cài đặt
-6. `admin-settings.html` — thêm: Đội bóng, Cầu thủ, Users
+### ✅ Pass 1 — Admin sidebar (8 files DONE)
+- `admin-dashboard.html`, `admin-posts.html`, `admin-predictions.html`, `admin-categories.html` — thêm Bóng đá group, Users, fix Cài đặt href
+- `admin-matches.html`, `admin-settings.html` — thêm Đội bóng, Cầu thủ, Users
+- `admin-job-monitor.html` — viết lại toàn bộ sidebar chuẩn structure
+- `admin-users.html` — thêm Bóng đá group, fix Users label + SVG, bỏ Trận đấu khỏi Hệ thống
 
-Reference sidebar (từ `admin-team.html`):
-```html
-<a href="admin-dashboard.html" class="nav-item">Dashboard</a>
-<a href="admin-posts.html" class="nav-item">Bài viết</a>
-<a href="admin-predictions.html" class="nav-item">Dự đoán AI</a>
-<a href="admin-categories.html" class="nav-item">Categories & Tags</a>
-<a href="admin-matches.html" class="nav-item">Trận đấu</a>
-<a href="admin-team.html" class="nav-item">Đội bóng</a>
-<a href="admin-players.html" class="nav-item">Cầu thủ</a>
-<a href="admin-users.html" class="nav-item">Users</a>
-<a href="admin-job-monitor.html" class="nav-item">Job Monitor</a>
-<a href="admin-settings.html" class="nav-item">Cài đặt</a>
-<a href="home.html" class="nav-item">Xem trang web</a>
-<a href="admin-login.html" class="nav-item">Logout</a>
-```
+### ✅ Pass 2a — Layout (2 files DONE)
+- `search-results.html` — đổi sang 2-col, xóa right sidebar, fix user-row + logout onclick
+- `category-tag.html` — đổi sang 2-col, xóa right sidebar, fix related tag ?tag=slug, fix user-row onclick
 
-### Pass 2 — Layout & Public pages (5 files)
-7. `search-results.html` — đổi sang 2-col, xóa right sidebar
-8. `category-tag.html` — đổi sang 2-col, xóa right sidebar, fix related tag query params
-9. `news.html` — thêm user-row + logout vào left sidebar
-10. `post-detail.html` — fix related-card clickable, fix sidebar league onclick
-11. `team-profile.html` — fix sidebar league items từ `<div>` sang `<a>`
+### ✅ Pass 2b — Public pages (3 files DONE)
+- `news.html` — thêm left-bottom block (settings-btn + user-row + logout)
+- `post-detail.html` — thêm onclick vào tất cả related-card
+- `team-profile.html` — đổi league-item từ `<div>` → `<a href="league-page.html?league=X">`, fix user-row onclick
 
-### Pass 3 — Minor onclick fixes (2 files)
-12. `predictions.html` — thêm onclick logout button
-13. `search-results.html` — thêm onclick user-row (nếu chưa xong ở pass 2)
+### ⏳ Pass 3 — Còn lại (2 file)
+1. `predictions.html` — thêm:
+   - `onclick="location.href='admin-dashboard.html'"` vào `<div class="user-row">`
+   - `onclick="event.stopPropagation(); location.href='admin-login.html'"` vào `<button class="logout-btn">`
+2. `post-detail.html` — fix sidebar league-item hrefs: `href="league-page.html"` → `href="league-page.html?league=X"` (hiện thiếu query param)
 
 ---
 

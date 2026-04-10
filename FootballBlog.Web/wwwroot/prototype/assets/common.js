@@ -98,10 +98,17 @@ function setDate(el) {
   el.classList.add('active');
 }
 
-// Right panel: tab switch
+// Right panel: tab switch (Nhận định / Dự đoán / Phân tích)
+// Content filtering handled by render.js initHomePage via 'rightTabChange' event
 function setRightTab(el) {
   el.closest('.right-tabs').querySelectorAll('.right-tab').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
+  document.dispatchEvent(new CustomEvent('rightTabChange', { detail: el.textContent.trim() }));
+}
+
+// Admin sidebar: dropdown toggle
+function toggleDD(id) {
+  document.getElementById(id).classList.toggle('open');
 }
 
 // Match detail: tab panel switch

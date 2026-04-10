@@ -9,9 +9,9 @@
 
 | Thống kê | Giá trị |
 |----------|---------|
-| Tổng trang | 23 HTML |
+| Tổng trang | 24 HTML |
 | Public pages | 11 (bao gồm 404) |
-| Admin pages | 12 |
+| Admin pages | 13 |
 | Data JSON | 10 file |
 | Shared JS | common.js + render.js |
 | Shared CSS | common.css + admin-common.css |
@@ -21,26 +21,52 @@
 
 ---
 
-## Core Business Flow: Prediction Pipeline
+## PostType — 3 Loại Bài Viết
+
+Mỗi bài viết (`Post`) thuộc 1 trong 3 loại, gắn với vòng đời của trận đấu.  
+Right sidebar tabs ở home.html (`Nhận định / Dự đoán / Phân tích`) filter theo `PostType`.
+
+| PostType | Thời điểm sinh | Match.Status | Prompt Template | Badge hiển thị |
+|----------|----------------|--------------|-----------------|----------------|
+| `DuDoan` (Dự đoán) | ~24h trước kickoff | `SCH` (scheduled) | "Dự đoán tỷ số trận đấu" | `🤖 AI · Dự đoán` |
+| `NhanDinh` (Nhận định) | Trong lúc thi đấu | `LIVE` | "Nhận định trực tiếp" | `🤖 AI · Nhận định LIVE` |
+| `PhanTich` (Phân tích) | Sau khi kết thúc | `FT` | "Phân tích sau trận" | `🤖 AI · Phân tích` |
+
+**Quy tắc sinh bài tự động:**
+- `DuDoan` → `GeneratePredictionJob` chạy cron 1h, query Match chưa có bài DuDoan
+- `NhanDinh` → `LiveScorePollingJob` trigger khi match chuyển sang LIVE (nếu chưa có)
+- `PhanTich` → `GeneratePredictionJob` trigger khi match chuyển sang FT (nếu chưa có)
+
+**Mỗi PostType dùng 1 Prompt Template riêng** — lưu trong DB, quản lý qua `admin-prompts.html`.  
+Admin có thể update prompt bất kỳ lúc nào mà không cần deploy lại code.
+
+---
+
+## Core Business Flow: Content Pipeline
 
 Đây là flow nghiệp vụ chính của hệ thống — từ dữ liệu trận đấu tới bài viết public:
 
 ```
 [Football API] ─── FetchUpcomingMatchesJob (cron 6h)
        ↓
- admin-matches.html  ◄── trigger manual hoặc đợi cron
+ admin-matches.html  ◄── xem danh sách trận sắp diễn ra
        ↓
- GeneratePredictionJob (cron 1h) ─── gọi AI (Claude/Gemini)
+ GeneratePredictionJob (cron 1h)
+   ├── Match SCH + chưa có bài DuDoan  → AI tạo bài "Dự đoán" (PostType.DuDoan)
+   ├── Match LIVE + chưa có bài NhanDinh → AI tạo bài "Nhận định" (PostType.NhanDinh)
+   └── Match FT + chưa có bài PhanTich  → AI tạo bài "Phân tích" (PostType.PhanTich)
        ↓
- admin-predictions.html  ◄── xem kết quả, approve / reject / chỉnh sửa
+ admin-predictions.html  ◄── xem kết quả AI, approve / reject / chỉnh sửa
        ↓
- PublishPredictionJob ─── tạo bài viết tự động
+ PublishPredictionJob ─── tạo bài viết tự động + gửi Telegram
        ↓
  admin-posts.html  ◄── bài mới xuất hiện, có thể edit thêm
        ↓
- post-detail.html  ◄── public đọc bài phân tích
-       ↓
- predictions.html  ◄── hiện prediction card + tỷ lệ dự đoán
+ post-detail.html  ◄── public đọc bài
+       │
+       ├── home.html right panel tab "Dự đoán" ← PostType.DuDoan
+       ├── home.html right panel tab "Nhận định" ← PostType.NhanDinh (LIVE)
+       └── home.html right panel tab "Phân tích" ← PostType.PhanTich
 ```
 
 **Live Score Real-time:**
@@ -211,9 +237,17 @@ ADMIN NAVIGATION MAP
 
 ### UNIVERSAL — Right Sidebar (chỉ trang 3-col)
 
+Tab right sidebar filter bài viết theo `PostType` — dispatch `rightTabChange` event → `initHomePage` re-render:
+
+| Tab | PostType filter | Match.Status | Kết quả hiển thị |
+|-----|----------------|--------------|-----------------|
+| **Nhận định** (default) | `NhanDinh` | `LIVE` | Featured post + bài đang diễn ra |
+| **Dự đoán** | `DuDoan` | `SCH` | Bài dự đoán trận chưa đấu |
+| **Phân tích** | `PhanTich` | `FT` | Bài phân tích trận đã kết thúc |
+
 | Element | Action | Kết quả |
 |---------|--------|---------|
-| Tab "Nổi bật" / "Mới nhất" | `→ toggle UI` · `JS: setRightTab(el)` | Active tab + filter danh sách post trong `.right-scroll` |
+| Tab "Nhận định" / "Dự đoán" / "Phân tích" | `→ toggle UI` · `JS: setRightTab(el)` | Active tab + re-render `.right-scroll` filter theo PostType |
 | Featured post click | `→ navigate` | `post-detail.html?slug={slug}` |
 | Post item click | `→ navigate` | `post-detail.html?slug={slug}` |
 
@@ -521,7 +555,8 @@ ADMIN NAVIGATION MAP
 | `admin-matches.html` | Trận đấu | Danh sách trận + link post/detail | ✅ |
 | `admin-users.html` | Users | CRUD user table | ✅ |
 | `admin-job-monitor.html` | Job Monitor | API quota, Hangfire jobs, Telegram status | ✅ |
-| `admin-settings.html` | Cài đặt | System config form | ✅ |
+| `admin-settings.html` | Cài đặt chung | System config: AI keys, Football API, Telegram | ✅ |
+| `admin-prompts.html` | Prompt Templates | CRUD prompt theo PostType (DuDoan/NhanDinh/PhanTich) | ✅ |
 | `admin-team.html` | Đội bóng | CRUD đội (tên, logo, quốc gia, giải đấu) | ✅ |
 | `admin-players.html` | Cầu thủ | CRUD cầu thủ (tên, số áo, vị trí, đội, stats) | ✅ |
 
