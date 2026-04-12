@@ -1,0 +1,116 @@
+@page "/search"
+@layout PublicLayout2Col
+@using FootballBlog.Core.DTOs
+@inject IPostApiClient PostClient
+@inject NavigationManager Nav
+
+<SeoHead Title="@($"Tìm kiếm: {_query} — FootballBlog")"
+         Description="@($"Kết quả tìm kiếm cho \"{_query}\" trên FootballBlog")" />
+
+<div style="padding:20px 16px 40px;">
+    <!-- Search bar -->
+    <div style="margin-bottom:20px;">
+        <div style="font-size:11px; color:var(--muted); margin-bottom:10px;">
+            <a href="/" style="color:var(--muted); text-decoration:none;">Trang chủ</a>
+            <span style="margin:0 6px;">›</span>
+            <span>Tìm kiếm</span>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+            <input type="text"
+                   @bind="_searchInput"
+                   @bind:event="oninput"
+                   @onkeydown="OnKeyDown"
+                   placeholder="Tìm kiếm bài viết..."
+                   style="flex:1; background:var(--bg-card); border:1px solid var(--border2); border-radius:6px; padding:8px 12px; color:var(--text-main); font-size:13px;" />
+            <button @onclick="DoSearch"
+                    style="background:var(--accent); color:#000; border:none; border-radius:6px; padding:8px 16px; font-size:13px; font-weight:600; cursor:pointer;">
+                Tìm
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_query))
+    {
+        <div style="font-size:12px; color:var(--muted); margin-bottom:16px;">
+            @_total kết quả cho "<strong style="color:var(--text-main);">@_query</strong>"
+        </div>
+
+        @if (_loading)
+        {
+            <div style="color:var(--muted); font-size:12px;">Đang tìm kiếm...</div>
+        }
+        else if (_posts.Count == 0)
+        {
+            <div style="color:var(--muted);">Không tìm thấy bài viết nào phù hợp.</div>
+        }
+        else
+        {
+            <div class="news-grid">
+                @foreach (var post in _posts)
+                {
+                    <PostCard Post="post" />
+                }
+            </div>
+
+            <Pagination CurrentPage="_page"
+                        TotalPages="_totalPages"
+                        OnPageChange="ChangePage" />
+        }
+    }
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "q")] public string? Query { get; set; }
+
+    private string _query = "";
+    private string _searchInput = "";
+    private List<PostSummaryDto> _posts = [];
+    private bool _loading = false;
+    private int _page = 1;
+    private int _totalPages = 1;
+    private int _total = 0;
+    private const int PageSize = 12;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _query = Query?.Trim() ?? "";
+        _searchInput = _query;
+        if (!string.IsNullOrEmpty(_query))
+            await LoadPosts();
+    }
+
+    private async Task LoadPosts()
+    {
+        _loading = true;
+        // Phase 2: load tất cả rồi filter client-side theo title
+        // Phase 4: thay bằng search endpoint thật
+        var result = await PostClient.GetPublishedAsync(_page, PageSize);
+        if (result != null)
+        {
+            _posts = result.Items
+                .Where(p => p.Title.Contains(_query, StringComparison.OrdinalIgnoreCase)
+                         || p.CategoryName.Contains(_query, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            _total = _posts.Count;
+            _totalPages = result.TotalPages;
+        }
+        _loading = false;
+    }
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") DoSearch();
+    }
+
+    private void DoSearch()
+    {
+        if (!string.IsNullOrWhiteSpace(_searchInput))
+            Nav.NavigateTo($"/search?q={Uri.EscapeDataString(_searchInput.Trim())}");
+    }
+
+    private async Task ChangePage(int page)
+    {
+        _page = page;
+        await LoadPosts();
+    }
+}

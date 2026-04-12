@@ -43,6 +43,9 @@ try
     builder.Services.AddHttpClient<ICategoryApiClient, CategoryApiClient>(client =>
         client.BaseAddress = new Uri(apiBaseUrl));
 
+    builder.Services.AddHttpClient<ITagApiClient, TagApiClient>(client =>
+        client.BaseAddress = new Uri(apiBaseUrl));
+
     builder.Services.AddRazorComponents()
         .AddInteractiveServerComponents();
 

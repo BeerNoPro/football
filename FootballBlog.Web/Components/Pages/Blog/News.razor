@@ -1,0 +1,97 @@
+@page "/news"
+@layout PublicLayout2Col
+@using FootballBlog.Core.DTOs
+@inject IPostApiClient PostClient
+@inject NavigationManager Nav
+
+<SeoHead Title="Tin tức bóng đá — FootballBlog"
+         Description="Tin tức bóng đá mới nhất: V.League, Premier League, Champions League và các giải đấu hàng đầu thế giới."
+         CanonicalUrl="@(Nav.BaseUri.TrimEnd('/') + "/news")" />
+
+<!-- Breaking strip -->
+<div class="breaking-strip">
+    <span class="breaking-label">TIN MỚI</span>
+    <span class="breaking-text">Cập nhật tin tức bóng đá mới nhất từ FootballBlog</span>
+</div>
+
+<!-- Filter pills (Phase 2: visual, Phase 4: thật) -->
+<div class="news-filter-bar">
+    <span class="filter-pill active">Tất cả</span>
+    <span class="filter-pill">🤖 AI Prediction</span>
+    <span class="filter-pill">📊 Phân tích</span>
+    <span class="filter-pill">📰 Tin tức</span>
+    <span class="filter-pill">🇻🇳 V.League</span>
+</div>
+
+<div class="news-scroll">
+    @if (_loading)
+    {
+        <div style="padding:24px; color:var(--muted); font-size:12px;">Đang tải...</div>
+    }
+    else if (_posts.Count == 0)
+    {
+        <div style="padding:24px; color:var(--muted);">Chưa có bài viết nào.</div>
+    }
+    else
+    {
+        @* Hero featured — bài đầu tiên *@
+        <a href="/posts/@_posts[0].Slug" class="news-hero" style="display:block; text-decoration:none;">
+            <div class="news-hero-inner">
+                <div class="news-hero-content">
+                    <div class="hero-category-pill">@_posts[0].CategoryName</div>
+                    <div class="hero-title">@_posts[0].Title</div>
+                    <div class="hero-meta">
+                        <span>@_posts[0].AuthorName</span>
+                        <span class="hero-meta-sep">·</span>
+                        <span>@FormatDate(_posts[0].PublishedAt)</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+
+        <div class="section-hd">
+            <span class="section-hd-title">Mới nhất</span>
+        </div>
+
+        <div class="news-grid">
+            @foreach (var post in _posts.Skip(1))
+            {
+                <PostCard Post="post" />
+            }
+        </div>
+
+        <Pagination CurrentPage="_page"
+                    TotalPages="_totalPages"
+                    OnPageChange="ChangePage" />
+    }
+</div>
+
+@code {
+    private List<PostSummaryDto> _posts = [];
+    private bool _loading = true;
+    private int _page = 1;
+    private int _totalPages = 1;
+    private const int PageSize = 10;
+
+    protected override async Task OnInitializedAsync() => await LoadPosts();
+
+    private async Task LoadPosts()
+    {
+        _loading = true;
+        var result = await PostClient.GetPublishedAsync(_page, PageSize);
+        if (result != null)
+        {
+            _posts = result.Items.ToList();
+            _totalPages = result.TotalPages;
+        }
+        _loading = false;
+    }
+
+    private async Task ChangePage(int page)
+    {
+        _page = page;
+        await LoadPosts();
+    }
+
+    private static string FormatDate(DateTime dt) => dt.ToString("dd/MM/yyyy");
+}

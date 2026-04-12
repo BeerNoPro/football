@@ -1,0 +1,103 @@
+@inject NavigationManager Nav
+
+<aside class="left-sidebar">
+    <a href="/" class="logo-wrap" style="display:block; text-decoration:none;">
+        <div class="logo">
+            <span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span>
+        </div>
+        <div class="logo-sub">Kết quả &amp; Nhận định AI</div>
+    </a>
+
+    <div class="left-search">
+        <div class="search-input-wrap">
+            <svg class="search-icon" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+            </svg>
+            <input type="text"
+                   placeholder="Tìm giải đấu, đội bóng..."
+                   @bind="_searchQuery"
+                   @bind:event="oninput"
+                   @onkeydown="OnSearchKeyDown" />
+        </div>
+    </div>
+
+    <!-- League tree — Phase 4 sẽ populate từ Football API -->
+    <div class="league-tree" id="league-tree">
+        @if (_leagueTree.Count == 0)
+        {
+            <div style="padding:12px 14px; color:var(--muted); font-size:11px;">
+                Dữ liệu giải đấu sẽ có ở Phase 4
+            </div>
+        }
+        else
+        {
+            @foreach (var group in _leagueTree)
+            {
+                <div class="country-group">
+                    <div class="country-header" @onclick="() => group.IsExpanded = !group.IsExpanded">
+                        <span class="country-flag">@group.Flag</span>
+                        <span class="country-name">@group.Name</span>
+                        <svg class="chevron @(group.IsExpanded ? "" : "rotated")" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path d="m6 9 6 6 6-6" />
+                        </svg>
+                    </div>
+                    @if (group.IsExpanded)
+                    {
+                        <div class="sub-leagues">
+                            @foreach (var league in group.Leagues)
+                            {
+                                <a class="league-item" href="/league/@league.Slug">@league.Name</a>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </div>
+
+    <div class="left-bottom">
+        <a href="/admin/dashboard" class="user-row" style="text-decoration:none;">
+            <div class="user-avatar">A</div>
+            <div class="user-info">
+                <div class="user-name">Admin</div>
+                <div class="user-email">admin@footballblog.vn</div>
+            </div>
+            <a href="/admin/login" class="logout-btn" title="Đăng nhập / Admin"
+               @onclick:stopPropagation="true">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+            </a>
+        </a>
+    </div>
+</aside>
+
+@code {
+    private string _searchQuery = "";
+
+    // Phase 4 sẽ replace bằng dữ liệu thật từ Football API
+    private List<CountryGroup> _leagueTree = [];
+
+    private void OnSearchKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(_searchQuery))
+            Nav.NavigateTo($"/search?q={Uri.EscapeDataString(_searchQuery.Trim())}");
+    }
+
+    private class CountryGroup
+    {
+        public string Name { get; set; } = "";
+        public string Flag { get; set; } = "";
+        public bool IsExpanded { get; set; } = true;
+        public List<LeagueItem> Leagues { get; set; } = [];
+    }
+
+    private class LeagueItem
+    {
+        public string Name { get; set; } = "";
+        public string Slug { get; set; } = "";
+    }
+}

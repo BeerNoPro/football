@@ -1,0 +1,104 @@
+@page "/"
+@layout PublicLayout3Col
+@using FootballBlog.Core.DTOs
+@inject IPostApiClient PostClient
+
+<SeoHead Title="FootballBlog — Kết quả & Nhận định bóng đá"
+         Description="Kết quả, lịch thi đấu và nhận định bóng đá từ AI. Cập nhật trực tiếp V.League, Premier League, Champions League."
+         CanonicalUrl="@_baseUrl" />
+
+<!-- Hero banner -->
+<div class="hero">
+    <div class="hero-bg">
+        <div class="hero-number">2025</div>
+    </div>
+    <div class="hero-content">
+        <div class="hero-tag">
+            <span class="live-dot"></span> V.League 1 — Mùa giải 2025
+        </div>
+        <div class="hero-title">Kết quả & Lịch thi đấu</div>
+        <div class="hero-sub">
+            Cập nhật trực tiếp · Nhận định AI · Dự đoán tỷ số
+        </div>
+    </div>
+</div>
+
+<!-- Tab bar -->
+<div class="tabs" style="padding:0 16px; border-bottom:1px solid var(--border-main);">
+    <a href="/" class="tab-btn active">📅 Lịch thi đấu</a>
+    <a href="/predictions" class="tab-btn">🤖 Dự đoán AI</a>
+    <a href="/news" class="tab-btn">📰 Tin tức</a>
+</div>
+
+<!-- Match list placeholder — Phase 4 sẽ thay bằng dữ liệu thật -->
+<div class="matches-list" style="padding:24px 16px; color:var(--muted); font-size:13px; text-align:center;">
+    <div style="margin-bottom:8px;">⚽</div>
+    <div>Dữ liệu lịch thi đấu sẽ được tích hợp ở Phase 4</div>
+    <div style="margin-top:4px; font-size:11px;">(Football API + Hangfire jobs)</div>
+</div>
+
+<!-- Latest news section -->
+<div style="padding:0 16px 24px;">
+    <div class="section-hd">
+        <span class="section-hd-title">Bài viết mới nhất</span>
+        <a href="/news" style="font-size:11px; color:var(--accent); text-decoration:none;">Xem tất cả →</a>
+    </div>
+
+    @if (_loading)
+    {
+        <div style="color:var(--muted); font-size:12px; padding:12px 0;">Đang tải...</div>
+    }
+    else if (_posts.Count == 0)
+    {
+        <div style="color:var(--muted); font-size:12px; padding:12px 0;">Chưa có bài viết nào.</div>
+    }
+    else
+    {
+        <div class="news-grid">
+            @foreach (var post in _posts)
+            {
+                <PostCard Post="post" />
+            }
+        </div>
+
+        <Pagination CurrentPage="_page"
+                    TotalPages="_totalPages"
+                    OnPageChange="ChangePage" />
+    }
+</div>
+
+@code {
+    [Inject] private NavigationManager Nav { get; set; } = null!;
+    [Inject] private IConfiguration Config { get; set; } = null!;
+
+    private List<PostSummaryDto> _posts = [];
+    private bool _loading = true;
+    private int _page = 1;
+    private int _totalPages = 1;
+    private const int PageSize = 9;
+    private string _baseUrl = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _baseUrl = Nav.BaseUri.TrimEnd('/');
+        await LoadPosts();
+    }
+
+    private async Task LoadPosts()
+    {
+        _loading = true;
+        var result = await PostClient.GetPublishedAsync(_page, PageSize);
+        if (result != null)
+        {
+            _posts = result.Items.ToList();
+            _totalPages = result.TotalPages;
+        }
+        _loading = false;
+    }
+
+    private async Task ChangePage(int page)
+    {
+        _page = page;
+        await LoadPosts();
+    }
+}

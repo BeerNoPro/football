@@ -1,0 +1,108 @@
+@page "/category/{Slug}"
+@layout PublicLayout2Col
+@using FootballBlog.Core.DTOs
+@inject IPostApiClient PostClient
+@inject ICategoryApiClient CategoryClient
+@inject NavigationManager Nav
+
+@if (_notFound)
+{
+    <NotFound />
+}
+else
+{
+    <SeoHead Title="@_seoTitle"
+             Description="@_seoDesc"
+             CanonicalUrl="@_canonicalUrl" />
+
+    <div style="padding:20px 16px 40px;">
+        <!-- Header -->
+        <div style="margin-bottom:20px;">
+            <div style="font-size:11px; color:var(--muted); margin-bottom:6px;">
+                <a href="/" style="color:var(--muted); text-decoration:none;">Trang chủ</a>
+                <span style="margin:0 6px;">›</span>
+                <span>@_category?.Name</span>
+            </div>
+            <h1 style="font-size:20px; font-weight:700; color:var(--text-main);">
+                @(_category?.Name ?? Slug)
+            </h1>
+            @if (_total > 0)
+            {
+                <div style="font-size:11px; color:var(--muted); margin-top:4px;">@_total bài viết</div>
+            }
+        </div>
+
+        @if (_loading)
+        {
+            <div style="color:var(--muted); font-size:12px;">Đang tải...</div>
+        }
+        else if (_posts.Count == 0)
+        {
+            <div style="color:var(--muted);">Chưa có bài viết nào trong chuyên mục này.</div>
+        }
+        else
+        {
+            <div class="news-grid">
+                @foreach (var post in _posts)
+                {
+                    <PostCard Post="post" />
+                }
+            </div>
+
+            <Pagination CurrentPage="_page"
+                        TotalPages="_totalPages"
+                        OnPageChange="ChangePage" />
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public string Slug { get; set; } = "";
+
+    private CategoryDto? _category;
+    private List<PostSummaryDto> _posts = [];
+    private bool _loading = true;
+    private bool _notFound = false;
+    private int _page = 1;
+    private int _totalPages = 1;
+    private int _total = 0;
+    private const int PageSize = 12;
+    private string _seoTitle = "Category — FootballBlog";
+    private string _seoDesc = "";
+    private string _canonicalUrl = "";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _notFound = false;
+        _loading = true;
+        _page = 1;
+
+        _category = await CategoryClient.GetBySlugAsync(Slug);
+        if (_category is null) { _notFound = true; _loading = false; return; }
+
+        _seoTitle = $"{_category.Name} — FootballBlog";
+        _seoDesc = $"Các bài viết về {_category.Name} trên FootballBlog";
+        _canonicalUrl = Nav.BaseUri.TrimEnd('/') + $"/category/{Slug}";
+
+        await LoadPosts();
+    }
+
+    private async Task LoadPosts()
+    {
+        _loading = true;
+        var result = await PostClient.GetByCategoryAsync(Slug, _page, PageSize);
+        if (result != null)
+        {
+            _posts = result.Items.ToList();
+            _totalPages = result.TotalPages;
+            _total = result.TotalCount;
+        }
+        _loading = false;
+    }
+
+    private async Task ChangePage(int page)
+    {
+        _page = page;
+        await LoadPosts();
+    }
+}

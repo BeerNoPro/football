@@ -21,19 +21,6 @@
 
 ---
 
-## TODO / Known Issues
-
-### [Bug] predictions.html — user-row và logout chưa có onclick
-
-- `<div class="user-row">` thiếu `onclick="location.href='admin-dashboard.html'"`
-- `<button class="logout-btn">` thiếu `onclick="event.stopPropagation(); location.href='admin-login.html'"`
-
-### [Bug] post-detail.html — sidebar league-item thiếu `?league=X`
-
-Các `<a class="league-item" href="league-page.html">` trong sidebar của post-detail.html thiếu query param — cần thêm `?league={id}` để đúng với navigation spec.
-
----
-
 ## Mock Data — Cấu trúc JSON cho Prototype
 
 > **Quy tắc:** Mọi trang HTML đều được render từ JSON thông qua `render.js`.  
@@ -631,16 +618,18 @@ Tab right sidebar filter bài viết theo `PostType` — dispatch `rightTabChang
 
 | File | Entity | Dùng bởi |
 |------|--------|----------|
-| `leagues.json` | Sidebar league tree (country groups) | **Mọi trang** |
-| `matches.json` | Match list theo giải + liveCount | home |
-| `match-detail.json` | Chi tiết 1 trận (lineup, events, stats) | match-detail |
-| `league-detail.json` | Standings, top scorers, fixtures | league-page |
-| `posts.json` | Danh sách blog posts + featured | home (right), news |
-| `predictions.json` | AI predictions nhóm theo league | predictions |
-| `player.json` | Profile cầu thủ (stats, career) | player-profile |
-| `team.json` | Profile đội (squad, results) | team-profile |
-| `categories.json` | Category/tag + posts | category-tag |
-| `search.json` | Kết quả mix (matches + posts + teams) | search-results |
+| `ref/leagues.json` | Sidebar league tree (country groups) | **Mọi trang** |
+| `ref/taxonomy.json` | Categories[] + tags[] | category-tag |
+| `pages/home.json` | matchDay (byLeague[]) + posts (featured + items[]) | home |
+| `pages/news.json` | Paginated PostRef[] | news |
+| `pages/post-detail.json` | Post content + relatedMatch + prediction + relatedPosts | post-detail |
+| `pages/category-detail.json` | Category info + paginated PostRef[] | category-tag |
+| `pages/league-detail.json` | Standings, top scorers, fixtures | league-page |
+| `pages/match-detail.json` | Chi tiết 1 trận (lineup, events, stats) | match-detail |
+| `pages/team-detail.json` | Profile đội (squad, results) | team-profile |
+| `pages/player-detail.json` | Profile cầu thủ (stats, career) | player-profile |
+| `pages/predictions.json` | AI predictions nhóm theo league | predictions |
+| `pages/search.json` | Kết quả mix (matches + posts + teams) | search-results |
 
 ---
 
@@ -741,4 +730,4 @@ Tất cả 23 trang đã có file HTML prototype.
 
 ---
 
-*Cập nhật lần cuối: 2026-04-10 — thêm Interaction Catalog*
+*Cập nhật lần cuối: 2026-04-12 — fix bugs predictions/post-detail, cập nhật Data JSON table*

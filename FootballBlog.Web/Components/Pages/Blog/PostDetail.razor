@@ -1,0 +1,113 @@
+@page "/posts/{Slug}"
+@layout PublicLayout3Col
+@using FootballBlog.Core.DTOs
+@inject IPostApiClient PostClient
+@inject NavigationManager Nav
+
+@if (_post is null && !_loading)
+{
+    <NotFound />
+}
+else
+{
+    <SeoHead Title="@(_post?.Title ?? "Đang tải...")"
+             Description="@GetDescription()"
+             OgType="article"
+             ImageUrl="@_post?.Thumbnail"
+             CanonicalUrl="@(Nav.BaseUri.TrimEnd('/') + $"/posts/{Slug}")"
+             JsonLd="@_jsonLd" />
+
+    @if (_loading)
+    {
+        <div style="padding:40px; color:var(--muted); font-size:13px;">Đang tải bài viết...</div>
+    }
+    else if (_post is not null)
+    {
+        <article style="padding:16px 20px 40px; max-width:760px;">
+            <!-- Breadcrumb -->
+            <nav style="font-size:11px; color:var(--muted); margin-bottom:16px;">
+                <a href="/" style="color:var(--muted); text-decoration:none;">Trang chủ</a>
+                <span style="margin:0 6px;">›</span>
+                <a href="/category/@_post.CategorySlug" style="color:var(--muted); text-decoration:none;">@_post.CategoryName</a>
+                <span style="margin:0 6px;">›</span>
+                <span style="color:var(--text-main);">@_post.Title</span>
+            </nav>
+
+            <!-- Header -->
+            <header>
+                <TagPill Slug="@_post.CategorySlug" Text="@_post.CategoryName" />
+                <h1 style="font-size:22px; font-weight:700; color:var(--text-main); margin:12px 0 8px; line-height:1.35;">
+                    @_post.Title
+                </h1>
+                <div style="font-size:11px; color:var(--muted); margin-bottom:16px;">
+                    <span>@_post.AuthorName</span>
+                    <span style="margin:0 6px;">·</span>
+                    <span>@_post.PublishedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+
+                @if (!string.IsNullOrEmpty(_post.Thumbnail))
+                {
+                    <img src="@_post.Thumbnail" alt="@_post.Title"
+                         style="width:100%; border-radius:8px; margin-bottom:20px; max-height:400px; object-fit:cover;" />
+                }
+            </header>
+
+            <!-- Content -->
+            <div class="post-body" style="color:var(--text-main); font-size:14px; line-height:1.75;">
+                @((MarkupString)_post.Content)
+            </div>
+
+            <!-- Tags -->
+            @if (_post.Tags.Count > 0)
+            {
+                <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border-main);">
+                    <span style="font-size:11px; color:var(--muted); margin-right:6px;">Tags:</span>
+                    @foreach (var tag in _post.Tags)
+                    {
+                        <TagPill Slug="@SlugifyTag(tag)" Text="@tag" />
+                    }
+                </div>
+            }
+        </article>
+    }
+}
+
+@code {
+    [Parameter] public string Slug { get; set; } = "";
+
+    private PostDetailDto? _post;
+    private bool _loading = true;
+    private string? _jsonLd;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _post = await PostClient.GetBySlugAsync(Slug);
+        if (_post is not null) _jsonLd = BuildJsonLd();
+        _loading = false;
+    }
+
+    private string GetDescription()
+    {
+        if (_post is null) return "";
+        // Lấy ~160 ký tự đầu từ content (bỏ HTML tags)
+        var plain = System.Text.RegularExpressions.Regex.Replace(_post.Content, "<[^>]+>", "");
+        return plain.Length > 160 ? plain[..160] + "..." : plain;
+    }
+
+    private string BuildJsonLd()
+    {
+        var title = _post!.Title.Replace("\"", "\\\"");
+        var author = _post.AuthorName.Replace("\"", "\\\"");
+        var date = _post.PublishedAt.ToString("yyyy-MM-ddTHH:mm:ssZ");
+        var section = _post.CategoryName.Replace("\"", "\\\"");
+        return "{\"@context\":\"https://schema.org\",\"@type\":\"NewsArticle\","
+             + "\"headline\":\"" + title + "\","
+             + "\"author\":{\"@type\":\"Person\",\"name\":\"" + author + "\"},"
+             + "\"datePublished\":\"" + date + "\","
+             + "\"articleSection\":\"" + section + "\"}";
+    }
+
+    private static string SlugifyTag(string tag) =>
+        tag.ToLower().Replace(" ", "-");
+}

@@ -1,0 +1,97 @@
+@using FootballBlog.Core.DTOs
+@inject IPostApiClient PostClient
+
+<aside class="right-sidebar">
+    <div class="right-header">
+        <span class="right-title">Nhận định trận đấu</span>
+        <div class="ai-badge">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 0 2h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1 0-2h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2zm-5 9a5 5 0 0 0-5 5v1h14v-1a5 5 0 0 0-5-5H7zm3 2a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm4 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z" />
+            </svg>
+            AI Agent
+        </div>
+    </div>
+
+    <div class="right-tabs">
+        @foreach (var tab in _tabs)
+        {
+            <button class="right-tab @(tab == _activeTab ? "active" : "")"
+                    @onclick="() => SetTab(tab)">
+                @tab
+            </button>
+        }
+    </div>
+
+    <div class="right-scroll" id="right-scroll">
+        @if (_loading)
+        {
+            <div style="padding:16px; color:var(--muted); font-size:12px;">Đang tải...</div>
+        }
+        else if (_posts.Count == 0)
+        {
+            <div style="padding:16px; color:var(--muted); font-size:12px;">Chưa có bài viết</div>
+        }
+        else
+        {
+            @* Featured post — bài đầu tiên *@
+            <a href="/posts/@_posts[0].Slug" class="post-featured" style="text-decoration:none;">
+                <div class="post-featured-thumb" style="background:@GetThumbBg(_posts[0].Thumbnail);">
+                    @GetEmoji(_posts[0].CategoryName)
+                    <div class="post-featured-tag">@_posts[0].CategoryName</div>
+                </div>
+                <div class="post-featured-body">
+                    <div class="post-featured-title">@_posts[0].Title</div>
+                    <div class="post-featured-meta">@FormatTimeAgo(_posts[0].PublishedAt)</div>
+                </div>
+            </a>
+
+            @* Danh sách còn lại *@
+            @foreach (var post in _posts.Skip(1))
+            {
+                <PostCardCompact Post="post" />
+            }
+        }
+    </div>
+</aside>
+
+@code {
+    private readonly string[] _tabs = ["Nhận định", "Dự đoán", "Phân tích"];
+    private string _activeTab = "Nhận định";
+    private List<PostSummaryDto> _posts = [];
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync() => await LoadPosts();
+
+    private async Task SetTab(string tab)
+    {
+        _activeTab = tab;
+        await LoadPosts();
+    }
+
+    private async Task LoadPosts()
+    {
+        _loading = true;
+        var result = await PostClient.GetPublishedAsync(page: 1, pageSize: 6);
+        _posts = result?.Items.ToList() ?? [];
+        _loading = false;
+    }
+
+    private static string GetThumbBg(string? thumb) =>
+        thumb ?? "linear-gradient(135deg,#1a1a2e,#16213e)";
+
+    private static string GetEmoji(string category) => category.ToLower() switch
+    {
+        var c when c.Contains("dự đoán") || c.Contains("ai") => "🤖",
+        var c when c.Contains("phân tích") => "📊",
+        var c when c.Contains("tin") => "📰",
+        _ => "⚽"
+    };
+
+    private static string FormatTimeAgo(DateTime dt)
+    {
+        var diff = DateTime.UtcNow - dt.ToUniversalTime();
+        if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes} phút trước";
+        if (diff.TotalHours < 24) return $"{(int)diff.TotalHours} giờ trước";
+        return $"{(int)diff.TotalDays} ngày trước";
+    }
+}

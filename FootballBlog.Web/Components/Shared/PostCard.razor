@@ -1,0 +1,48 @@
+@using FootballBlog.Core.DTOs
+
+<a href="/posts/@Post.Slug" class="news-card" style="text-decoration:none;">
+    <div class="news-card-thumb" style="background:@_thumbBg;">
+        @_thumbEmoji
+        <span class="news-card-cat">@Post.CategoryName</span>
+    </div>
+    <div class="news-card-body">
+        <div class="news-card-league">@Post.CategoryName</div>
+        <div class="news-card-title">@Post.Title</div>
+        <div class="news-card-meta">
+            <span class="news-card-time">@_timeAgo</span>
+            <span class="news-card-read">Đọc →</span>
+        </div>
+    </div>
+</a>
+
+@code {
+    [Parameter, EditorRequired] public PostSummaryDto Post { get; set; } = null!;
+
+    private string _thumbBg = "linear-gradient(135deg,#1a1a2e,#16213e)";
+    private string _thumbEmoji = "⚽";
+    private string _timeAgo = "";
+
+    protected override void OnParametersSet()
+    {
+        _thumbBg = Post.Thumbnail ?? "linear-gradient(135deg,#1a1a2e,#16213e)";
+        _thumbEmoji = GetEmoji(Post.CategoryName);
+        _timeAgo = FormatTimeAgo(Post.PublishedAt);
+    }
+
+    private static string GetEmoji(string category) => category.ToLower() switch
+    {
+        var c when c.Contains("dự đoán") || c.Contains("ai") => "🤖",
+        var c when c.Contains("phân tích") => "📊",
+        var c when c.Contains("tin") => "📰",
+        _ => "⚽"
+    };
+
+    private static string FormatTimeAgo(DateTime dt)
+    {
+        var diff = DateTime.UtcNow - dt.ToUniversalTime();
+        if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes} phút trước";
+        if (diff.TotalHours < 24) return $"{(int)diff.TotalHours} giờ trước";
+        if (diff.TotalDays < 7) return $"{(int)diff.TotalDays} ngày trước";
+        return dt.ToString("dd/MM/yyyy");
+    }
+}

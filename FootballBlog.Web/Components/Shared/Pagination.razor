@@ -1,0 +1,58 @@
+@using FootballBlog.Core.DTOs
+
+@if (TotalPages > 1)
+{
+    <div class="pagination">
+        @if (CurrentPage > 1)
+        {
+            <button class="page-btn page-prev" @onclick="() => OnPageChange.InvokeAsync(CurrentPage - 1)">‹</button>
+        }
+
+        @foreach (int pageNum in GetPageNumbers())
+        {
+            @if (pageNum == -1)
+            {
+                <span class="page-ellipsis">…</span>
+            }
+            else
+            {
+                <button class="page-num @(pageNum == CurrentPage ? "active" : "")"
+                        @onclick="() => OnPageChange.InvokeAsync(pageNum)">
+                    @pageNum
+                </button>
+            }
+        }
+
+        @if (CurrentPage < TotalPages)
+        {
+            <button class="page-btn page-next" @onclick="() => OnPageChange.InvokeAsync(CurrentPage + 1)">›</button>
+        }
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public int CurrentPage { get; set; }
+    [Parameter, EditorRequired] public int TotalPages { get; set; }
+    [Parameter, EditorRequired] public EventCallback<int> OnPageChange { get; set; }
+
+    private IEnumerable<int> GetPageNumbers()
+    {
+        // Hiện tối đa 7 nút: 1 ... (cur-1) cur (cur+1) ... last
+        var pages = new List<int>();
+        if (TotalPages <= 7)
+        {
+            for (int i = 1; i <= TotalPages; i++) pages.Add(i);
+            return pages;
+        }
+
+        pages.Add(1);
+        if (CurrentPage > 3) pages.Add(-1); // ellipsis
+
+        for (int i = Math.Max(2, CurrentPage - 1); i <= Math.Min(TotalPages - 1, CurrentPage + 1); i++)
+            pages.Add(i);
+
+        if (CurrentPage < TotalPages - 2) pages.Add(-1); // ellipsis
+        pages.Add(TotalPages);
+        return pages;
+    }
+}

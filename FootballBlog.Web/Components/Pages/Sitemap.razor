@@ -1,0 +1,51 @@
+@page "/sitemap.xml"
+@layout EmptyLayout
+@using FootballBlog.Core.DTOs
+@inject IPostApiClient PostClient
+@inject ICategoryApiClient CategoryClient
+@inject NavigationManager Nav
+
+@((MarkupString)_xml)
+
+@code {
+    private string _xml = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var baseUrl = Nav.BaseUri.TrimEnd('/');
+
+        var postsTask = PostClient.GetPublishedAsync(1, 500);
+        var categoriesTask = CategoryClient.GetAllAsync();
+
+        await Task.WhenAll(postsTask, categoriesTask);
+
+        var posts = postsTask.Result?.Items ?? [];
+        var categories = categoriesTask.Result ?? [];
+
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        sb.AppendLine("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">");
+
+        // Static pages
+        sb.AppendLine(Url(baseUrl + "/", "daily", "1.0"));
+        sb.AppendLine(Url(baseUrl + "/news", "daily", "0.9"));
+
+        // Categories
+        foreach (var cat in categories)
+            sb.AppendLine(Url($"{baseUrl}/category/{cat.Slug}", "weekly", "0.7"));
+
+        // Posts
+        foreach (var post in posts)
+            sb.AppendLine(Url($"{baseUrl}/posts/{post.Slug}", "monthly", "0.8",
+                post.PublishedAt.ToString("yyyy-MM-dd")));
+
+        sb.AppendLine("</urlset>");
+        _xml = sb.ToString();
+    }
+
+    private static string Url(string loc, string changefreq, string priority, string? lastmod = null)
+    {
+        var lastmodTag = lastmod is not null ? $"<lastmod>{lastmod}</lastmod>" : "";
+        return $"  <url><loc>{loc}</loc>{lastmodTag}<changefreq>{changefreq}</changefreq><priority>{priority}</priority></url>";
+    }
+}
