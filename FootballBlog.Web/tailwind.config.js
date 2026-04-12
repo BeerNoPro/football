@@ -1,8 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./**/*.{razor,html}",
-    "./Components/**/*.{razor,cs}",
+    "./Components/**/*.{razor,cs}",   // Blazor components — nguồn chính
+    "./Pages/**/*.{razor,cs}",        // Razor pages nếu có
+    "!./wwwroot/prototype/**",        // Exclude prototype HTML (dùng common.css, không phải Tailwind)
+    "!./wwwroot/**",                  // Exclude tất cả wwwroot output
   ],
   theme: {
     extend: {

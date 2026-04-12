@@ -10,17 +10,17 @@
 
 <!-- Breaking strip -->
 <div class="breaking-strip">
-    <span class="breaking-label">TIN MỚI</span>
+    <span class="breaking-label">⚡ TIN MỚI</span>
     <span class="breaking-text">Cập nhật tin tức bóng đá mới nhất từ FootballBlog</span>
 </div>
 
-<!-- Filter pills (Phase 2: visual, Phase 4: thật) -->
+<!-- Filter pills -->
 <div class="news-filter-bar">
-    <span class="filter-pill active">Tất cả</span>
-    <span class="filter-pill">🤖 AI Prediction</span>
-    <span class="filter-pill">📊 Phân tích</span>
-    <span class="filter-pill">📰 Tin tức</span>
-    <span class="filter-pill">🇻🇳 V.League</span>
+    <button class="filter-pill active">Tất cả</button>
+    <button class="filter-pill">🤖 AI Prediction</button>
+    <button class="filter-pill">📊 Phân tích</button>
+    <button class="filter-pill">📰 Tin tức</button>
+    <button class="filter-pill">🇻🇳 V.League</button>
 </div>
 
 <div class="news-scroll">
@@ -35,7 +35,7 @@
     else
     {
         @* Hero featured — bài đầu tiên *@
-        <a href="/posts/@_posts[0].Slug" class="news-hero" style="display:block; text-decoration:none;">
+        <a href="/posts/@_posts[0].Slug" class="news-hero" style="text-decoration:none;">
             <div class="news-hero-inner">
                 <div class="news-hero-content">
                     <div class="hero-category-pill">@_posts[0].CategoryName</div>
@@ -45,6 +45,9 @@
                         <span class="hero-meta-sep">·</span>
                         <span>@FormatDate(_posts[0].PublishedAt)</span>
                     </div>
+                </div>
+                <div class="news-hero-image">
+                    @PostHelpers.GetEmoji(_posts[0].CategoryName)
                 </div>
             </div>
         </a>

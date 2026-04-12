@@ -14,45 +14,39 @@ else
              Description="@_seoDesc"
              CanonicalUrl="@_canonicalUrl" />
 
-    <div style="padding:20px 16px 40px;">
-        <!-- Header -->
-        <div style="margin-bottom:20px;">
-            <div style="font-size:11px; color:var(--muted); margin-bottom:6px;">
-                <a href="/" style="color:var(--muted); text-decoration:none;">Trang chủ</a>
-                <span style="margin:0 6px;">›</span>
-                <span>Tag: @_tag?.Name</span>
+    <!-- Tag header -->
+    <div class="tag-header">
+        <div class="tag-header-top">
+            <div class="tag-icon">🏷️</div>
+            <div class="tag-info">
+                <div class="tag-name">#@(_tag?.Name ?? Slug)</div>
+                <div class="tag-sub">@(_total > 0 ? $"{_total} bài viết" : "Tag")</div>
             </div>
-            <h1 style="font-size:20px; font-weight:700; color:var(--text-main);">
-                #@(_tag?.Name ?? Slug)
-            </h1>
-            @if (_total > 0)
-            {
-                <div style="font-size:11px; color:var(--muted); margin-top:4px;">@_total bài viết</div>
-            }
         </div>
+    </div>
 
-        @if (_loading)
-        {
-            <div style="color:var(--muted); font-size:12px;">Đang tải...</div>
-        }
-        else if (_posts.Count == 0)
-        {
-            <div style="color:var(--muted);">Chưa có bài viết nào với tag này.</div>
-        }
-        else
-        {
-            <div class="news-grid">
+    @if (_loading)
+    {
+        <div style="padding:24px; color:var(--muted); font-size:12px;">Đang tải...</div>
+    }
+    else if (_posts.Count == 0)
+    {
+        <div style="padding:24px; color:var(--muted);">Chưa có bài viết nào với tag này.</div>
+    }
+    else
+    {
+        <div class="posts-scroll">
+            <div class="posts-grid">
                 @foreach (var post in _posts)
                 {
                     <PostCard Post="post" />
                 }
             </div>
-
             <Pagination CurrentPage="_page"
                         TotalPages="_totalPages"
                         OnPageChange="ChangePage" />
-        }
-    </div>
+        </div>
+    }
 }
 
 @code {

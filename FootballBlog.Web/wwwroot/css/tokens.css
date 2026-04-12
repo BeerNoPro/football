@@ -1,0 +1,47 @@
+/* ===================================================
+   FOOTBALLBLOG — Design Tokens
+   CSS custom properties (variables) + base reset
+   Nguồn duy nhất cho toàn bộ design system
+=================================================== */
+
+/* ===== CSS VARIABLES ===== */
+:root {
+  --bg:          #141414;
+  --bg-sidebar:  #111111;
+  --bg-card:     #1c1c1c;
+  --bg-row:      #181818;
+  --bg-dark:     #0d0d0d;
+  --accent:      #c8f04d;
+  --accent-dim:  rgba(200,240,77,0.1);
+  --accent-glow: rgba(200,240,77,0.15);
+  --text:        #efefef;
+  --muted:       #666;
+  --muted2:      #999;
+  --border:      #242424;
+  --border2:     #2e2e2e;
+  --live:        #4ade80;
+  --live-dim:    rgba(74,222,128,0.12);
+}
+
+/* ===== BASE RESET ===== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ===== ALIASES (Blazor components dùng tên khác) ===== */
+/* Không thay đổi, chỉ alias để tương thích */
+:root {
+  --text-main:   var(--text);
+  --border-main: var(--border);
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2e2e2e; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #3e3e3e; }

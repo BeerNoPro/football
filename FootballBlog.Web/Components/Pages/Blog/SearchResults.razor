@@ -7,55 +7,66 @@
 <SeoHead Title="@($"Tìm kiếm: {_query} — FootballBlog")"
          Description="@($"Kết quả tìm kiếm cho \"{_query}\" trên FootballBlog")" />
 
-<div style="padding:20px 16px 40px;">
-    <!-- Search bar -->
-    <div style="margin-bottom:20px;">
-        <div style="font-size:11px; color:var(--muted); margin-bottom:10px;">
-            <a href="/" style="color:var(--muted); text-decoration:none;">Trang chủ</a>
-            <span style="margin:0 6px;">›</span>
-            <span>Tìm kiếm</span>
-        </div>
-        <div style="display:flex; gap:8px; align-items:center;">
-            <input type="text"
-                   @bind="_searchInput"
-                   @bind:event="oninput"
-                   @onkeydown="OnKeyDown"
-                   placeholder="Tìm kiếm bài viết..."
-                   style="flex:1; background:var(--bg-card); border:1px solid var(--border2); border-radius:6px; padding:8px 12px; color:var(--text-main); font-size:13px;" />
-            <button @onclick="DoSearch"
-                    style="background:var(--accent); color:#000; border:none; border-radius:6px; padding:8px 16px; font-size:13px; font-weight:600; cursor:pointer;">
-                Tìm
-            </button>
-        </div>
+<!-- Search hero -->
+<div class="search-hero">
+    <div class="search-hero-bar">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+             style="color:var(--muted); flex-shrink:0;">
+            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+        </svg>
+        <input type="text"
+               @bind="_searchInput"
+               @bind:event="oninput"
+               @onkeydown="OnKeyDown"
+               placeholder="Tìm kiếm bài viết, đội bóng, giải đấu..." />
+        <button @onclick="DoSearch">Tìm</button>
     </div>
-
     @if (!string.IsNullOrEmpty(_query))
     {
-        <div style="font-size:12px; color:var(--muted); margin-bottom:16px;">
-            @_total kết quả cho "<strong style="color:var(--text-main);">@_query</strong>"
-        </div>
-
-        @if (_loading)
-        {
-            <div style="color:var(--muted); font-size:12px;">Đang tìm kiếm...</div>
-        }
-        else if (_posts.Count == 0)
-        {
-            <div style="color:var(--muted);">Không tìm thấy bài viết nào phù hợp.</div>
-        }
-        else
-        {
-            <div class="news-grid">
-                @foreach (var post in _posts)
-                {
-                    <PostCard Post="post" />
-                }
+        <div class="search-meta">
+            <span class="search-count">
+                @_total kết quả cho "<strong style="color:var(--text);">@_query</strong>"
+            </span>
+            <div class="search-filters">
+                <button class="search-filter-btn active">Tất cả</button>
+                <button class="search-filter-btn">Bài viết</button>
+                <button class="search-filter-btn">Trận đấu</button>
             </div>
+        </div>
+    }
+</div>
 
-            <Pagination CurrentPage="_page"
-                        TotalPages="_totalPages"
-                        OnPageChange="ChangePage" />
-        }
+<!-- Results -->
+<div class="results-scroll">
+    @if (string.IsNullOrEmpty(_query))
+    {
+        <div style="padding:40px 16px; color:var(--muted); font-size:13px; text-align:center;">
+            Nhập từ khóa để tìm kiếm bài viết
+        </div>
+    }
+    else if (_loading)
+    {
+        <div style="padding:24px 16px; color:var(--muted); font-size:12px;">Đang tìm kiếm...</div>
+    }
+    else if (_posts.Count == 0)
+    {
+        <div style="padding:40px 16px; color:var(--muted); text-align:center;">
+            <div style="font-size:32px; margin-bottom:8px;">🔍</div>
+            <div>Không tìm thấy kết quả cho "@_query"</div>
+        </div>
+    }
+    else
+    {
+        <div class="result-section-header">Bài viết (@_total)</div>
+        <div class="post-results-grid">
+            @foreach (var post in _posts)
+            {
+                <PostCard Post="post" />
+            }
+        </div>
+        <Pagination CurrentPage="_page"
+                    TotalPages="_totalPages"
+                    OnPageChange="ChangePage" />
     }
 </div>
 
@@ -82,7 +93,6 @@
     private async Task LoadPosts()
     {
         _loading = true;
-        // Phase 2: load tất cả rồi filter client-side theo title
         // Phase 4: thay bằng search endpoint thật
         var result = await PostClient.GetPublishedAsync(_page, PageSize);
         if (result != null)
@@ -97,10 +107,7 @@
         _loading = false;
     }
 
-    private void OnKeyDown(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter") DoSearch();
-    }
+    private void OnKeyDown(KeyboardEventArgs e) { if (e.Key == "Enter") DoSearch(); }
 
     private void DoSearch()
     {

@@ -25,6 +25,7 @@ secrets.json
 ## Node / Tailwind
 node_modules/
 npm-debug.log*
+**/wwwroot/app.css        # Build artifact — generate bằng `npm run build:css`
 
 ## OS
 .DS_Store

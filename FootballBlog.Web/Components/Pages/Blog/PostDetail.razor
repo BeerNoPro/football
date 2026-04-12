@@ -17,59 +17,60 @@ else
              CanonicalUrl="@(Nav.BaseUri.TrimEnd('/') + $"/posts/{Slug}")"
              JsonLd="@_jsonLd" />
 
-    @if (_loading)
-    {
-        <div style="padding:40px; color:var(--muted); font-size:13px;">Đang tải bài viết...</div>
-    }
-    else if (_post is not null)
-    {
-        <article style="padding:16px 20px 40px; max-width:760px;">
-            <!-- Breadcrumb -->
-            <nav style="font-size:11px; color:var(--muted); margin-bottom:16px;">
-                <a href="/" style="color:var(--muted); text-decoration:none;">Trang chủ</a>
-                <span style="margin:0 6px;">›</span>
-                <a href="/category/@_post.CategorySlug" style="color:var(--muted); text-decoration:none;">@_post.CategoryName</a>
-                <span style="margin:0 6px;">›</span>
-                <span style="color:var(--text-main);">@_post.Title</span>
-            </nav>
-
-            <!-- Header -->
-            <header>
-                <TagPill Slug="@_post.CategorySlug" Text="@_post.CategoryName" />
-                <h1 style="font-size:22px; font-weight:700; color:var(--text-main); margin:12px 0 8px; line-height:1.35;">
-                    @_post.Title
-                </h1>
-                <div style="font-size:11px; color:var(--muted); margin-bottom:16px;">
-                    <span>@_post.AuthorName</span>
-                    <span style="margin:0 6px;">·</span>
-                    <span>@_post.PublishedAt.ToString("dd/MM/yyyy HH:mm")</span>
-                </div>
-
-                @if (!string.IsNullOrEmpty(_post.Thumbnail))
-                {
-                    <img src="@_post.Thumbnail" alt="@_post.Title"
-                         style="width:100%; border-radius:8px; margin-bottom:20px; max-height:400px; object-fit:cover;" />
-                }
-            </header>
-
-            <!-- Content -->
-            <div class="post-body" style="color:var(--text-main); font-size:14px; line-height:1.75;">
-                @((MarkupString)_post.Content)
-            </div>
-
-            <!-- Tags -->
-            @if (_post.Tags.Count > 0)
+    <div class="article-col">
+        <div class="article-scroll">
+            @if (_loading)
             {
-                <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border-main);">
-                    <span style="font-size:11px; color:var(--muted); margin-right:6px;">Tags:</span>
-                    @foreach (var tag in _post.Tags)
+                <div style="padding:40px; color:var(--muted); font-size:13px;">Đang tải bài viết...</div>
+            }
+            else if (_post is not null)
+            {
+                <div class="article-wrap">
+                    <!-- Breadcrumb -->
+                    <nav class="breadcrumb">
+                        <a href="/">Trang chủ</a>
+                        <span class="breadcrumb-sep">›</span>
+                        <a href="/category/@_post.CategorySlug">@_post.CategoryName</a>
+                        <span class="breadcrumb-sep">›</span>
+                        <span style="color:var(--muted2);">@_post.Title</span>
+                    </nav>
+
+                    <!-- Meta -->
+                    <div class="article-meta">
+                        <TagPill Slug="@_post.CategorySlug" Text="@_post.CategoryName" />
+                        <span class="article-meta-time">
+                            @_post.AuthorName · @_post.PublishedAt.ToString("dd/MM/yyyy HH:mm")
+                        </span>
+                    </div>
+
+                    <!-- Title -->
+                    <h1 class="article-title">@_post.Title</h1>
+
+                    <!-- Featured image -->
+                    @if (!string.IsNullOrEmpty(_post.Thumbnail))
                     {
-                        <TagPill Slug="@SlugifyTag(tag)" Text="@tag" />
+                        <img src="@_post.Thumbnail" alt="@_post.Title" class="article-featured-img" />
+                    }
+
+                    <!-- Content -->
+                    <div class="article-body">
+                        @((MarkupString)_post.Content)
+                    </div>
+
+                    <!-- Tags -->
+                    @if (_post.Tags.Count > 0)
+                    {
+                        <div class="article-tags">
+                            @foreach (var tag in _post.Tags)
+                            {
+                                <a href="/tag/@SlugifyTag(tag)" class="article-tag-pill">#@tag</a>
+                            }
+                        </div>
                     }
                 </div>
             }
-        </article>
-    }
+        </div>
+    </div>
 }
 
 @code {
@@ -90,7 +91,6 @@ else
     private string GetDescription()
     {
         if (_post is null) return "";
-        // Lấy ~160 ký tự đầu từ content (bỏ HTML tags)
         var plain = System.Text.RegularExpressions.Regex.Replace(_post.Content, "<[^>]+>", "");
         return plain.Length > 160 ? plain[..160] + "..." : plain;
     }
@@ -108,6 +108,5 @@ else
              + "\"articleSection\":\"" + section + "\"}";
     }
 
-    private static string SlugifyTag(string tag) =>
-        tag.ToLower().Replace(" ", "-");
+    private static string SlugifyTag(string tag) => tag.ToLower().Replace(" ", "-");
 }

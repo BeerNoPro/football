@@ -21,36 +21,124 @@
             Cập nhật trực tiếp · Nhận định AI · Dự đoán tỷ số
         </div>
     </div>
+    <div class="hero-dots">
+        <div class="hero-dot active"></div>
+        <div class="hero-dot"></div>
+        <div class="hero-dot"></div>
+    </div>
 </div>
 
-<!-- Tab bar -->
-<div class="tabs" style="padding:0 16px; border-bottom:1px solid var(--border-main);">
-    <a href="/" class="tab-btn active">📅 Lịch thi đấu</a>
-    <a href="/predictions" class="tab-btn">🤖 Dự đoán AI</a>
-    <a href="/news" class="tab-btn">📰 Tin tức</a>
-</div>
+<!-- Match panel (Phase 4: dữ liệu thật từ Football API — hiện mock) -->
+<div class="match-panel">
+    <!-- Toolbar -->
+    <div class="match-toolbar">
+        <div class="live-pill">
+            <span class="live-dot"></span> LIVE · 2
+        </div>
+        <div class="match-search-bar">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+            </svg>
+            <input type="text" placeholder="Tìm đội bóng, giải đấu..." disabled />
+        </div>
+        <button class="filter-btn">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+            </svg>
+            Tất cả giải
+        </button>
+    </div>
 
-<!-- Match list placeholder — Phase 4 sẽ thay bằng dữ liệu thật -->
-<div class="matches-list" style="padding:24px 16px; color:var(--muted); font-size:13px; text-align:center;">
-    <div style="margin-bottom:8px;">⚽</div>
-    <div>Dữ liệu lịch thi đấu sẽ được tích hợp ở Phase 4</div>
-    <div style="margin-top:4px; font-size:11px;">(Football API + Hangfire jobs)</div>
+    <!-- Tab + Date bar -->
+    <div class="tab-date-row">
+        <div class="tabs">
+            <a href="/" class="tab-btn active">📅 Lịch thi đấu</a>
+            <a href="/predictions" class="tab-btn">🤖 Dự đoán AI</a>
+            <a href="/news" class="tab-btn">📰 Tin tức</a>
+        </div>
+        <div class="date-bar">
+            <button class="date-nav">‹</button>
+            @foreach (var d in _dates)
+            {
+                <button class="date-btn2 @(d.IsToday ? "active" : "")">
+                    <span class="dn">@d.DayName</span>
+                    <span class="dd">@d.Day</span>
+                </button>
+            }
+            <button class="date-nav">›</button>
+        </div>
+    </div>
+
+    <!-- Match list (mock data — Phase 4 thay bằng API) -->
+    <div class="matches-list">
+        @foreach (var league in _mockLeagues)
+        {
+            <div class="lg @(league.IsExpanded ? "" : "collapsed")">
+                <div class="lg-header" @onclick="() => league.IsExpanded = !league.IsExpanded">
+                    <div class="lg-icon">@league.Flag</div>
+                    <span class="lg-name lg-name-link">@league.Name</span>
+                    <span class="lg-round">Vòng @league.Round</span>
+                    <span class="lg-chevron">▾</span>
+                </div>
+                @if (league.IsExpanded)
+                {
+                    <div class="lg-matches">
+                        @foreach (var m in league.Matches)
+                        {
+                            <div class="match-row">
+                                <div class="mr-time @(m.IsLive ? "is-live" : "")">
+                                    @if (m.IsLive) { <span>@m.Minute'</span> }
+                                    else { <span>@m.Time</span> }
+                                </div>
+                                <div class="mr-home @(m.IsLive && m.HomeScore > m.AwayScore ? "live-team" : "")">
+                                    <span class="tn">@m.Home</span>
+                                    <div class="tl">@m.HomeEmoji</div>
+                                </div>
+                                <div class="score-c @(m.IsLive ? "is-live-score" : m.IsFinished ? "has-score" : "no-score")">
+                                    @if (m.IsLive || m.IsFinished) { <span>@m.HomeScore – @m.AwayScore</span> }
+                                    else { <span>–</span> }
+                                </div>
+                                <div class="mr-away @(m.IsLive && m.AwayScore > m.HomeScore ? "live-team" : "")">
+                                    <div class="tl">@m.AwayEmoji</div>
+                                    <span class="tn">@m.Away</span>
+                                </div>
+                                <div class="mr-status">
+                                    @if (m.IsLive)
+                                    {
+                                        <span class="badge-live"><span class="live-dot"></span> LIVE</span>
+                                    }
+                                    else if (m.IsFinished)
+                                    {
+                                        <span class="badge-ft">KT</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge-sch">@m.Time</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
 </div>
 
 <!-- Latest news section -->
-<div style="padding:0 16px 24px;">
+<div style="padding-bottom:24px;">
     <div class="section-hd">
         <span class="section-hd-title">Bài viết mới nhất</span>
-        <a href="/news" style="font-size:11px; color:var(--accent); text-decoration:none;">Xem tất cả →</a>
+        <a href="/news" class="section-hd-more">Xem tất cả →</a>
     </div>
 
     @if (_loading)
     {
-        <div style="color:var(--muted); font-size:12px; padding:12px 0;">Đang tải...</div>
+        <div style="color:var(--muted); font-size:12px; padding:12px 16px;">Đang tải...</div>
     }
     else if (_posts.Count == 0)
     {
-        <div style="color:var(--muted); font-size:12px; padding:12px 0;">Chưa có bài viết nào.</div>
+        <div style="color:var(--muted); font-size:12px; padding:12px 16px;">Chưa có bài viết nào.</div>
     }
     else
     {
@@ -78,10 +166,55 @@
     private const int PageSize = 9;
     private string _baseUrl = "";
 
+    // Date bar mock
+    private List<DateItem> _dates = [];
+
+    // Mock league data (Phase 4: thay bằng Football API)
+    private List<MockLeague> _mockLeagues =
+    [
+        new MockLeague
+        {
+            Name = "V.League 1 — 2025", Flag = "🇻🇳", Round = 18, IsExpanded = true,
+            Matches =
+            [
+                new MockMatch { Home = "Hà Nội FC", Away = "HAGL", Time = "18:00", HomeEmoji = "🔵", AwayEmoji = "🟡", IsLive = true, Minute = 67, HomeScore = 2, AwayScore = 1 },
+                new MockMatch { Home = "SHB Đà Nẵng", Away = "Becamex Bình Dương", Time = "18:00", HomeEmoji = "🔴", AwayEmoji = "🟢", IsLive = true, Minute = 55, HomeScore = 0, AwayScore = 0 },
+                new MockMatch { Home = "Viettel FC", Away = "Hải Phòng FC", Time = "20:00", HomeEmoji = "🔴", AwayEmoji = "⚫", IsFinished = false },
+            ]
+        },
+        new MockLeague
+        {
+            Name = "Premier League", Flag = "🏴󠁧󠁢󠁥󠁮󠁧󠁿", Round = 36, IsExpanded = true,
+            Matches =
+            [
+                new MockMatch { Home = "Arsenal", Away = "Chelsea", Time = "21:00", HomeEmoji = "🔴", AwayEmoji = "🔵", IsFinished = true, HomeScore = 2, AwayScore = 2 },
+                new MockMatch { Home = "Man City", Away = "Liverpool", Time = "23:30", HomeEmoji = "🔵", AwayEmoji = "🔴", IsFinished = false },
+                new MockMatch { Home = "Tottenham", Away = "Man United", Time = "02:00", HomeEmoji = "⚪", AwayEmoji = "🔴", IsFinished = false },
+            ]
+        }
+    ];
+
     protected override async Task OnInitializedAsync()
     {
         _baseUrl = Nav.BaseUri.TrimEnd('/');
+        BuildDates();
         await LoadPosts();
+    }
+
+    private void BuildDates()
+    {
+        var today = DateTime.Today;
+        var dayNames = new[] { "CN", "T2", "T3", "T4", "T5", "T6", "T7" };
+        for (int i = -3; i <= 3; i++)
+        {
+            var d = today.AddDays(i);
+            _dates.Add(new DateItem
+            {
+                DayName = dayNames[(int)d.DayOfWeek],
+                Day = d.Day.ToString("D2"),
+                IsToday = i == 0
+            });
+        }
     }
 
     private async Task LoadPosts()
@@ -100,5 +233,30 @@
     {
         _page = page;
         await LoadPosts();
+    }
+
+    private record DateItem { public string DayName { get; init; } = ""; public string Day { get; init; } = ""; public bool IsToday { get; init; } }
+
+    private class MockLeague
+    {
+        public string Name { get; set; } = "";
+        public string Flag { get; set; } = "";
+        public int Round { get; set; }
+        public bool IsExpanded { get; set; } = true;
+        public List<MockMatch> Matches { get; set; } = [];
+    }
+
+    private class MockMatch
+    {
+        public string Home { get; set; } = "";
+        public string Away { get; set; } = "";
+        public string HomeEmoji { get; set; } = "⚽";
+        public string AwayEmoji { get; set; } = "⚽";
+        public string Time { get; set; } = "";
+        public bool IsLive { get; set; }
+        public bool IsFinished { get; set; }
+        public int Minute { get; set; }
+        public int HomeScore { get; set; }
+        public int AwayScore { get; set; }
     }
 }

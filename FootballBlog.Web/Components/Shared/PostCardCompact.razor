@@ -1,42 +1,16 @@
 @using FootballBlog.Core.DTOs
 
 <a href="/posts/@Post.Slug" class="post-item" style="text-decoration:none;">
-    <div class="post-thumb" style="background:@_thumbBg;">@_thumbEmoji</div>
-    <div class="post-body">
-        <div class="post-tag">@Post.CategoryName</div>
-        <div class="post-title">@Post.Title</div>
-        <div class="post-time">@_timeAgo</div>
+    <div class="post-thumb" style="background:@PostHelpers.GetThumbBg(Post.Thumbnail);">
+        @PostHelpers.GetEmoji(Post.CategoryName)
+    </div>
+    <div class="post-item-body">
+        <div class="post-item-tag">@Post.CategoryName</div>
+        <div class="post-item-title">@Post.Title</div>
+        <div class="post-item-meta">@PostHelpers.FormatTimeAgo(Post.PublishedAt)</div>
     </div>
 </a>
 
 @code {
     [Parameter, EditorRequired] public PostSummaryDto Post { get; set; } = null!;
-
-    private string _thumbBg = "linear-gradient(135deg,#1a1a2e,#16213e)";
-    private string _thumbEmoji = "⚽";
-    private string _timeAgo = "";
-
-    protected override void OnParametersSet()
-    {
-        _thumbBg = Post.Thumbnail ?? "linear-gradient(135deg,#1a1a2e,#16213e)";
-        _thumbEmoji = GetEmoji(Post.CategoryName);
-        _timeAgo = FormatTimeAgo(Post.PublishedAt);
-    }
-
-    private static string GetEmoji(string category) => category.ToLower() switch
-    {
-        var c when c.Contains("dự đoán") || c.Contains("ai") => "🤖",
-        var c when c.Contains("phân tích") => "📊",
-        var c when c.Contains("tin") => "📰",
-        _ => "⚽"
-    };
-
-    private static string FormatTimeAgo(DateTime dt)
-    {
-        var diff = DateTime.UtcNow - dt.ToUniversalTime();
-        if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes} phút trước";
-        if (diff.TotalHours < 24) return $"{(int)diff.TotalHours} giờ trước";
-        if (diff.TotalDays < 7) return $"{(int)diff.TotalDays} ngày trước";
-        return dt.ToString("dd/MM/yyyy");
-    }
 }

@@ -35,13 +35,20 @@
         {
             @* Featured post — bài đầu tiên *@
             <a href="/posts/@_posts[0].Slug" class="post-featured" style="text-decoration:none;">
-                <div class="post-featured-thumb" style="background:@GetThumbBg(_posts[0].Thumbnail);">
-                    @GetEmoji(_posts[0].CategoryName)
-                    <div class="post-featured-tag">@_posts[0].CategoryName</div>
+                <div class="post-featured-img" style="background:@PostHelpers.GetThumbBg(_posts[0].Thumbnail);">
+                    @PostHelpers.GetEmoji(_posts[0].CategoryName)
+                    <div class="match-label">
+                        <span>@_posts[0].CategoryName</span>
+                        <span style="color:var(--accent); font-size:9px;">AI</span>
+                    </div>
                 </div>
                 <div class="post-featured-body">
-                    <div class="post-featured-title">@_posts[0].Title</div>
-                    <div class="post-featured-meta">@FormatTimeAgo(_posts[0].PublishedAt)</div>
+                    <div class="post-tag">@_posts[0].CategoryName</div>
+                    <div class="post-title">@_posts[0].Title</div>
+                    <div class="post-meta">
+                        <span class="post-time">@PostHelpers.FormatTimeAgo(_posts[0].PublishedAt)</span>
+                        <span class="post-read">Đọc →</span>
+                    </div>
                 </div>
             </a>
 
@@ -74,24 +81,5 @@
         var result = await PostClient.GetPublishedAsync(page: 1, pageSize: 6);
         _posts = result?.Items.ToList() ?? [];
         _loading = false;
-    }
-
-    private static string GetThumbBg(string? thumb) =>
-        thumb ?? "linear-gradient(135deg,#1a1a2e,#16213e)";
-
-    private static string GetEmoji(string category) => category.ToLower() switch
-    {
-        var c when c.Contains("dự đoán") || c.Contains("ai") => "🤖",
-        var c when c.Contains("phân tích") => "📊",
-        var c when c.Contains("tin") => "📰",
-        _ => "⚽"
-    };
-
-    private static string FormatTimeAgo(DateTime dt)
-    {
-        var diff = DateTime.UtcNow - dt.ToUniversalTime();
-        if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes} phút trước";
-        if (diff.TotalHours < 24) return $"{(int)diff.TotalHours} giờ trước";
-        return $"{(int)diff.TotalDays} ngày trước";
     }
 }
