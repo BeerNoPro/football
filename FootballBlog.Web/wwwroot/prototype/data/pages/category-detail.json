@@ -1,0 +1,74 @@
+{
+  "category": {
+    "id": 1,
+    "name": "AI Prediction",
+    "slug": "ai-prediction",
+    "icon": "🤖",
+    "description": "Nhận định & dự đoán tỷ số bằng AI — cập nhật trước mỗi trận đấu lớn",
+    "color": "#c8f04d",
+    "postCount": 41
+  },
+  "pagination": { "page": 1, "pageSize": 20, "total": 41 },
+  "posts": [
+    {
+      "id": 1,
+      "title": "Man City vs Arsenal: De Bruyne tung hoành, Guardiola sắp giành 3 điểm quan trọng",
+      "slug": "man-city-vs-arsenal-de-bruyne-tung-hoanh",
+      "excerpt": "Với lợi thế 1-0, Man City đang kiểm soát thế trận hoàn toàn. De Bruyne và Haaland phối hợp ăn ý.",
+      "thumbGradient": "linear-gradient(135deg, #1a1a3e 0%, #0f2860 50%, #1e3a6e 100%)",
+      "thumbEmoji": "⚽",
+      "tag": "🤖 AI Nhận định · Premier League",
+      "publishedAt": "2025-04-09T19:45:00",
+      "updatedAt": "21:45",
+      "url": "post-detail.html"
+    },
+    {
+      "id": 2,
+      "title": "Inter Milan vs Atlético: Simone Inzaghi lên kế hoạch bẫy phản công hoàn hảo",
+      "slug": "inter-milan-vs-atletico-inzaghi-ke-hoach-bay-phan-cong",
+      "excerpt": "Với lối chơi phản công sắc bén và sân San Siro là lợi thế lớn, Inter Milan đang có cơ hội vượt qua Atlético ở tứ kết.",
+      "thumbGradient": "linear-gradient(135deg, #0d2137, #1a3a5c)",
+      "thumbEmoji": "🏆",
+      "tag": "🤖 AI · Champions League",
+      "publishedAt": "2025-04-09T02:00:00",
+      "updatedAt": "5 phút trước",
+      "url": "post-detail.html"
+    },
+    {
+      "id": 3,
+      "title": "TPHCM FC vs Bình Dương: Trận derby miền Nam căng thẳng",
+      "slug": "tphcm-fc-vs-binh-duong-derby-mien-nam-vong-15",
+      "excerpt": "Hai đội đang thể hiện sức mạnh phòng thủ khi 0-0 kéo dài đến phút 65. Đây là trận derby miền Nam đầy căng thẳng.",
+      "thumbGradient": "linear-gradient(135deg, #1a3a0a, #2d5a0f)",
+      "thumbEmoji": "🇻🇳",
+      "tag": "🤖 AI · V.League 1",
+      "publishedAt": "2025-04-09T19:45:00",
+      "updatedAt": "12 phút trước",
+      "url": "post-detail.html"
+    },
+    {
+      "id": 4,
+      "title": "Tottenham vs Man United 22:15: Mourinho trên sân cũ — ai sẽ phá vỡ thế đối đầu?",
+      "slug": "tottenham-vs-man-united-gw32-du-doan",
+      "excerpt": "Tottenham đang có phong độ tốt tại sân nhà. Man United bất ổn định ở hàng thủ với 3 trận thủng lưới liên tiếp.",
+      "thumbGradient": "linear-gradient(135deg, #2d1a0a, #5a3010)",
+      "thumbEmoji": "🔴",
+      "tag": "🤖 AI · Premier League",
+      "publishedAt": "2025-04-09T16:00:00",
+      "updatedAt": "1 giờ trước",
+      "url": "post-detail.html"
+    },
+    {
+      "id": 6,
+      "title": "Hải Phòng FC vs Viettel FC 20:00: Cuộc chiến top 3 — ai sẽ bứt phá?",
+      "slug": "hai-phong-vs-viettel-vong-15-du-doan",
+      "excerpt": "Hải Phòng FC bất bại 5 trận gần nhất tại sân nhà. Viettel FC vắng Pedro Paulo do chấn thương.",
+      "thumbGradient": "linear-gradient(135deg, #0a1a2d, #1a3a5c)",
+      "thumbEmoji": "🔵",
+      "tag": "🤖 AI · V.League 1",
+      "publishedAt": "2025-04-09T15:00:00",
+      "updatedAt": "2 giờ trước",
+      "url": "post-detail.html"
+    }
+  ]
+}

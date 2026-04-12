@@ -1,22 +1,418 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Categories & Tags — FootballBlog Admin</title>
   <link rel="stylesheet" href="assets/common.css">
   <link rel="stylesheet" href="assets/admin-common.css">
-  <style>
-    body { overflow: hidden; }
+</head>
 
-    /* Top tabs (Categories / Tags) */
+<body class="admin-body">
+  <div class="admin-wrap">
+
+    <!-- Top Nav -->
+    <nav class="admin-topnav">
+      <div class="logo-wrap">
+        <div class="logo"><span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span></div>
+      </div>
+      <div class="admin-topnav-spacer"></div>
+      <div class="admin-topnav-actions">
+        <div class="user-row" style="padding:4px 8px;border-radius:8px;cursor:pointer;"
+          onmouseover="this.style.background='var(--bg-card)'" onmouseout="this.style.background='none'">
+          <div class="user-avatar" style="width:26px;height:26px;font-size:11px;">A</div>
+          <div class="user-info">
+            <div class="user-name">Admin</div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="admin-body-area">
+
+      <!-- Sidebar -->
+      <aside class="admin-sidebar">
+        <div class="admin-sidebar-scroll">
+          <div class="admin-menu-group">
+            <div class="admin-menu-label">Tổng quan</div>
+            <a class="admin-menu-item" href="admin-dashboard.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+              </svg>
+              Dashboard
+            </a>
+          </div>
+          <div class="admin-menu-group">
+            <div class="admin-menu-label">Nội dung</div>
+            <a class="admin-menu-item" href="admin-posts.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
+              Bài viết
+            </a>
+            <a class="admin-menu-item" href="admin-predictions.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+              AI Predictions
+            </a>
+            <a class="admin-menu-item active" href="admin-categories.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+              </svg>
+              Categories &amp; Tags
+            </a>
+          </div>
+          <div class="admin-menu-group">
+            <div class="admin-menu-label">Bóng đá</div>
+            <a class="admin-menu-item" href="admin-matches.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+              </svg>
+              Trận đấu
+            </a>
+            <a class="admin-menu-item" href="admin-team.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              Đội bóng
+            </a>
+            <a class="admin-menu-item" href="admin-players.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M20 21a8 8 0 1 0-16 0" />
+              </svg>
+              Cầu thủ
+            </a>
+          </div>
+          <div class="admin-menu-group">
+            <div class="admin-menu-label">Hệ thống</div>
+            <a class="admin-menu-item" href="admin-users.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              Users
+            </a>
+            <a class="admin-menu-item" href="admin-job-monitor.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              </svg>
+              Job Monitor
+            </a>
+            <div class="admin-menu-dropdown" id="dd-settings">
+              <div class="admin-menu-dropdown-trigger" onclick="toggleDD('dd-settings')">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="3" />
+                  <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+                Cài đặt
+                <svg class="dd-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </div>
+              <div class="admin-submenu">
+                <a class="admin-submenu-item" href="admin-settings.html">Cài đặt chung</a>
+                <a class="admin-submenu-item" href="admin-prompts.html">Prompt Templates</a>
+              </div>
+            </div>
+            <a class="admin-menu-item" href="admin-login.html" style="color:#f87171">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              Đăng xuất
+            </a>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main content -->
+      <main class="admin-main" style="overflow:hidden;">
+
+        <!-- Top tabs -->
+        <div class="cat-top-tabs">
+          <button class="cat-top-tab active" onclick="switchCatTab(this, 'tab-categories')">📁 Danh mục (8)</button>
+          <button class="cat-top-tab" onclick="switchCatTab(this, 'tab-tags')">🏷️ Tags (24)</button>
+        </div>
+
+        <!-- CATEGORIES TAB -->
+        <div id="tab-categories" style="display:flex;flex:1;overflow:hidden;height:calc(100% - 45px);">
+          <div class="cat-panels" style="width:100%;height:100%;">
+
+            <!-- Left tree -->
+            <div class="cat-tree-panel">
+              <div class="cat-tree-header">
+                <button class="btn btn-primary" style="font-size:11px;padding:5px 10px;" onclick="newCategory()">
+                  <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  Thêm mới
+                </button>
+                <div style="flex:1;"></div>
+                <button class="btn-icon danger" title="Xóa">🗑️</button>
+              </div>
+
+              <div class="cat-tree-scroll">
+
+                <div class="cat-item active" onclick="selectCat(this, 'epl')">
+                  <span class="cat-item-icon">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+                  <span class="cat-item-name">Premier League</span>
+                  <span class="cat-item-count">41</span>
+                  <span class="cat-chevron">▾</span>
+                </div>
+                <div class="cat-children">
+                  <div class="cat-child-item active">→ GW Recap</div>
+                  <div class="cat-child-item">→ Transfer News</div>
+                </div>
+
+                <div class="cat-item" onclick="selectCat(this, 'ucl')">
+                  <span class="cat-item-icon">🏆</span>
+                  <span class="cat-item-name">Champions League</span>
+                  <span class="cat-item-count">28</span>
+                  <span class="cat-chevron">▾</span>
+                </div>
+                <div class="cat-children">
+                  <div class="cat-child-item">→ Group Stage</div>
+                  <div class="cat-child-item">→ Knockout</div>
+                </div>
+
+                <div class="cat-item" onclick="selectCat(this, 'vl1')">
+                  <span class="cat-item-icon">🇻🇳</span>
+                  <span class="cat-item-name">V.League 1</span>
+                  <span class="cat-item-count">19</span>
+                </div>
+
+                <div class="cat-item" onclick="selectCat(this, 'laliga')">
+                  <span class="cat-item-icon">🇪🇸</span>
+                  <span class="cat-item-name">La Liga</span>
+                  <span class="cat-item-count">15</span>
+                </div>
+
+                <div class="cat-item" onclick="selectCat(this, 'bund')">
+                  <span class="cat-item-icon">🇩🇪</span>
+                  <span class="cat-item-name">Bundesliga</span>
+                  <span class="cat-item-count">12</span>
+                </div>
+
+                <div class="cat-item" onclick="selectCat(this, 'seriea')">
+                  <span class="cat-item-icon">🇮🇹</span>
+                  <span class="cat-item-name">Serie A</span>
+                  <span class="cat-item-count">8</span>
+                </div>
+
+                <div class="cat-item" onclick="selectCat(this, 'ai')">
+                  <span class="cat-item-icon">🤖</span>
+                  <span class="cat-item-name">AI Nhận định</span>
+                  <span class="cat-item-count">48</span>
+                </div>
+
+                <div class="cat-item" onclick="selectCat(this, 'news')">
+                  <span class="cat-item-icon">📰</span>
+                  <span class="cat-item-name">Tin tức</span>
+                  <span class="cat-item-count">22</span>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Right form -->
+            <div class="cat-form-panel">
+              <div class="cat-form-header">
+                <div class="cat-form-title">Chỉnh sửa: Premier League</div>
+                <button class="btn btn-ghost" style="font-size:11px;">Xem bài viết →</button>
+              </div>
+              <div class="cat-form-scroll">
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+                  <div class="form-field">
+                    <label class="form-label">Tên danh mục</label>
+                    <input class="form-input" type="text" value="Premier League" />
+                  </div>
+
+                  <div class="form-field">
+                    <label class="form-label">Slug</label>
+                    <input class="form-input" type="text" value="premier-league" />
+                  </div>
+
+                </div>
+
+                <div class="form-field">
+                  <label class="form-label">Mô tả</label>
+                  <textarea class="form-textarea"
+                    rows="2">Giải bóng đá vô địch quốc gia Anh, mùa giải 2024/25. Tổng hợp kết quả, lịch thi đấu và nhận định AI.</textarea>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+                  <div class="form-field">
+                    <label class="form-label">Danh mục cha</label>
+                    <select class="form-select">
+                      <option value="">— Không có (gốc) —</option>
+                      <option>UEFA</option>
+                      <option>Châu Âu</option>
+                    </select>
+                  </div>
+
+                  <div class="form-field">
+                    <label class="form-label">Icon (Emoji)</label>
+                    <input class="form-input" type="text" value="🏴󠁧󠁢󠁥󠁮󠁧󠁿" />
+                  </div>
+
+                </div>
+
+                <div class="form-field">
+                  <label class="form-label">Màu nhận diện</label>
+                  <div class="color-picker-wrap">
+                    <div class="color-option selected" style="background:#60a5fa"></div>
+                    <div class="color-option" style="background:#c8f04d"></div>
+                    <div class="color-option" style="background:#4ade80"></div>
+                    <div class="color-option" style="background:#f87171"></div>
+                    <div class="color-option" style="background:#fbbf24"></div>
+                    <div class="color-option" style="background:#a78bfa"></div>
+                    <input class="color-input" type="text" value="#60a5fa" />
+                    <input type="color" value="#60a5fa"
+                      style="width:32px;height:32px;border:none;background:none;cursor:pointer;border-radius:6px;overflow:hidden;" />
+                  </div>
+                </div>
+
+                <div class="form-field">
+                  <label class="form-label">SEO Meta Title</label>
+                  <input class="form-input" type="text"
+                    value="Premier League 2024/25 — Kết quả & Nhận định AI | FootballBlog" />
+                  <div class="form-hint">62 ký tự</div>
+                </div>
+
+                <!-- Stats -->
+                <div
+                  style="background:var(--bg-dark);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;">
+                  <div
+                    style="font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:10px;">
+                    Thống kê</div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center;">
+                    <div>
+                      <div style="font-size:22px;font-weight:900;color:var(--accent)">41</div>
+                      <div style="font-size:10px;color:var(--muted)">Bài viết</div>
+                    </div>
+                    <div>
+                      <div style="font-size:22px;font-weight:900;color:var(--text)">12,847</div>
+                      <div style="font-size:10px;color:var(--muted)">Lượt xem</div>
+                    </div>
+                    <div>
+                      <div style="font-size:22px;font-weight:900;color:var(--text)">07/04</div>
+                      <div style="font-size:10px;color:var(--muted)">Cập nhật</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display:flex;gap:10px;">
+                  <button class="btn btn-primary" style="flex:1;">Lưu thay đổi</button>
+                  <button class="btn btn-danger">Xóa danh mục</button>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- TAGS TAB -->
+        <div id="tab-tags" style="display:none;flex:1;overflow-y:auto;padding:20px;">
+          <div class="admin-page-header" style="margin-bottom:16px;">
+            <div>
+              <div class="admin-page-title" style="font-size:16px;">Tags</div>
+              <div class="admin-page-sub">24 tags · Nhấn để chỉnh sửa</div>
+            </div>
+          </div>
+
+          <div class="tags-wrap" style="padding:0;">
+            <div class="tags-grid">
+              <div class="tag-mgmt-item">Premier League <span class="tag-mgmt-count">(41)</span><button
+                  class="tag-mgmt-del">×</button></div>
+              <div class="tag-mgmt-item">Man City <span class="tag-mgmt-count">(18)</span><button
+                  class="tag-mgmt-del">×</button></div>
+              <div class="tag-mgmt-item">Arsenal <span class="tag-mgmt-count">(15)</span><button
+                  class="tag-mgmt-del">×</button></div>
+              <div class="tag-mgmt-item">Liverpool <span class="tag-mgmt-count">(14)</span><button
+                  class="tag-mgmt-del">×</button></div>
+              <div class="tag-mgmt-item">Chelsea <span class="tag-mgmt-count">(12)</span><button
+                  class="tag-mgmt-del">×</button></div>
+              <div class="tag-mgmt-item">Champions League <span class="tag-mgmt-count">(28)</span><button
+                  class="tag-mgmt-del">×</button></div>
+              <div class="tag-mgmt-item">AI Nhận định <span class="tag-mgmt-count">(48)</span><button
+                  class="tag-mgmt-del">×</button></div>
+              <div class="tag-mgmt-item">Dự đoán tỷ số <span class="tag-mgmt-count">(48)</span><button
+                  class="tag-mgmt-del">×</button></div>
+              <div class="tag-mgmt-item">Haaland <span class="tag-mgmt-count">(12)</span><button
+                  class="tag-mgmt-del">×</button></div>
+              <div class="tag-mgmt-item">Salah <span class="tag-mgmt-count">(10)</span><button
+                  class="tag-mgmt-del">×</button></div>
+              <div class="tag-mgmt-item">Saka <span class="tag-mgmt-count">(8)</span><button
+                  class="tag-mgmt-del">×</button></div>
+              <div class="tag-mgmt-item">V.League 1 <span class="tag-mgmt-count">(19)</span><button
+                  class="tag-mgmt-del">×</button></div>
+              <div class="tag-mgmt-item">Viettel FC <span class="tag-mgmt-count">(7)</span><button
+                  class="tag-mgmt-del">×</button></div>
+              <div class="tag-mgmt-item">Hà Nội FC <span class="tag-mgmt-count">(6)</span><button
+                  class="tag-mgmt-del">×</button></div>
+              <div class="tag-mgmt-item">Bundesliga <span class="tag-mgmt-count">(12)</span><button
+                  class="tag-mgmt-del">×</button></div>
+              <div class="tag-mgmt-item">Bayern Munich <span class="tag-mgmt-count">(9)</span><button
+                  class="tag-mgmt-del">×</button></div>
+              <div class="tag-mgmt-item">La Liga <span class="tag-mgmt-count">(15)</span><button
+                  class="tag-mgmt-del">×</button></div>
+              <div class="tag-mgmt-item">Real Madrid <span class="tag-mgmt-count">(11)</span><button
+                  class="tag-mgmt-del">×</button></div>
+              <div class="tag-mgmt-item">Phân tích chiến thuật <span class="tag-mgmt-count">(6)</span><button
+                  class="tag-mgmt-del">×</button></div>
+              <div class="tag-mgmt-item">Tin tức chuyển nhượng <span class="tag-mgmt-count">(8)</span><button
+                  class="tag-mgmt-del">×</button></div>
+            </div>
+
+            <div
+              style="font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px;">
+              Thêm tag mới</div>
+            <div class="add-tag-wrap">
+              <input class="add-tag-input" type="text" placeholder="Nhập tên tag rồi nhấn Enter..." />
+              <button class="btn btn-primary" style="font-size:11px;padding:5px 12px;">Thêm</button>
+            </div>
+          </div>
+        </div>
+
+      </main>
+
+    </div>
+  </div>
+  <!-- STYLES — skip khi chỉ cần phân tích structure -->
+  <style>
+    body {
+      overflow: hidden
+    }
+
     .cat-top-tabs {
       display: flex;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
       padding: 0 24px;
-      background: var(--bg);
+      background: var(--bg)
     }
+
     .cat-top-tab {
       padding: 12px 16px;
       font-size: 13px;
@@ -24,42 +420,52 @@
       color: var(--muted);
       cursor: pointer;
       border: none;
-      background: none;
+      background: 0 0;
       border-bottom: 2px solid transparent;
       margin-bottom: -1px;
-      transition: all 0.15s;
+      transition: all .15s
     }
-    .cat-top-tab:hover { color: var(--text); }
-    .cat-top-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-    /* Two-panel layout */
+    .cat-top-tab:hover {
+      color: var(--text)
+    }
+
+    .cat-top-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent)
+    }
+
     .cat-panels {
       display: grid;
       grid-template-columns: 280px 1fr;
       gap: 0;
       flex: 1;
       overflow: hidden;
-      height: 100%;
+      height: 100%
     }
 
-    /* Left tree panel */
     .cat-tree-panel {
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      overflow: hidden
     }
+
     .cat-tree-header {
       display: flex;
       align-items: center;
       gap: 8px;
       padding: 12px 14px;
       border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
+      flex-shrink: 0
     }
-    .cat-tree-scroll { flex: 1; overflow-y: auto; padding: 8px 0; }
 
-    /* Category tree item */
+    .cat-tree-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0
+    }
+
     .cat-item {
       display: flex;
       align-items: center;
@@ -68,14 +474,32 @@
       cursor: pointer;
       font-size: 13px;
       color: var(--muted2);
-      transition: all 0.12s;
+      transition: all .12s;
       border-left: 2px solid transparent;
-      user-select: none;
+      user-select: none
     }
-    .cat-item:hover { background: var(--bg-card); color: var(--text); }
-    .cat-item.active { color: var(--accent); background: var(--accent-dim); border-left-color: var(--accent); }
-    .cat-item-icon { font-size: 14px; flex-shrink: 0; }
-    .cat-item-name { flex: 1; font-weight: 500; }
+
+    .cat-item:hover {
+      background: var(--bg-card);
+      color: var(--text)
+    }
+
+    .cat-item.active {
+      color: var(--accent);
+      background: var(--accent-dim);
+      border-left-color: var(--accent)
+    }
+
+    .cat-item-icon {
+      font-size: 14px;
+      flex-shrink: 0
+    }
+
+    .cat-item-name {
+      flex: 1;
+      font-weight: 500
+    }
+
     .cat-item-count {
       font-size: 9px;
       background: var(--bg-card);
@@ -83,14 +507,29 @@
       color: var(--muted);
       padding: 1px 5px;
       border-radius: 8px;
-      font-weight: 600;
+      font-weight: 600
     }
-    .cat-item.active .cat-item-count { background: rgba(200,240,77,0.1); border-color: rgba(200,240,77,0.2); color: var(--accent); }
-    .cat-chevron { font-size: 9px; color: var(--muted); transition: transform 0.2s; }
-    .cat-item.collapsed .cat-chevron { transform: rotate(-90deg); }
 
-    /* Sub categories */
-    .cat-children { padding-left: 14px; }
+    .cat-item.active .cat-item-count {
+      background: rgba(200, 240, 77, .1);
+      border-color: rgba(200, 240, 77, .2);
+      color: var(--accent)
+    }
+
+    .cat-chevron {
+      font-size: 9px;
+      color: var(--muted);
+      transition: transform .2s
+    }
+
+    .cat-item.collapsed .cat-chevron {
+      transform: rotate(-90deg)
+    }
+
+    .cat-children {
+      padding-left: 14px
+    }
+
     .cat-child-item {
       display: flex;
       align-items: center;
@@ -99,9 +538,10 @@
       cursor: pointer;
       font-size: 12px;
       color: var(--muted);
-      transition: all 0.12s;
-      position: relative;
+      transition: all .12s;
+      position: relative
     }
+
     .cat-child-item::before {
       content: '';
       position: absolute;
@@ -109,38 +549,64 @@
       top: 50%;
       width: 6px;
       height: 1px;
-      background: var(--border2);
+      background: var(--border2)
     }
-    .cat-child-item:hover { color: var(--text); background: rgba(255,255,255,0.02); }
-    .cat-child-item.active { color: var(--accent); }
 
-    /* Right form panel */
+    .cat-child-item:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, .02)
+    }
+
+    .cat-child-item.active {
+      color: var(--accent)
+    }
+
     .cat-form-panel {
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      overflow: hidden
     }
+
     .cat-form-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 12px 20px;
       border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
+      flex-shrink: 0
     }
-    .cat-form-title { font-size: 14px; font-weight: 700; color: var(--text); }
-    .cat-form-scroll { flex: 1; overflow-y: auto; padding: 20px; }
 
-    /* Color picker */
-    .color-picker-wrap { display: flex; gap: 8px; align-items: center; }
+    .cat-form-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text)
+    }
+
+    .cat-form-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px
+    }
+
+    .color-picker-wrap {
+      display: flex;
+      gap: 8px;
+      align-items: center
+    }
+
     .color-option {
-      width: 24px; height: 24px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       cursor: pointer;
       border: 2px solid transparent;
-      transition: border-color 0.15s;
+      transition: border-color .15s
     }
-    .color-option.selected { border-color: #fff; }
+
+    .color-option.selected {
+      border-color: #fff
+    }
+
     .color-input {
       flex: 1;
       background: var(--bg-card);
@@ -150,17 +616,20 @@
       color: var(--text);
       font-size: 12px;
       font-family: monospace;
-      outline: none;
+      outline: 0
     }
 
-    /* Tags panel */
-    .tags-wrap { padding: 20px; }
+    .tags-wrap {
+      padding: 20px
+    }
+
     .tags-grid {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-bottom: 16px;
+      margin-bottom: 16px
     }
+
     .tag-mgmt-item {
       display: inline-flex;
       align-items: center;
@@ -172,25 +641,40 @@
       font-size: 12px;
       color: var(--text);
       cursor: pointer;
-      transition: all 0.12s;
+      transition: all .12s
     }
-    .tag-mgmt-item:hover { border-color: var(--accent); color: var(--accent); }
-    .tag-mgmt-count { font-size: 10px; color: var(--muted); }
+
+    .tag-mgmt-item:hover {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    .tag-mgmt-count {
+      font-size: 10px;
+      color: var(--muted)
+    }
+
     .tag-mgmt-del {
-      width: 16px; height: 16px;
+      width: 16px;
+      height: 16px;
       background: var(--bg);
       border: none;
       border-radius: 50%;
       color: var(--muted);
       cursor: pointer;
       font-size: 11px;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.12s;
-      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .12s;
+      flex-shrink: 0
     }
-    .tag-mgmt-del:hover { background: rgba(248,113,113,0.2); color: #f87171; }
 
-    /* Add tag form inline */
+    .tag-mgmt-del:hover {
+      background: rgba(248, 113, 113, .2);
+      color: #f87171
+    }
+
     .add-tag-wrap {
       display: flex;
       gap: 8px;
@@ -199,348 +683,49 @@
       border-radius: 8px;
       padding: 10px 12px;
       align-items: center;
-      margin-top: 8px;
+      margin-top: 8px
     }
-    .add-tag-wrap:focus-within { border-color: var(--accent); }
+
+    .add-tag-wrap:focus-within {
+      border-color: var(--accent)
+    }
+
     .add-tag-input {
       flex: 1;
-      background: none;
+      background: 0 0;
       border: none;
-      outline: none;
+      outline: 0;
       color: var(--text);
       font-size: 13px;
-      font-family: inherit;
+      font-family: inherit
     }
-    .add-tag-input::placeholder { color: var(--muted); }
+
+    .add-tag-input::placeholder {
+      color: var(--muted)
+    }
   </style>
-</head>
-<body class="admin-body">
-<div class="admin-wrap">
+  <script src="assets/common.js"></script>
+  <script>
+    function toggleDD(id) {
+      document.getElementById(id).classList.toggle('open');
+    }
+    function switchCatTab(el, tabId) {
+      document.querySelectorAll('.cat-top-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('tab-categories').style.display = tabId === 'tab-categories' ? 'flex' : 'none';
+      document.getElementById('tab-tags').style.display = tabId === 'tab-tags' ? 'block' : 'none';
+    }
 
-  <!-- Top Nav -->
-  <nav class="admin-topnav">
-    <div class="logo-wrap">
-      <div class="logo"><span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span></div>
-    </div>
-    <div class="admin-topnav-spacer"></div>
-    <div class="admin-topnav-actions">
-      <div class="user-row" style="padding:4px 8px;border-radius:8px;cursor:pointer;" onmouseover="this.style.background='var(--bg-card)'" onmouseout="this.style.background='none'">
-        <div class="user-avatar" style="width:26px;height:26px;font-size:11px;">A</div>
-        <div class="user-info"><div class="user-name">Admin</div></div>
-      </div>
-    </div>
-  </nav>
+    function selectCat(el) {
+      document.querySelectorAll('.cat-item').forEach(i => i.classList.remove('active'));
+      el.classList.add('active');
+    }
 
-  <div class="admin-body-area">
-
-    <!-- Sidebar -->
-    <aside class="admin-sidebar">
-      <div class="admin-sidebar-scroll">
-        <div class="admin-menu-group">
-          <div class="admin-menu-label">Tổng quan</div>
-          <a class="admin-menu-item" href="admin-dashboard.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            Dashboard
-          </a>
-        </div>
-        <div class="admin-menu-group">
-          <div class="admin-menu-label">Nội dung</div>
-          <a class="admin-menu-item" href="admin-posts.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            Bài viết
-          </a>
-          <a class="admin-menu-item" href="admin-predictions.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            AI Predictions
-          </a>
-          <a class="admin-menu-item active" href="admin-categories.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-            Categories &amp; Tags
-          </a>
-        </div>
-        <div class="admin-menu-group">
-          <div class="admin-menu-label">Bóng đá</div>
-          <a class="admin-menu-item" href="admin-matches.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
-            Trận đấu
-          </a>
-          <a class="admin-menu-item" href="admin-team.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Đội bóng
-          </a>
-          <a class="admin-menu-item" href="admin-players.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
-            Cầu thủ
-          </a>
-        </div>
-        <div class="admin-menu-group">
-          <div class="admin-menu-label">Hệ thống</div>
-          <a class="admin-menu-item" href="admin-users.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            Users
-          </a>
-          <a class="admin-menu-item" href="admin-job-monitor.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            Job Monitor
-          </a>
-          <div class="admin-menu-dropdown" id="dd-settings">
-            <div class="admin-menu-dropdown-trigger" onclick="toggleDD('dd-settings')">
-              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-              Cài đặt
-              <svg class="dd-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-            </div>
-            <div class="admin-submenu">
-              <a class="admin-submenu-item" href="admin-settings.html">Cài đặt chung</a>
-              <a class="admin-submenu-item" href="admin-prompts.html">Prompt Templates</a>
-            </div>
-          </div>
-          <a class="admin-menu-item" href="admin-login.html" style="color:#f87171">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            Đăng xuất
-          </a>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Main content -->
-    <main class="admin-main" style="overflow:hidden;">
-
-      <!-- Top tabs -->
-      <div class="cat-top-tabs">
-        <button class="cat-top-tab active" onclick="switchCatTab(this, 'tab-categories')">📁 Danh mục (8)</button>
-        <button class="cat-top-tab" onclick="switchCatTab(this, 'tab-tags')">🏷️ Tags (24)</button>
-      </div>
-
-      <!-- CATEGORIES TAB -->
-      <div id="tab-categories" style="display:flex;flex:1;overflow:hidden;height:calc(100% - 45px);">
-        <div class="cat-panels" style="width:100%;height:100%;">
-
-          <!-- Left tree -->
-          <div class="cat-tree-panel">
-            <div class="cat-tree-header">
-              <button class="btn btn-primary" style="font-size:11px;padding:5px 10px;" onclick="newCategory()">
-                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Thêm mới
-              </button>
-              <div style="flex:1;"></div>
-              <button class="btn-icon danger" title="Xóa">🗑️</button>
-            </div>
-
-            <div class="cat-tree-scroll">
-
-              <div class="cat-item active" onclick="selectCat(this, 'epl')">
-                <span class="cat-item-icon">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
-                <span class="cat-item-name">Premier League</span>
-                <span class="cat-item-count">41</span>
-                <span class="cat-chevron">▾</span>
-              </div>
-              <div class="cat-children">
-                <div class="cat-child-item active">→ GW Recap</div>
-                <div class="cat-child-item">→ Transfer News</div>
-              </div>
-
-              <div class="cat-item" onclick="selectCat(this, 'ucl')">
-                <span class="cat-item-icon">🏆</span>
-                <span class="cat-item-name">Champions League</span>
-                <span class="cat-item-count">28</span>
-                <span class="cat-chevron">▾</span>
-              </div>
-              <div class="cat-children">
-                <div class="cat-child-item">→ Group Stage</div>
-                <div class="cat-child-item">→ Knockout</div>
-              </div>
-
-              <div class="cat-item" onclick="selectCat(this, 'vl1')">
-                <span class="cat-item-icon">🇻🇳</span>
-                <span class="cat-item-name">V.League 1</span>
-                <span class="cat-item-count">19</span>
-              </div>
-
-              <div class="cat-item" onclick="selectCat(this, 'laliga')">
-                <span class="cat-item-icon">🇪🇸</span>
-                <span class="cat-item-name">La Liga</span>
-                <span class="cat-item-count">15</span>
-              </div>
-
-              <div class="cat-item" onclick="selectCat(this, 'bund')">
-                <span class="cat-item-icon">🇩🇪</span>
-                <span class="cat-item-name">Bundesliga</span>
-                <span class="cat-item-count">12</span>
-              </div>
-
-              <div class="cat-item" onclick="selectCat(this, 'seriea')">
-                <span class="cat-item-icon">🇮🇹</span>
-                <span class="cat-item-name">Serie A</span>
-                <span class="cat-item-count">8</span>
-              </div>
-
-              <div class="cat-item" onclick="selectCat(this, 'ai')">
-                <span class="cat-item-icon">🤖</span>
-                <span class="cat-item-name">AI Nhận định</span>
-                <span class="cat-item-count">48</span>
-              </div>
-
-              <div class="cat-item" onclick="selectCat(this, 'news')">
-                <span class="cat-item-icon">📰</span>
-                <span class="cat-item-name">Tin tức</span>
-                <span class="cat-item-count">22</span>
-              </div>
-
-            </div>
-          </div>
-
-          <!-- Right form -->
-          <div class="cat-form-panel">
-            <div class="cat-form-header">
-              <div class="cat-form-title">Chỉnh sửa: Premier League</div>
-              <button class="btn btn-ghost" style="font-size:11px;">Xem bài viết →</button>
-            </div>
-            <div class="cat-form-scroll">
-
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-
-                <div class="form-field">
-                  <label class="form-label">Tên danh mục</label>
-                  <input class="form-input" type="text" value="Premier League" />
-                </div>
-
-                <div class="form-field">
-                  <label class="form-label">Slug</label>
-                  <input class="form-input" type="text" value="premier-league" />
-                </div>
-
-              </div>
-
-              <div class="form-field">
-                <label class="form-label">Mô tả</label>
-                <textarea class="form-textarea" rows="2">Giải bóng đá vô địch quốc gia Anh, mùa giải 2024/25. Tổng hợp kết quả, lịch thi đấu và nhận định AI.</textarea>
-              </div>
-
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-
-                <div class="form-field">
-                  <label class="form-label">Danh mục cha</label>
-                  <select class="form-select">
-                    <option value="">— Không có (gốc) —</option>
-                    <option>UEFA</option>
-                    <option>Châu Âu</option>
-                  </select>
-                </div>
-
-                <div class="form-field">
-                  <label class="form-label">Icon (Emoji)</label>
-                  <input class="form-input" type="text" value="🏴󠁧󠁢󠁥󠁮󠁧󠁿" />
-                </div>
-
-              </div>
-
-              <div class="form-field">
-                <label class="form-label">Màu nhận diện</label>
-                <div class="color-picker-wrap">
-                  <div class="color-option selected" style="background:#60a5fa"></div>
-                  <div class="color-option" style="background:#c8f04d"></div>
-                  <div class="color-option" style="background:#4ade80"></div>
-                  <div class="color-option" style="background:#f87171"></div>
-                  <div class="color-option" style="background:#fbbf24"></div>
-                  <div class="color-option" style="background:#a78bfa"></div>
-                  <input class="color-input" type="text" value="#60a5fa" />
-                  <input type="color" value="#60a5fa" style="width:32px;height:32px;border:none;background:none;cursor:pointer;border-radius:6px;overflow:hidden;" />
-                </div>
-              </div>
-
-              <div class="form-field">
-                <label class="form-label">SEO Meta Title</label>
-                <input class="form-input" type="text" value="Premier League 2024/25 — Kết quả & Nhận định AI | FootballBlog" />
-                <div class="form-hint">62 ký tự</div>
-              </div>
-
-              <!-- Stats -->
-              <div style="background:var(--bg-dark);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;">
-                <div style="font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:10px;">Thống kê</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center;">
-                  <div><div style="font-size:22px;font-weight:900;color:var(--accent)">41</div><div style="font-size:10px;color:var(--muted)">Bài viết</div></div>
-                  <div><div style="font-size:22px;font-weight:900;color:var(--text)">12,847</div><div style="font-size:10px;color:var(--muted)">Lượt xem</div></div>
-                  <div><div style="font-size:22px;font-weight:900;color:var(--text)">07/04</div><div style="font-size:10px;color:var(--muted)">Cập nhật</div></div>
-                </div>
-              </div>
-
-              <div style="display:flex;gap:10px;">
-                <button class="btn btn-primary" style="flex:1;">Lưu thay đổi</button>
-                <button class="btn btn-danger">Xóa danh mục</button>
-              </div>
-
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- TAGS TAB -->
-      <div id="tab-tags" style="display:none;flex:1;overflow-y:auto;padding:20px;">
-        <div class="admin-page-header" style="margin-bottom:16px;">
-          <div>
-            <div class="admin-page-title" style="font-size:16px;">Tags</div>
-            <div class="admin-page-sub">24 tags · Nhấn để chỉnh sửa</div>
-          </div>
-        </div>
-
-        <div class="tags-wrap" style="padding:0;">
-          <div class="tags-grid">
-            <div class="tag-mgmt-item">Premier League <span class="tag-mgmt-count">(41)</span><button class="tag-mgmt-del">×</button></div>
-            <div class="tag-mgmt-item">Man City <span class="tag-mgmt-count">(18)</span><button class="tag-mgmt-del">×</button></div>
-            <div class="tag-mgmt-item">Arsenal <span class="tag-mgmt-count">(15)</span><button class="tag-mgmt-del">×</button></div>
-            <div class="tag-mgmt-item">Liverpool <span class="tag-mgmt-count">(14)</span><button class="tag-mgmt-del">×</button></div>
-            <div class="tag-mgmt-item">Chelsea <span class="tag-mgmt-count">(12)</span><button class="tag-mgmt-del">×</button></div>
-            <div class="tag-mgmt-item">Champions League <span class="tag-mgmt-count">(28)</span><button class="tag-mgmt-del">×</button></div>
-            <div class="tag-mgmt-item">AI Nhận định <span class="tag-mgmt-count">(48)</span><button class="tag-mgmt-del">×</button></div>
-            <div class="tag-mgmt-item">Dự đoán tỷ số <span class="tag-mgmt-count">(48)</span><button class="tag-mgmt-del">×</button></div>
-            <div class="tag-mgmt-item">Haaland <span class="tag-mgmt-count">(12)</span><button class="tag-mgmt-del">×</button></div>
-            <div class="tag-mgmt-item">Salah <span class="tag-mgmt-count">(10)</span><button class="tag-mgmt-del">×</button></div>
-            <div class="tag-mgmt-item">Saka <span class="tag-mgmt-count">(8)</span><button class="tag-mgmt-del">×</button></div>
-            <div class="tag-mgmt-item">V.League 1 <span class="tag-mgmt-count">(19)</span><button class="tag-mgmt-del">×</button></div>
-            <div class="tag-mgmt-item">Viettel FC <span class="tag-mgmt-count">(7)</span><button class="tag-mgmt-del">×</button></div>
-            <div class="tag-mgmt-item">Hà Nội FC <span class="tag-mgmt-count">(6)</span><button class="tag-mgmt-del">×</button></div>
-            <div class="tag-mgmt-item">Bundesliga <span class="tag-mgmt-count">(12)</span><button class="tag-mgmt-del">×</button></div>
-            <div class="tag-mgmt-item">Bayern Munich <span class="tag-mgmt-count">(9)</span><button class="tag-mgmt-del">×</button></div>
-            <div class="tag-mgmt-item">La Liga <span class="tag-mgmt-count">(15)</span><button class="tag-mgmt-del">×</button></div>
-            <div class="tag-mgmt-item">Real Madrid <span class="tag-mgmt-count">(11)</span><button class="tag-mgmt-del">×</button></div>
-            <div class="tag-mgmt-item">Phân tích chiến thuật <span class="tag-mgmt-count">(6)</span><button class="tag-mgmt-del">×</button></div>
-            <div class="tag-mgmt-item">Tin tức chuyển nhượng <span class="tag-mgmt-count">(8)</span><button class="tag-mgmt-del">×</button></div>
-          </div>
-
-          <div style="font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px;">Thêm tag mới</div>
-          <div class="add-tag-wrap">
-            <input class="add-tag-input" type="text" placeholder="Nhập tên tag rồi nhấn Enter..." />
-            <button class="btn btn-primary" style="font-size:11px;padding:5px 12px;">Thêm</button>
-          </div>
-        </div>
-      </div>
-
-    </main>
-
-  </div>
-</div>
-<script src="assets/common.js"></script>
-<script>
-  function toggleDD(id) {
-    document.getElementById(id).classList.toggle('open');
-  }
-  function switchCatTab(el, tabId) {
-    document.querySelectorAll('.cat-top-tab').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
-    document.getElementById('tab-categories').style.display = tabId === 'tab-categories' ? 'flex' : 'none';
-    document.getElementById('tab-tags').style.display = tabId === 'tab-tags' ? 'block' : 'none';
-  }
-
-  function selectCat(el) {
-    document.querySelectorAll('.cat-item').forEach(i => i.classList.remove('active'));
-    el.classList.add('active');
-  }
-
-  function newCategory() {
-    // Just a mock — focus on name field
-    document.querySelector('.cat-form-scroll input').focus();
-  }
-</script>
+    function newCategory() {
+      // Just a mock — focus on name field
+      document.querySelector('.cat-form-scroll input').focus();
+    }
+  </script>
 </body>
+
 </html>

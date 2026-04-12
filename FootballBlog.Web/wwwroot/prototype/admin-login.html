@@ -1,23 +1,94 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Đăng nhập — FootballBlog Admin</title>
   <link rel="stylesheet" href="assets/common.css">
-  <style>
-    body { overflow: auto; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+</head>
 
-    /* Background decoration */
+<body>
+  <div class="login-bg"></div>
+
+  <div class="login-card">
+
+    <!-- Logo -->
+    <div class="login-logo">
+      <div class="logo"><span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span></div>
+      <div class="login-logo-sub">Kết quả &amp; Nhận định AI</div>
+      <div class="login-logo-badge">⚙️ Admin Panel</div>
+    </div>
+
+    <!-- Title -->
+    <div class="login-title">Đăng nhập</div>
+    <div class="login-sub">Truy cập bảng quản trị hệ thống</div>
+
+    <!-- Error (hidden by default, shown on error) -->
+    <!-- <div class="login-error">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+    Email hoặc mật khẩu không đúng
+  </div> -->
+
+    <!-- Form -->
+    <form onsubmit="handleLogin(event)">
+
+      <div class="login-field">
+        <label class="login-label" for="email">Email</label>
+        <input class="login-input" type="email" id="email" placeholder="admin@footballblog.vn"
+          value="admin@footballblog.vn" autocomplete="email" />
+      </div>
+
+      <div class="login-field">
+        <label class="login-label" for="password">Mật khẩu</label>
+        <div class="password-wrap">
+          <input class="login-input" type="password" id="password" placeholder="••••••••"
+            autocomplete="current-password" />
+          <button type="button" class="password-toggle" onclick="togglePassword()">
+            <svg id="eye-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+              viewBox="0 0 24 24">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="login-remember">
+        <div class="checkbox-wrap">
+          <input type="checkbox" id="remember" checked />
+          <label for="remember">Ghi nhớ đăng nhập</label>
+        </div>
+        <a class="forgot-link" href="#">Quên mật khẩu?</a>
+      </div>
+
+      <button type="submit" class="login-btn">Đăng nhập</button>
+
+    </form>
+
+    <div class="login-footer">
+      FootballBlog Admin v2.0 · <span style="color:var(--accent)">©2025</span>
+    </div>
+
+  </div>
+
+  <!-- STYLES — skip khi chỉ cần phân tích structure -->
+  <style>
+    body {
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh
+    }
+
     .login-bg {
       position: fixed;
       inset: 0;
-      background: radial-gradient(ellipse at 30% 40%, rgba(200,240,77,0.04) 0%, transparent 60%),
-                  radial-gradient(ellipse at 70% 70%, rgba(74,222,128,0.03) 0%, transparent 50%);
-      pointer-events: none;
+      background: radial-gradient(ellipse at 30% 40%, rgba(200, 240, 77, .04) 0, transparent 60%), radial-gradient(ellipse at 70% 70%, rgba(74, 222, 128, .03) 0, transparent 50%);
+      pointer-events: none
     }
 
-    /* Login card */
     .login-card {
       width: 380px;
       background: var(--bg-card);
@@ -25,35 +96,59 @@
       border-radius: 16px;
       padding: 36px 32px 32px;
       position: relative;
-      z-index: 1;
+      z-index: 1
     }
 
-    /* Logo */
-    .login-logo { text-align: center; margin-bottom: 28px; }
-    .login-logo .logo { font-size: 24px; display: inline-block; }
-    .login-logo-sub { font-size: 11px; color: var(--muted); margin-top: 4px; letter-spacing: 0.5px; }
+    .login-logo {
+      text-align: center;
+      margin-bottom: 28px
+    }
+
+    .login-logo .logo {
+      font-size: 24px;
+      display: inline-block
+    }
+
+    .login-logo-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+      letter-spacing: .5px
+    }
+
     .login-logo-badge {
       display: inline-flex;
       align-items: center;
       gap: 4px;
       background: var(--accent-dim);
-      border: 1px solid rgba(200,240,77,0.2);
+      border: 1px solid rgba(200, 240, 77, .2);
       color: var(--accent);
       font-size: 9px;
       font-weight: 700;
       padding: 2px 8px;
       border-radius: 20px;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-top: 6px;
+      letter-spacing: .5px;
+      margin-top: 6px
     }
 
-    /* Title */
-    .login-title { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
-    .login-sub { font-size: 12px; color: var(--muted); margin-bottom: 24px; }
+    .login-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 6px
+    }
 
-    /* Form */
-    .login-field { margin-bottom: 14px; }
+    .login-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 24px
+    }
+
+    .login-field {
+      margin-bottom: 14px
+    }
+
     .login-label {
       display: block;
       font-size: 11px;
@@ -61,8 +156,9 @@
       color: var(--muted2);
       margin-bottom: 6px;
       text-transform: uppercase;
-      letter-spacing: 0.4px;
+      letter-spacing: .4px
     }
+
     .login-input {
       width: 100%;
       background: var(--bg);
@@ -72,53 +168,81 @@
       color: var(--text);
       font-size: 13px;
       font-family: inherit;
-      outline: none;
-      transition: border-color 0.15s;
+      outline: 0;
+      transition: border-color .15s
     }
-    .login-input:focus { border-color: var(--accent); }
-    .login-input::placeholder { color: var(--muted); }
 
-    /* Password field with show/hide */
-    .password-wrap { position: relative; }
-    .password-wrap .login-input { padding-right: 40px; }
+    .login-input:focus {
+      border-color: var(--accent)
+    }
+
+    .login-input::placeholder {
+      color: var(--muted)
+    }
+
+    .password-wrap {
+      position: relative
+    }
+
+    .password-wrap .login-input {
+      padding-right: 40px
+    }
+
     .password-toggle {
       position: absolute;
       right: 12px;
       top: 50%;
       transform: translateY(-50%);
-      background: none;
+      background: 0 0;
       border: none;
       color: var(--muted);
       cursor: pointer;
       padding: 4px;
-      transition: color 0.15s;
+      transition: color .15s
     }
-    .password-toggle:hover { color: var(--text); }
 
-    /* Remember me */
+    .password-toggle:hover {
+      color: var(--text)
+    }
+
     .login-remember {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 20px;
+      margin-bottom: 20px
     }
+
     .checkbox-wrap {
       display: flex;
       align-items: center;
       gap: 8px;
-      cursor: pointer;
+      cursor: pointer
     }
-    .checkbox-wrap input[type="checkbox"] {
+
+    .checkbox-wrap input[type=checkbox] {
       width: 15px;
       height: 15px;
       accent-color: var(--accent);
-      cursor: pointer;
+      cursor: pointer
     }
-    .checkbox-wrap label { font-size: 12px; color: var(--muted2); cursor: pointer; }
-    .forgot-link { font-size: 12px; color: var(--accent); text-decoration: none; cursor: pointer; }
-    .forgot-link:hover { text-decoration: underline; }
 
-    /* Submit button */
+    .checkbox-wrap label {
+      font-size: 12px;
+      color: var(--muted2);
+      cursor: pointer
+    }
+
+    .forgot-link {
+      font-size: 12px;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer
+    }
+
+    .forgot-link:hover {
+      text-decoration: underline
+    }
+
     .login-btn {
       width: 100%;
       background: var(--accent);
@@ -129,16 +253,21 @@
       font-weight: 700;
       color: #111;
       cursor: pointer;
-      transition: background 0.15s;
-      font-family: inherit;
+      transition: background .15s;
+      font-family: inherit
     }
-    .login-btn:hover { background: #d4f560; }
-    .login-btn:active { background: #b8e040; }
 
-    /* Error state */
+    .login-btn:hover {
+      background: #d4f560
+    }
+
+    .login-btn:active {
+      background: #b8e040
+    }
+
     .login-error {
-      background: rgba(248,113,113,0.08);
-      border: 1px solid rgba(248,113,113,0.2);
+      background: rgba(248, 113, 113, .08);
+      border: 1px solid rgba(248, 113, 113, .2);
       border-radius: 8px;
       padding: 10px 14px;
       font-size: 12px;
@@ -146,104 +275,50 @@
       margin-bottom: 16px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 8px
     }
 
-    /* Footer */
     .login-footer {
       text-align: center;
       margin-top: 20px;
       font-size: 11px;
-      color: var(--muted);
+      color: var(--muted)
     }
 
-    /* Divider */
     .login-divider {
       display: flex;
       align-items: center;
       gap: 12px;
-      margin: 18px 0;
+      margin: 18px 0
     }
-    .login-divider::before,
-    .login-divider::after {
+
+    .login-divider::after,
+    .login-divider::before {
       content: '';
       flex: 1;
       height: 1px;
-      background: var(--border);
+      background: var(--border)
     }
-    .login-divider span { font-size: 10px; color: var(--muted); white-space: nowrap; }
+
+    .login-divider span {
+      font-size: 10px;
+      color: var(--muted);
+      white-space: nowrap
+    }
   </style>
-</head>
-<body>
-<div class="login-bg"></div>
+  <script src="assets/common.js"></script>
+  <script>
+    function handleLogin(e) {
+      e.preventDefault();
+      // Navigate to dashboard on submit
+      location.href = 'admin-dashboard.html';
+    }
 
-<div class="login-card">
-
-  <!-- Logo -->
-  <div class="login-logo">
-    <div class="logo"><span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span></div>
-    <div class="login-logo-sub">Kết quả &amp; Nhận định AI</div>
-    <div class="login-logo-badge">⚙️ Admin Panel</div>
-  </div>
-
-  <!-- Title -->
-  <div class="login-title">Đăng nhập</div>
-  <div class="login-sub">Truy cập bảng quản trị hệ thống</div>
-
-  <!-- Error (hidden by default, shown on error) -->
-  <!-- <div class="login-error">
-    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-    Email hoặc mật khẩu không đúng
-  </div> -->
-
-  <!-- Form -->
-  <form onsubmit="handleLogin(event)">
-
-    <div class="login-field">
-      <label class="login-label" for="email">Email</label>
-      <input class="login-input" type="email" id="email" placeholder="admin@footballblog.vn" value="admin@footballblog.vn" autocomplete="email" />
-    </div>
-
-    <div class="login-field">
-      <label class="login-label" for="password">Mật khẩu</label>
-      <div class="password-wrap">
-        <input class="login-input" type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
-        <button type="button" class="password-toggle" onclick="togglePassword()">
-          <svg id="eye-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        </button>
-      </div>
-    </div>
-
-    <div class="login-remember">
-      <div class="checkbox-wrap">
-        <input type="checkbox" id="remember" checked />
-        <label for="remember">Ghi nhớ đăng nhập</label>
-      </div>
-      <a class="forgot-link" href="#">Quên mật khẩu?</a>
-    </div>
-
-    <button type="submit" class="login-btn">Đăng nhập</button>
-
-  </form>
-
-  <div class="login-footer">
-    FootballBlog Admin v2.0 · <span style="color:var(--accent)">©2025</span>
-  </div>
-
-</div>
-
-<script src="assets/common.js"></script>
-<script>
-  function handleLogin(e) {
-    e.preventDefault();
-    // Navigate to dashboard on submit
-    location.href = 'admin-dashboard.html';
-  }
-
-  function togglePassword() {
-    const input = document.getElementById('password');
-    input.type = input.type === 'password' ? 'text' : 'password';
-  }
-</script>
+    function togglePassword() {
+      const input = document.getElementById('password');
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+  </script>
 </body>
+
 </html>

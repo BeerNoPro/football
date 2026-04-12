@@ -1,15 +1,432 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Prompt Templates — FootballBlog Admin</title>
   <link rel="stylesheet" href="assets/common.css">
   <link rel="stylesheet" href="assets/admin-common.css">
-  <style>
-    body { overflow: hidden; }
+</head>
 
-    /* Split layout */
+<body class="admin-body">
+  <div class="admin-wrap">
+
+    <!-- Top Nav -->
+    <nav class="admin-topnav">
+      <div class="logo-wrap">
+        <div class="logo"><span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span></div>
+      </div>
+      <div class="admin-topnav-spacer"></div>
+      <div class="admin-topnav-actions">
+        <button class="topnav-btn" onclick="location.href='home.html'">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          </svg>
+          Xem trang chủ
+        </button>
+        <div class="user-row" style="padding:4px 8px;border-radius:8px;cursor:pointer;"
+          onmouseover="this.style.background='var(--bg-card)'" onmouseout="this.style.background='none'">
+          <div class="user-avatar" style="width:26px;height:26px;font-size:11px;">A</div>
+          <div class="user-info">
+            <div class="user-name">Admin</div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="admin-body-area">
+
+      <!-- Sidebar -->
+      <aside class="admin-sidebar">
+        <div class="admin-sidebar-scroll">
+          <div class="admin-menu-group">
+            <div class="admin-menu-label">Tổng quan</div>
+            <a class="admin-menu-item" href="admin-dashboard.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+              </svg>
+              Dashboard
+            </a>
+          </div>
+          <div class="admin-menu-group">
+            <div class="admin-menu-label">Nội dung</div>
+            <a class="admin-menu-item" href="admin-posts.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
+              Bài viết
+            </a>
+            <a class="admin-menu-item" href="admin-predictions.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+              AI Predictions
+            </a>
+            <a class="admin-menu-item" href="admin-categories.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+              </svg>
+              Categories &amp; Tags
+            </a>
+          </div>
+          <div class="admin-menu-group">
+            <div class="admin-menu-label">Bóng đá</div>
+            <a class="admin-menu-item" href="admin-matches.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+              </svg>
+              Trận đấu
+            </a>
+            <a class="admin-menu-item" href="admin-team.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              Đội bóng
+            </a>
+            <a class="admin-menu-item" href="admin-players.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M20 21a8 8 0 1 0-16 0" />
+              </svg>
+              Cầu thủ
+            </a>
+          </div>
+          <div class="admin-menu-group">
+            <div class="admin-menu-label">Hệ thống</div>
+            <a class="admin-menu-item" href="admin-users.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              Users
+            </a>
+            <a class="admin-menu-item" href="admin-job-monitor.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              </svg>
+              Job Monitor
+            </a>
+            <!-- Cài đặt dropdown — OPEN (active page is under this) -->
+            <div class="admin-menu-dropdown open" id="dd-settings">
+              <div class="admin-menu-dropdown-trigger active" onclick="toggleDD('dd-settings')">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="3" />
+                  <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+                Cài đặt
+                <svg class="dd-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </div>
+              <div class="admin-submenu">
+                <a class="admin-submenu-item" href="admin-settings.html">Cài đặt chung</a>
+                <a class="admin-submenu-item active" href="admin-prompts.html">Prompt Templates</a>
+              </div>
+            </div>
+            <a class="admin-menu-item" href="admin-login.html" style="color:#f87171">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              Đăng xuất
+            </a>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main content -->
+      <main class="admin-main">
+
+        <!-- Page header -->
+        <div class="admin-page-header" style="padding:16px 24px 0;margin-bottom:0;flex-shrink:0;">
+          <div>
+            <div class="admin-page-title">Prompt Templates</div>
+            <div class="admin-page-sub">Quản lý các mẫu prompt gửi cho AI — Claude, Gemini</div>
+          </div>
+          <div class="admin-header-actions">
+            <button class="btn btn-primary" onclick="newPrompt()">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Thêm template
+            </button>
+          </div>
+        </div>
+
+        <!-- Split view -->
+        <div class="prompts-wrap" style="padding:16px 24px 0;gap:16px;padding-bottom:16px;">
+
+          <!-- LEFT: Prompt list -->
+          <div class="prompt-list-panel"
+            style="border-radius:10px;border:1px solid var(--border);background:var(--bg-card);">
+            <div class="prompt-list-header">
+              <div class="prompt-list-title">Danh sách templates</div>
+              <div class="prompt-list-search">
+                <svg width="13" height="13" fill="none" stroke="var(--muted)" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input type="text" placeholder="Tìm template...">
+              </div>
+            </div>
+
+            <div class="prompt-list-scroll">
+
+              <!-- Card 1 — Active, selected -->
+              <div class="prompt-card active" onclick="selectPrompt(this)">
+                <div class="prompt-card-top">
+                  <div class="prompt-card-name">Dự đoán tỷ số trận đấu</div>
+                  <span class="prompt-status live"><span class="prompt-status-dot"></span>Active</span>
+                </div>
+                <div class="prompt-card-meta">
+                  <span class="prompt-provider-badge">Claude</span>
+                  <span class="prompt-card-meta-sep">·</span>
+                  <span>Cập nhật 10/04</span>
+                </div>
+                <div class="prompt-card-actions">
+                  <button class="prompt-action-btn primary" onclick="event.stopPropagation(); editPrompt(1)">
+                    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                    Sửa
+                  </button>
+                  <button class="prompt-action-btn" onclick="event.stopPropagation(); duplicatePrompt(1)">
+                    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <rect x="9" y="9" width="13" height="13" rx="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                    Copy
+                  </button>
+                  <button class="prompt-action-btn danger" onclick="event.stopPropagation(); deletePrompt(1)">
+                    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14H6L5 6" />
+                      <path d="M10 11v6M14 11v6" />
+                      <path d="M9 6V4h6v2" />
+                    </svg>
+                    Xóa
+                  </button>
+                </div>
+              </div>
+
+              <!-- Card 2 -->
+              <div class="prompt-card" onclick="selectPrompt(this)">
+                <div class="prompt-card-top">
+                  <div class="prompt-card-name">Phân tích phong độ đội hình</div>
+                  <span class="prompt-status draft">Draft</span>
+                </div>
+                <div class="prompt-card-meta">
+                  <span class="prompt-provider-badge gemini">Gemini</span>
+                  <span class="prompt-card-meta-sep">·</span>
+                  <span>Cập nhật 08/04</span>
+                </div>
+                <div class="prompt-card-actions">
+                  <button class="prompt-action-btn primary" onclick="event.stopPropagation(); editPrompt(2)">
+                    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                    Sửa
+                  </button>
+                  <button class="prompt-action-btn" onclick="event.stopPropagation(); duplicatePrompt(2)">
+                    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <rect x="9" y="9" width="13" height="13" rx="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                    Copy
+                  </button>
+                  <button class="prompt-action-btn danger" onclick="event.stopPropagation(); deletePrompt(2)">
+                    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14H6L5 6" />
+                      <path d="M10 11v6M14 11v6" />
+                      <path d="M9 6V4h6v2" />
+                    </svg>
+                    Xóa
+                  </button>
+                </div>
+              </div>
+
+              <!-- Card 3 -->
+              <div class="prompt-card" onclick="selectPrompt(this)">
+                <div class="prompt-card-top">
+                  <div class="prompt-card-name">Tóm tắt kết quả trận đấu</div>
+                  <span class="prompt-status draft">Draft</span>
+                </div>
+                <div class="prompt-card-meta">
+                  <span class="prompt-provider-badge">Claude</span>
+                  <span class="prompt-card-meta-sep">·</span>
+                  <span>Cập nhật 07/04</span>
+                </div>
+                <div class="prompt-card-actions">
+                  <button class="prompt-action-btn primary" onclick="event.stopPropagation(); editPrompt(3)">
+                    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                    Sửa
+                  </button>
+                  <button class="prompt-action-btn" onclick="event.stopPropagation(); duplicatePrompt(3)">
+                    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <rect x="9" y="9" width="13" height="13" rx="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                    Copy
+                  </button>
+                  <button class="prompt-action-btn danger" onclick="event.stopPropagation(); deletePrompt(3)">
+                    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14H6L5 6" />
+                      <path d="M10 11v6M14 11v6" />
+                      <path d="M9 6V4h6v2" />
+                    </svg>
+                    Xóa
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="prompt-list-footer">
+              <button class="btn-add-prompt" onclick="newPrompt()">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Thêm template mới
+              </button>
+            </div>
+          </div>
+
+          <!-- RIGHT: Editor -->
+          <div class="prompt-editor-panel"
+            style="border-radius:10px;border:1px solid var(--border);background:var(--bg-card);">
+
+            <!-- Editor header -->
+            <div class="editor-header">
+              <div class="editor-header-top">
+                <input class="editor-title-input" type="text" placeholder="Tên template..."
+                  value="Dự đoán tỷ số trận đấu">
+              </div>
+              <div class="editor-meta-row">
+                <span class="editor-meta-label">Provider</span>
+                <select class="editor-meta-select">
+                  <option selected>Claude (claude-opus-4-6)</option>
+                  <option>Claude (claude-sonnet-4-6)</option>
+                  <option>Gemini (gemini-2.0-flash)</option>
+                </select>
+                <div class="editor-meta-sep"></div>
+                <span class="editor-meta-label">Trạng thái</span>
+                <select class="editor-meta-select">
+                  <option selected>Active</option>
+                  <option>Draft</option>
+                </select>
+                <div class="editor-meta-sep"></div>
+                <span style="font-size:10px;color:var(--muted);">Lưu lần cuối: 10/04/2026 14:32</span>
+              </div>
+            </div>
+
+            <!-- Variables reference -->
+            <div class="editor-vars">
+              <div class="editor-vars-title">Variables có thể dùng — click để chèn vào prompt</div>
+              <div class="editor-vars-list">
+                <span class="var-chip" onclick="insertVar('{{match_info}}')">{{match_info}}<span
+                    class="var-chip-title">Thông tin trận</span></span>
+                <span class="var-chip" onclick="insertVar('{{home_team}}')">{{home_team}}<span
+                    class="var-chip-title">Đội nhà</span></span>
+                <span class="var-chip" onclick="insertVar('{{away_team}}')">{{away_team}}<span
+                    class="var-chip-title">Đội khách</span></span>
+                <span class="var-chip" onclick="insertVar('{{home_stats}}')">{{home_stats}}<span
+                    class="var-chip-title">Thống kê nhà</span></span>
+                <span class="var-chip" onclick="insertVar('{{away_stats}}')">{{away_stats}}<span
+                    class="var-chip-title">Thống kê khách</span></span>
+                <span class="var-chip" onclick="insertVar('{{h2h_history}}')">{{h2h_history}}<span
+                    class="var-chip-title">Đối đầu</span></span>
+                <span class="var-chip" onclick="insertVar('{{kickoff_time}}')">{{kickoff_time}}<span
+                    class="var-chip-title">Giờ đấu</span></span>
+                <span class="var-chip" onclick="insertVar('{{league_name}}')">{{league_name}}<span
+                    class="var-chip-title">Giải đấu</span></span>
+              </div>
+            </div>
+
+            <!-- Textarea -->
+            <div class="editor-body">
+              <textarea class="editor-textarea" id="prompt-textarea" oninput="updateCount(this)"
+                placeholder="Nhập nội dung prompt...">
+                Bạn là chuyên gia phân tích bóng đá. Hãy dự đoán kết quả trận đấu dưới đây dựa trên dữ liệu thống kê.
+                THÔNG TIN TRẬN ĐẤU:
+                {{match_info}}
+
+                ĐỘI NHÀ: {{home_team}}
+                Thống kê gần đây: {{home_stats}}
+
+                ĐỘI KHÁCH: {{away_team}}
+                Thống kê gần đây: {{away_stats}}
+
+                LỊCH SỬ ĐỐI ĐẦU:
+                {{h2h_history}}
+
+                Hãy phân tích và đưa ra:
+                1. Dự đoán tỷ số (ví dụ: 2-1)
+                2. Xác suất thắng của từng đội (%)
+                3. Nhận định ngắn gọn (tối đa 150 từ)
+                4. Kèo châu Á gợi ý
+
+                Trả lời theo định dạng JSON.
+              </textarea>
+              <div class="editor-char-count" id="char-count">847 ký tự</div>
+            </div>
+
+            <!-- Footer -->
+            <div class="editor-footer">
+              <div class="editor-footer-left">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                Sửa đổi chưa lưu
+              </div>
+              <div class="editor-footer-right">
+                <button class="btn btn-ghost" onclick="cancelEdit()">Hủy</button>
+                <button class="btn btn-secondary" onclick="saveDraft()">Lưu nháp</button>
+                <button class="btn btn-primary" onclick="saveAndActivate()">
+                  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  Lưu &amp; Kích hoạt
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- STYLES — skip khi chỉ cần phân tích structure -->
+  <style>
+    body {
+      overflow: hidden;
+    }
+
     .prompts-wrap {
       display: flex;
       flex: 1;
@@ -17,7 +434,6 @@
       gap: 0;
     }
 
-    /* ── LEFT: Version/List Panel ── */
     .prompt-list-panel {
       width: 300px;
       flex-shrink: 0;
@@ -26,11 +442,13 @@
       flex-direction: column;
       overflow: hidden;
     }
+
     .prompt-list-header {
       padding: 14px 16px 10px;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
+
     .prompt-list-title {
       font-size: 12px;
       font-weight: 700;
@@ -39,6 +457,7 @@
       letter-spacing: 0.5px;
       margin-bottom: 10px;
     }
+
     .prompt-list-search {
       display: flex;
       align-items: center;
@@ -48,7 +467,11 @@
       border-radius: 7px;
       padding: 6px 10px;
     }
-    .prompt-list-search:focus-within { border-color: rgba(200,240,77,0.3); }
+
+    .prompt-list-search:focus-within {
+      border-color: rgba(200, 240, 77, 0.3);
+    }
+
     .prompt-list-search input {
       background: none;
       border: none;
@@ -57,7 +480,10 @@
       font-size: 12px;
       width: 100%;
     }
-    .prompt-list-search input::placeholder { color: var(--muted); }
+
+    .prompt-list-search input::placeholder {
+      color: var(--muted);
+    }
 
     .prompt-list-scroll {
       flex: 1;
@@ -72,11 +498,16 @@
       transition: all 0.12s;
       border-bottom: 1px solid #1a1a1a;
     }
-    .prompt-card:hover { background: rgba(255,255,255,0.02); }
+
+    .prompt-card:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
     .prompt-card.active {
       background: var(--accent-dim);
       border-left-color: var(--accent);
     }
+
     .prompt-card-top {
       display: flex;
       align-items: flex-start;
@@ -84,13 +515,18 @@
       gap: 8px;
       margin-bottom: 4px;
     }
+
     .prompt-card-name {
       font-size: 12px;
       font-weight: 700;
       color: var(--text);
       line-height: 1.3;
     }
-    .prompt-card.active .prompt-card-name { color: var(--accent); }
+
+    .prompt-card.active .prompt-card-name {
+      color: var(--accent);
+    }
+
     .prompt-status {
       display: inline-flex;
       align-items: center;
@@ -102,22 +538,26 @@
       white-space: nowrap;
       flex-shrink: 0;
     }
+
     .prompt-status.live {
-      background: rgba(74,222,128,0.12);
+      background: rgba(74, 222, 128, 0.12);
       color: var(--live);
-      border: 1px solid rgba(74,222,128,0.2);
+      border: 1px solid rgba(74, 222, 128, 0.2);
     }
+
     .prompt-status.draft {
-      background: rgba(255,255,255,0.06);
+      background: rgba(255, 255, 255, 0.06);
       color: var(--muted);
       border: 1px solid var(--border2);
     }
+
     .prompt-status-dot {
       width: 5px;
       height: 5px;
       border-radius: 50%;
       background: currentColor;
     }
+
     .prompt-card-meta {
       display: flex;
       align-items: center;
@@ -126,7 +566,11 @@
       color: var(--muted);
       margin-bottom: 8px;
     }
-    .prompt-card-meta-sep { opacity: 0.3; }
+
+    .prompt-card-meta-sep {
+      opacity: 0.3;
+    }
+
     .prompt-provider-badge {
       display: inline-flex;
       align-items: center;
@@ -135,19 +579,22 @@
       font-weight: 600;
       padding: 1px 6px;
       border-radius: 5px;
-      background: rgba(200,240,77,0.08);
+      background: rgba(200, 240, 77, 0.08);
       color: var(--accent);
-      border: 1px solid rgba(200,240,77,0.15);
+      border: 1px solid rgba(200, 240, 77, 0.15);
     }
+
     .prompt-provider-badge.gemini {
-      background: rgba(100,180,255,0.08);
+      background: rgba(100, 180, 255, 0.08);
       color: #60a5fa;
-      border-color: rgba(100,180,255,0.2);
+      border-color: rgba(100, 180, 255, 0.2);
     }
+
     .prompt-card-actions {
       display: flex;
       gap: 4px;
     }
+
     .prompt-action-btn {
       height: 24px;
       padding: 0 8px;
@@ -163,16 +610,34 @@
       align-items: center;
       gap: 4px;
     }
-    .prompt-action-btn:hover { background: var(--bg-card); color: var(--text); }
-    .prompt-action-btn.danger:hover { background: rgba(248,113,113,0.1); color: #f87171; border-color: rgba(248,113,113,0.3); }
-    .prompt-action-btn.primary { color: var(--accent); border-color: rgba(200,240,77,0.3); background: rgba(200,240,77,0.06); }
-    .prompt-action-btn.primary:hover { background: rgba(200,240,77,0.12); }
+
+    .prompt-action-btn:hover {
+      background: var(--bg-card);
+      color: var(--text);
+    }
+
+    .prompt-action-btn.danger:hover {
+      background: rgba(248, 113, 113, 0.1);
+      color: #f87171;
+      border-color: rgba(248, 113, 113, 0.3);
+    }
+
+    .prompt-action-btn.primary {
+      color: var(--accent);
+      border-color: rgba(200, 240, 77, 0.3);
+      background: rgba(200, 240, 77, 0.06);
+    }
+
+    .prompt-action-btn.primary:hover {
+      background: rgba(200, 240, 77, 0.12);
+    }
 
     .prompt-list-footer {
       padding: 10px 16px;
       border-top: 1px solid var(--border);
       flex-shrink: 0;
     }
+
     .btn-add-prompt {
       width: 100%;
       display: flex;
@@ -189,26 +654,33 @@
       cursor: pointer;
       transition: all 0.15s;
     }
-    .btn-add-prompt:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
 
-    /* ── RIGHT: Editor Panel ── */
+    .btn-add-prompt:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+
     .prompt-editor-panel {
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
+
     .editor-header {
       padding: 16px 24px 12px;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
+
     .editor-header-top {
       display: flex;
       align-items: center;
       gap: 10px;
       margin-bottom: 12px;
     }
+
     .editor-title-input {
       flex: 1;
       background: none;
@@ -219,19 +691,29 @@
       color: var(--text);
       font-family: inherit;
     }
-    .editor-title-input::placeholder { color: var(--muted); font-weight: 400; }
-    .editor-title-input:focus { border-bottom: 1px solid var(--accent); }
+
+    .editor-title-input::placeholder {
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .editor-title-input:focus {
+      border-bottom: 1px solid var(--accent);
+    }
+
     .editor-meta-row {
       display: flex;
       align-items: center;
       gap: 12px;
       flex-wrap: wrap;
     }
+
     .editor-meta-label {
       font-size: 11px;
       color: var(--muted);
       font-weight: 500;
     }
+
     .editor-meta-select {
       background: var(--bg-card);
       border: 1px solid var(--border2);
@@ -244,8 +726,15 @@
       outline: none;
       transition: border-color 0.15s;
     }
-    .editor-meta-select:focus { border-color: var(--accent); }
-    .editor-meta-select option { background: var(--bg-card); }
+
+    .editor-meta-select:focus {
+      border-color: var(--accent);
+    }
+
+    .editor-meta-select option {
+      background: var(--bg-card);
+    }
+
     .editor-meta-sep {
       width: 1px;
       height: 20px;
@@ -253,16 +742,16 @@
       flex-shrink: 0;
     }
 
-    /* Variables ref */
     .editor-vars {
       margin: 0 24px 0;
       padding: 10px 14px;
-      background: rgba(200,240,77,0.04);
-      border: 1px solid rgba(200,240,77,0.12);
+      background: rgba(200, 240, 77, 0.04);
+      border: 1px solid rgba(200, 240, 77, 0.12);
       border-radius: 8px;
       margin-top: 12px;
       flex-shrink: 0;
     }
+
     .editor-vars-title {
       font-size: 10px;
       font-weight: 700;
@@ -271,17 +760,19 @@
       letter-spacing: 0.5px;
       margin-bottom: 6px;
     }
+
     .editor-vars-list {
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
     }
+
     .var-chip {
       display: inline-flex;
       align-items: center;
       padding: 2px 8px;
-      background: rgba(200,240,77,0.08);
-      border: 1px solid rgba(200,240,77,0.2);
+      background: rgba(200, 240, 77, 0.08);
+      border: 1px solid rgba(200, 240, 77, 0.2);
       border-radius: 4px;
       font-size: 11px;
       font-family: 'Courier New', monospace;
@@ -289,7 +780,11 @@
       cursor: pointer;
       transition: background 0.1s;
     }
-    .var-chip:hover { background: rgba(200,240,77,0.15); }
+
+    .var-chip:hover {
+      background: rgba(200, 240, 77, 0.15);
+    }
+
     .var-chip-title {
       font-size: 10px;
       color: var(--muted);
@@ -297,7 +792,6 @@
       font-family: inherit;
     }
 
-    /* Textarea */
     .editor-body {
       flex: 1;
       display: flex;
@@ -305,6 +799,7 @@
       padding: 16px 24px;
       overflow: hidden;
     }
+
     .editor-textarea {
       flex: 1;
       background: var(--bg-card);
@@ -319,7 +814,11 @@
       outline: none;
       transition: border-color 0.15s;
     }
-    .editor-textarea:focus { border-color: rgba(200,240,77,0.4); }
+
+    .editor-textarea:focus {
+      border-color: rgba(200, 240, 77, 0.4);
+    }
+
     .editor-char-count {
       text-align: right;
       font-size: 10px;
@@ -327,7 +826,6 @@
       margin-top: 6px;
     }
 
-    /* Footer bar */
     .editor-footer {
       padding: 12px 24px;
       border-top: 1px solid var(--border);
@@ -336,6 +834,7 @@
       justify-content: space-between;
       flex-shrink: 0;
     }
+
     .editor-footer-left {
       display: flex;
       align-items: center;
@@ -343,10 +842,16 @@
       font-size: 11px;
       color: var(--muted);
     }
-    .editor-footer-left svg { opacity: 0.5; }
-    .editor-footer-right { display: flex; gap: 8px; }
 
-    /* Empty state for editor */
+    .editor-footer-left svg {
+      opacity: 0.5;
+    }
+
+    .editor-footer-right {
+      display: flex;
+      gap: 8px;
+    }
+
     .editor-empty {
       flex: 1;
       display: flex;
@@ -356,357 +861,61 @@
       color: var(--muted);
       gap: 12px;
     }
-    .editor-empty svg { opacity: 0.2; }
-    .editor-empty-title { font-size: 14px; font-weight: 600; color: var(--muted2); }
-    .editor-empty-sub { font-size: 12px; }
+
+    .editor-empty svg {
+      opacity: 0.2;
+    }
+
+    .editor-empty-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted2);
+    }
+
+    .editor-empty-sub {
+      font-size: 12px;
+    }
   </style>
-</head>
-<body class="admin-body">
-<div class="admin-wrap">
 
-  <!-- Top Nav -->
-  <nav class="admin-topnav">
-    <div class="logo-wrap">
-      <div class="logo"><span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span></div>
-    </div>
-    <div class="admin-topnav-spacer"></div>
-    <div class="admin-topnav-actions">
-      <button class="topnav-btn" onclick="location.href='home.html'">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-        Xem trang chủ
-      </button>
-      <div class="user-row" style="padding:4px 8px;border-radius:8px;cursor:pointer;" onmouseover="this.style.background='var(--bg-card)'" onmouseout="this.style.background='none'">
-        <div class="user-avatar" style="width:26px;height:26px;font-size:11px;">A</div>
-        <div class="user-info"><div class="user-name">Admin</div></div>
-      </div>
-    </div>
-  </nav>
+  <script>
+    function toggleDD(id) {
+      document.getElementById(id).classList.toggle('open');
+    }
 
-  <div class="admin-body-area">
+    function selectPrompt(el) {
+      document.querySelectorAll('.prompt-card').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+    }
 
-    <!-- Sidebar -->
-    <aside class="admin-sidebar">
-      <div class="admin-sidebar-scroll">
-        <div class="admin-menu-group">
-          <div class="admin-menu-label">Tổng quan</div>
-          <a class="admin-menu-item" href="admin-dashboard.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            Dashboard
-          </a>
-        </div>
-        <div class="admin-menu-group">
-          <div class="admin-menu-label">Nội dung</div>
-          <a class="admin-menu-item" href="admin-posts.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            Bài viết
-          </a>
-          <a class="admin-menu-item" href="admin-predictions.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            AI Predictions
-          </a>
-          <a class="admin-menu-item" href="admin-categories.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-            Categories &amp; Tags
-          </a>
-        </div>
-        <div class="admin-menu-group">
-          <div class="admin-menu-label">Bóng đá</div>
-          <a class="admin-menu-item" href="admin-matches.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
-            Trận đấu
-          </a>
-          <a class="admin-menu-item" href="admin-team.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Đội bóng
-          </a>
-          <a class="admin-menu-item" href="admin-players.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
-            Cầu thủ
-          </a>
-        </div>
-        <div class="admin-menu-group">
-          <div class="admin-menu-label">Hệ thống</div>
-          <a class="admin-menu-item" href="admin-users.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            Users
-          </a>
-          <a class="admin-menu-item" href="admin-job-monitor.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            Job Monitor
-          </a>
-          <!-- Cài đặt dropdown — OPEN (active page is under this) -->
-          <div class="admin-menu-dropdown open" id="dd-settings">
-            <div class="admin-menu-dropdown-trigger active" onclick="toggleDD('dd-settings')">
-              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-              Cài đặt
-              <svg class="dd-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-            </div>
-            <div class="admin-submenu">
-              <a class="admin-submenu-item" href="admin-settings.html">Cài đặt chung</a>
-              <a class="admin-submenu-item active" href="admin-prompts.html">Prompt Templates</a>
-            </div>
-          </div>
-          <a class="admin-menu-item" href="admin-login.html" style="color:#f87171">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            Đăng xuất
-          </a>
-        </div>
-      </div>
-    </aside>
+    function newPrompt() {
+      document.querySelectorAll('.prompt-card').forEach(c => c.classList.remove('active'));
+      document.querySelector('.editor-title-input').value = '';
+      document.getElementById('prompt-textarea').value = '';
+      updateCount(document.getElementById('prompt-textarea'));
+      document.querySelector('.editor-title-input').focus();
+    }
 
-    <!-- Main content -->
-    <main class="admin-main">
+    function deletePrompt(id) {
+      if (confirm('Xóa template này?')) alert('Đã xóa (prototype)');
+    }
 
-      <!-- Page header -->
-      <div class="admin-page-header" style="padding:16px 24px 0;margin-bottom:0;flex-shrink:0;">
-        <div>
-          <div class="admin-page-title">Prompt Templates</div>
-          <div class="admin-page-sub">Quản lý các mẫu prompt gửi cho AI — Claude, Gemini</div>
-        </div>
-        <div class="admin-header-actions">
-          <button class="btn btn-primary" onclick="newPrompt()">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Thêm template
-          </button>
-        </div>
-      </div>
+    function insertVar(v) {
+      const ta = document.getElementById('prompt-textarea');
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      ta.value = ta.value.slice(0, start) + v + ta.value.slice(end);
+      ta.selectionStart = ta.selectionEnd = start + v.length;
+      ta.focus();
+      updateCount(ta);
+    }
 
-      <!-- Split view -->
-      <div class="prompts-wrap" style="padding:16px 24px 0;gap:16px;padding-bottom:16px;">
+    function updateCount(ta) {
+      document.getElementById('char-count').textContent = ta.value.length + ' ký tự';
+    }
 
-        <!-- LEFT: Prompt list -->
-        <div class="prompt-list-panel" style="border-radius:10px;border:1px solid var(--border);background:var(--bg-card);">
-          <div class="prompt-list-header">
-            <div class="prompt-list-title">Danh sách templates</div>
-            <div class="prompt-list-search">
-              <svg width="13" height="13" fill="none" stroke="var(--muted)" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" placeholder="Tìm template...">
-            </div>
-          </div>
-
-          <div class="prompt-list-scroll">
-
-            <!-- Card 1 — Active, selected -->
-            <div class="prompt-card active" onclick="selectPrompt(this)">
-              <div class="prompt-card-top">
-                <div class="prompt-card-name">Dự đoán tỷ số trận đấu</div>
-                <span class="prompt-status live"><span class="prompt-status-dot"></span>Active</span>
-              </div>
-              <div class="prompt-card-meta">
-                <span class="prompt-provider-badge">Claude</span>
-                <span class="prompt-card-meta-sep">·</span>
-                <span>Cập nhật 10/04</span>
-              </div>
-              <div class="prompt-card-actions">
-                <button class="prompt-action-btn primary" onclick="event.stopPropagation(); editPrompt(1)">
-                  <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                  Sửa
-                </button>
-                <button class="prompt-action-btn" onclick="event.stopPropagation(); duplicatePrompt(1)">
-                  <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                  Copy
-                </button>
-                <button class="prompt-action-btn danger" onclick="event.stopPropagation(); deletePrompt(1)">
-                  <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                  Xóa
-                </button>
-              </div>
-            </div>
-
-            <!-- Card 2 -->
-            <div class="prompt-card" onclick="selectPrompt(this)">
-              <div class="prompt-card-top">
-                <div class="prompt-card-name">Phân tích phong độ đội hình</div>
-                <span class="prompt-status draft">Draft</span>
-              </div>
-              <div class="prompt-card-meta">
-                <span class="prompt-provider-badge gemini">Gemini</span>
-                <span class="prompt-card-meta-sep">·</span>
-                <span>Cập nhật 08/04</span>
-              </div>
-              <div class="prompt-card-actions">
-                <button class="prompt-action-btn primary" onclick="event.stopPropagation(); editPrompt(2)">
-                  <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                  Sửa
-                </button>
-                <button class="prompt-action-btn" onclick="event.stopPropagation(); duplicatePrompt(2)">
-                  <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                  Copy
-                </button>
-                <button class="prompt-action-btn danger" onclick="event.stopPropagation(); deletePrompt(2)">
-                  <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                  Xóa
-                </button>
-              </div>
-            </div>
-
-            <!-- Card 3 -->
-            <div class="prompt-card" onclick="selectPrompt(this)">
-              <div class="prompt-card-top">
-                <div class="prompt-card-name">Tóm tắt kết quả trận đấu</div>
-                <span class="prompt-status draft">Draft</span>
-              </div>
-              <div class="prompt-card-meta">
-                <span class="prompt-provider-badge">Claude</span>
-                <span class="prompt-card-meta-sep">·</span>
-                <span>Cập nhật 07/04</span>
-              </div>
-              <div class="prompt-card-actions">
-                <button class="prompt-action-btn primary" onclick="event.stopPropagation(); editPrompt(3)">
-                  <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                  Sửa
-                </button>
-                <button class="prompt-action-btn" onclick="event.stopPropagation(); duplicatePrompt(3)">
-                  <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                  Copy
-                </button>
-                <button class="prompt-action-btn danger" onclick="event.stopPropagation(); deletePrompt(3)">
-                  <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                  Xóa
-                </button>
-              </div>
-            </div>
-
-          </div>
-
-          <div class="prompt-list-footer">
-            <button class="btn-add-prompt" onclick="newPrompt()">
-              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Thêm template mới
-            </button>
-          </div>
-        </div>
-
-        <!-- RIGHT: Editor -->
-        <div class="prompt-editor-panel" style="border-radius:10px;border:1px solid var(--border);background:var(--bg-card);">
-
-          <!-- Editor header -->
-          <div class="editor-header">
-            <div class="editor-header-top">
-              <input class="editor-title-input" type="text" placeholder="Tên template..." value="Dự đoán tỷ số trận đấu">
-            </div>
-            <div class="editor-meta-row">
-              <span class="editor-meta-label">Provider</span>
-              <select class="editor-meta-select">
-                <option selected>Claude (claude-opus-4-6)</option>
-                <option>Claude (claude-sonnet-4-6)</option>
-                <option>Gemini (gemini-2.0-flash)</option>
-              </select>
-              <div class="editor-meta-sep"></div>
-              <span class="editor-meta-label">Trạng thái</span>
-              <select class="editor-meta-select">
-                <option selected>Active</option>
-                <option>Draft</option>
-              </select>
-              <div class="editor-meta-sep"></div>
-              <span style="font-size:10px;color:var(--muted);">Lưu lần cuối: 10/04/2026 14:32</span>
-            </div>
-          </div>
-
-          <!-- Variables reference -->
-          <div class="editor-vars">
-            <div class="editor-vars-title">Variables có thể dùng — click để chèn vào prompt</div>
-            <div class="editor-vars-list">
-              <span class="var-chip" onclick="insertVar('{{match_info}}')">{{match_info}}<span class="var-chip-title">Thông tin trận</span></span>
-              <span class="var-chip" onclick="insertVar('{{home_team}}')">{{home_team}}<span class="var-chip-title">Đội nhà</span></span>
-              <span class="var-chip" onclick="insertVar('{{away_team}}')">{{away_team}}<span class="var-chip-title">Đội khách</span></span>
-              <span class="var-chip" onclick="insertVar('{{home_stats}}')">{{home_stats}}<span class="var-chip-title">Thống kê nhà</span></span>
-              <span class="var-chip" onclick="insertVar('{{away_stats}}')">{{away_stats}}<span class="var-chip-title">Thống kê khách</span></span>
-              <span class="var-chip" onclick="insertVar('{{h2h_history}}')">{{h2h_history}}<span class="var-chip-title">Đối đầu</span></span>
-              <span class="var-chip" onclick="insertVar('{{kickoff_time}}')">{{kickoff_time}}<span class="var-chip-title">Giờ đấu</span></span>
-              <span class="var-chip" onclick="insertVar('{{league_name}}')">{{league_name}}<span class="var-chip-title">Giải đấu</span></span>
-            </div>
-          </div>
-
-          <!-- Textarea -->
-          <div class="editor-body">
-            <textarea class="editor-textarea" id="prompt-textarea" oninput="updateCount(this)" placeholder="Nhập nội dung prompt...">Bạn là chuyên gia phân tích bóng đá. Hãy dự đoán kết quả trận đấu dưới đây dựa trên dữ liệu thống kê.
-
-THÔNG TIN TRẬN ĐẤU:
-{{match_info}}
-
-ĐỘI NHÀ: {{home_team}}
-Thống kê gần đây: {{home_stats}}
-
-ĐỘI KHÁCH: {{away_team}}
-Thống kê gần đây: {{away_stats}}
-
-LỊCH SỬ ĐỐI ĐẦU:
-{{h2h_history}}
-
-Hãy phân tích và đưa ra:
-1. Dự đoán tỷ số (ví dụ: 2-1)
-2. Xác suất thắng của từng đội (%)
-3. Nhận định ngắn gọn (tối đa 150 từ)
-4. Kèo châu Á gợi ý
-
-Trả lời theo định dạng JSON.</textarea>
-            <div class="editor-char-count" id="char-count">847 ký tự</div>
-          </div>
-
-          <!-- Footer -->
-          <div class="editor-footer">
-            <div class="editor-footer-left">
-              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              Sửa đổi chưa lưu
-            </div>
-            <div class="editor-footer-right">
-              <button class="btn btn-ghost" onclick="cancelEdit()">Hủy</button>
-              <button class="btn btn-secondary" onclick="saveDraft()">Lưu nháp</button>
-              <button class="btn btn-primary" onclick="saveAndActivate()">
-                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                Lưu &amp; Kích hoạt
-              </button>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-    </main>
-  </div>
-</div>
-
-<script>
-  function toggleDD(id) {
-    document.getElementById(id).classList.toggle('open');
-  }
-
-  function selectPrompt(el) {
-    document.querySelectorAll('.prompt-card').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
-  }
-
-  function newPrompt() {
-    document.querySelectorAll('.prompt-card').forEach(c => c.classList.remove('active'));
-    document.querySelector('.editor-title-input').value = '';
-    document.getElementById('prompt-textarea').value = '';
-    updateCount(document.getElementById('prompt-textarea'));
-    document.querySelector('.editor-title-input').focus();
-  }
-
-  function editPrompt(id) { /* select card & load into editor */ }
-  function duplicatePrompt(id) { /* clone prompt */ }
-  function deletePrompt(id) {
-    if (confirm('Xóa template này?')) alert('Đã xóa (prototype)');
-  }
-
-  function insertVar(v) {
-    const ta = document.getElementById('prompt-textarea');
-    const start = ta.selectionStart, end = ta.selectionEnd;
-    ta.value = ta.value.slice(0, start) + v + ta.value.slice(end);
-    ta.selectionStart = ta.selectionEnd = start + v.length;
-    ta.focus();
-    updateCount(ta);
-  }
-
-  function updateCount(ta) {
-    document.getElementById('char-count').textContent = ta.value.length + ' ký tự';
-  }
-
-  function cancelEdit() { alert('Hủy thay đổi (prototype)'); }
-  function saveDraft() { alert('Đã lưu bản nháp (prototype)'); }
-  function saveAndActivate() { alert('Đã lưu & kích hoạt (prototype)'); }
-</script>
+    function cancelEdit() { alert('Hủy thay đổi (prototype)'); }
+    function saveDraft() { alert('Đã lưu bản nháp (prototype)'); }
+    function saveAndActivate() { alert('Đã lưu & kích hoạt (prototype)'); }
+  </script>
 </body>
+
 </html>

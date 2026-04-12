@@ -1,30 +1,498 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Man City vs Arsenal: AI nhận định — FootballBlog</title>
   <link rel="stylesheet" href="assets/common.css">
-  <style>
-    /* ===== POST DETAIL PAGE ===== */
+</head>
 
-    /* 2-col layout: sidebar + article (no right panel) */
+<body>
+  <div class="app">
+    <!-- LEFT SIDEBAR -->
+    <aside class="left-sidebar">
+      <div class="logo-wrap">
+        <div class="logo"><span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span></div>
+        <div class="logo-sub">Kết quả &amp; Nhận định AI</div>
+      </div>
+      <div class="left-search">
+        <div class="search-input-wrap">
+          <svg class="search-icon" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"
+            viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+          <input type="text" placeholder="Tìm giải đấu, đội bóng..." oninput="filterLeagues(this.value)" />
+        </div>
+      </div>
+      <div class="league-tree" id="league-tree">
+
+        <!-- Vietnam -->
+        <div class="country-group" id="cg-vn">
+          <div class="country-header" onclick="toggleCountry('cg-vn')">
+            <span class="country-flag">🇻🇳</span>
+            <span class="country-name">Việt Nam</span>
+            <span class="country-chevron">▾</span>
+          </div>
+          <div class="sub-leagues">
+            <a class="league-item" href="league-page.html?league=vleague1" data-league="vleague1">
+              V.League 1
+              <span class="league-live-count">2</span>
+            </a>
+            <a class="league-item" href="league-page.html?league=vleague2" data-league="vleague2">V.League 2</a>
+            <a class="league-item" href="league-page.html?league=vcup" data-league="vcup">Cúp Quốc gia</a>
+          </div>
+        </div>
+
+        <!-- England -->
+        <div class="country-group" id="cg-eng">
+          <div class="country-header" onclick="toggleCountry('cg-eng')">
+            <span class="country-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+            <span class="country-name">Anh</span>
+            <span class="country-chevron">▾</span>
+          </div>
+          <div class="sub-leagues">
+            <a class="league-item" href="league-page.html?league=epl" data-league="epl">
+              Premier League
+              <span class="league-live-count">1</span>
+            </a>
+            <a class="league-item" href="league-page.html?league=championship"
+              data-league="championship">Championship</a>
+            <a class="league-item" href="league-page.html?league=facup" data-league="facup">FA Cup</a>
+          </div>
+        </div>
+
+        <!-- UEFA -->
+        <div class="country-group" id="cg-uefa">
+          <div class="country-header" onclick="toggleCountry('cg-uefa')">
+            <span class="country-flag">🏆</span>
+            <span class="country-name">UEFA</span>
+            <span class="country-chevron">▾</span>
+          </div>
+          <div class="sub-leagues">
+            <a class="league-item" href="league-page.html?league=ucl" data-league="ucl">
+              Champions League
+              <span class="league-live-count">1</span>
+            </a>
+            <a class="league-item" href="league-page.html?league=uel" data-league="uel">Europa League</a>
+            <a class="league-item" href="league-page.html?league=uecl" data-league="uecl">Conference League</a>
+          </div>
+        </div>
+
+        <!-- Germany -->
+        <div class="country-group" id="cg-de">
+          <div class="country-header" onclick="toggleCountry('cg-de')">
+            <span class="country-flag">🇩🇪</span>
+            <span class="country-name">Đức</span>
+            <span class="country-chevron">▾</span>
+          </div>
+          <div class="sub-leagues">
+            <a class="league-item" href="league-page.html?league=bund" data-league="bund">Bundesliga</a>
+            <a class="league-item" href="league-page.html?league=bund2" data-league="bund2">2. Bundesliga</a>
+          </div>
+        </div>
+
+        <!-- Spain -->
+        <div class="country-group" id="cg-es">
+          <div class="country-header" onclick="toggleCountry('cg-es')">
+            <span class="country-flag">🇪🇸</span>
+            <span class="country-name">Tây Ban Nha</span>
+            <span class="country-chevron">▾</span>
+          </div>
+          <div class="sub-leagues">
+            <a class="league-item" href="league-page.html?league=laliga" data-league="laliga">La Liga</a>
+            <a class="league-item" href="league-page.html?league=laliga2" data-league="laliga2">La Liga 2</a>
+            <a class="league-item" href="league-page.html?league=cdr" data-league="cdr">Copa del Rey</a>
+          </div>
+        </div>
+
+        <!-- Italy -->
+        <div class="country-group" id="cg-it">
+          <div class="country-header" onclick="toggleCountry('cg-it')">
+            <span class="country-flag">🇮🇹</span>
+            <span class="country-name">Ý</span>
+            <span class="country-chevron">▾</span>
+          </div>
+          <div class="sub-leagues">
+            <a class="league-item" href="league-page.html?league=seriea" data-league="seriea">Serie A</a>
+            <a class="league-item" href="league-page.html?league=serieb" data-league="serieb">Serie B</a>
+            <a class="league-item" href="league-page.html?league=coppait" data-league="coppait">Coppa Italia</a>
+          </div>
+        </div>
+
+        <!-- France -->
+        <div class="country-group" id="cg-fr">
+          <div class="country-header" onclick="toggleCountry('cg-fr')">
+            <span class="country-flag">🇫🇷</span>
+            <span class="country-name">Pháp</span>
+            <span class="country-chevron">▾</span>
+          </div>
+          <div class="sub-leagues">
+            <a class="league-item" href="league-page.html?league=ligue1" data-league="ligue1">Ligue 1</a>
+            <a class="league-item" href="league-page.html?league=ligue2" data-league="ligue2">Ligue 2</a>
+          </div>
+        </div>
+
+      </div>
+      <div class="left-bottom">
+        <button class="settings-btn" style="display:none">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          Cài đặt
+        </button>
+        <div class="user-row">
+          <div class="user-avatar">A</div>
+          <div class="user-info">
+            <div class="user-name">Admin</div>
+            <div class="user-email">admin@footballblog.vn</div>
+          </div>
+          <button class="logout-btn"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
+              viewBox="0 0 24 24">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg></button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-col">
+      <div class="article-col">
+        <div class="article-scroll">
+          <div class="article-wrap">
+
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+              <a href="home.html">Trang chủ</a>
+              <span>›</span>
+              <a href="category-tag.html">Premier League</a>
+              <span>›</span>
+              <span style="color:var(--text)">Man City vs Arsenal: AI nhận định</span>
+            </div>
+
+            <!-- Hero image -->
+            <div class="article-hero">
+              🏆
+              <div class="article-hero-overlay">
+                <div class="article-hero-match">
+                  <span style="font-size:22px">🔵</span>
+                  <span class="article-hero-teams">Manchester City</span>
+                  <span class="article-hero-vs">vs</span>
+                  <span class="article-hero-teams">Arsenal</span>
+                  <span style="font-size:22px">🔴</span>
+                </div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.5)">Premier League · GW 32 · Etihad Stadium ·
+                  07/04/2025</div>
+              </div>
+            </div>
+
+            <!-- Meta -->
+            <div class="article-meta">
+              <span class="article-tag">🤖 AI Nhận định</span>
+              <span class="article-tag"
+                style="background:rgba(74,222,128,0.08);border-color:rgba(74,222,128,0.2);color:var(--live)">⚽ Premier
+                League</span>
+              <span class="article-meta-item">
+                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                07/04/2025 · 18:00
+              </span>
+              <span class="article-meta-item">
+                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                2,847 lượt đọc
+              </span>
+            </div>
+
+            <!-- Title -->
+            <h1 class="article-title">Man City vs Arsenal: Pháo thủ khó cản vua thành Manchester — AI dự đoán 2-0</h1>
+
+            <!-- Lead -->
+            <p class="article-lead">
+              Đêm nay lúc 20:00 ICT, Etihad Stadium sẽ là đấu trường cho cuộc đối đầu đỉnh cao giữa <strong><a
+                  href="team-profile.html">Manchester City</a></strong> và <strong><a
+                  href="team-profile.html">Arsenal</a></strong> trong khuôn khổ vòng 32 Premier League. Đây là trận cầu
+              được kỳ vọng sẽ định hình cuộc đua vô địch mùa giải 2024/25.
+            </p>
+
+            <!-- AI Prediction box -->
+            <div class="ai-pred-box">
+              <div class="ai-pred-header">
+                <div class="ai-pred-badge">🤖 Claude AI · Phân tích</div>
+                <div class="ai-pred-title">Dự đoán tỷ số & nhận định</div>
+              </div>
+              <div class="ai-pred-grid">
+                <div class="ai-pred-item">
+                  <div class="ai-pred-value">2 – 0</div>
+                  <div class="ai-pred-label">Tỷ số dự đoán</div>
+                </div>
+                <div class="ai-pred-item">
+                  <div class="ai-pred-value" style="font-size:20px;">74%</div>
+                  <div class="ai-pred-label">Độ tin cậy</div>
+                </div>
+                <div class="ai-pred-item">
+                  <div class="ai-pred-value" style="font-size:20px;color:#60a5fa">Over</div>
+                  <div class="ai-pred-label">Tài/Xỉu 2.5</div>
+                </div>
+              </div>
+              <div class="ai-confidence-bar">
+                <div class="ai-confidence-row"><span>Man City thắng</span><strong>58%</strong></div>
+                <div class="ai-bar-track">
+                  <div class="ai-bar-fill" style="width:58%"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-top:8px;">
+                  <div class="ai-confidence-row" style="gap:8px;flex:1;margin-right:16px;"><span>Hòa</span><strong
+                      style="color:var(--muted2)">22%</strong></div>
+                  <div class="ai-confidence-row" style="gap:8px;flex:1;"><span>Arsenal</span><strong
+                      style="color:#60a5fa">20%</strong></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Article body -->
+            <div class="article-body">
+
+              <h2>Phân tích phong độ gần đây</h2>
+
+              <p>
+                <strong><a href="team-profile.html">Manchester City</a></strong> đang trải qua giai đoạn ổn định ấn
+                tượng với 5 chiến thắng liên tiếp tại Premier League. Erling Haaland đã ghi 7 bàn trong 5 trận gần nhất,
+                trong khi Kevin De Bruyne trở lại sau chấn thương và mang theo chất xúc tác sáng tạo không thể thay thế
+                cho Pep Guardiola.
+              </p>
+
+              <div class="highlight">
+                "Man City tại Etihad là pháo đài bất khả xâm phạm — họ chỉ thua 2 trận sân nhà trong toàn mùa. Con số
+                này nói lên tất cả." — Phân tích từ Claude AI
+              </div>
+
+              <p>
+                Ngược lại, <strong><a href="team-profile.html">Arsenal</a></strong> vừa trải qua kết quả không như ý khi
+                hòa 1-1 trước Newcastle tại Emirates. Arteta đang đối mặt với bài toán thiếu Gabriel Jesus (chấn thương)
+                và phải phụ thuộc nhiều vào Leandro Trossard ở vai trò trung phong cắm giả.
+              </p>
+
+              <div class="inline-stats">
+                <div class="inline-stats-title">Thống kê 5 trận gần nhất</div>
+                <table>
+                  <tr>
+                    <td></td>
+                    <td>Man City</td>
+                    <td>Arsenal</td>
+                  </tr>
+                  <tr>
+                    <td>Trận thắng</td>
+                    <td>5</td>
+                    <td>3</td>
+                  </tr>
+                  <tr>
+                    <td>Trận hòa</td>
+                    <td>0</td>
+                    <td>2</td>
+                  </tr>
+                  <tr>
+                    <td>Bàn thắng</td>
+                    <td>14</td>
+                    <td>8</td>
+                  </tr>
+                  <tr>
+                    <td>Bàn thua</td>
+                    <td>3</td>
+                    <td>5</td>
+                  </tr>
+                  <tr>
+                    <td>xG trung bình</td>
+                    <td>2.31</td>
+                    <td>1.67</td>
+                  </tr>
+                </table>
+              </div>
+
+              <h2>Lịch sử đối đầu</h2>
+
+              <p>
+                Trong 17 trận đối đầu gần nhất, <a href="team-profile.html">Man City</a> chiếm ưu thế rõ ràng với 8
+                chiến thắng so với 5 của <a href="team-profile.html">Arsenal</a> và 4 trận hòa. Đặc biệt tại Etihad,
+                <strong><a href="team-profile.html">Man City</a> bất bại trong 6 trận liên tiếp</strong> trước <a
+                  href="team-profile.html">Arsenal</a>. Trận thua gần nhất của The Citizens trước đối thủ này là ngày
+                12/05/2023.
+              </p>
+
+              <h2>Nhận định chiến thuật</h2>
+
+              <h3>Bộ tứ tấn công Man City</h3>
+              <p>
+                Guardiola nhiều khả năng sẽ triển khai sơ đồ 4-3-3 với Haaland trung phong, De Bruyne và Foden hỗ trợ.
+                Đây là sơ đồ gây khó dễ nhất cho hàng thủ đối phương khi Haaland kéo hai trung vệ ra, tạo khoảng trống
+                cho De Bruyne cắt vào.
+              </p>
+
+              <h3>Điểm yếu của <a href="team-profile.html">Arsenal</a></h3>
+              <p>
+                Hàng thủ <a href="team-profile.html">Arsenal</a> tỏ ra lung lay khi đối mặt với những đường chuyền thẳng
+                vào không gian sau lưng hậu vệ. Trossard đóng vai trung phong giả thiếu kinh nghiệm so với Jesus, điều
+                này khiến <a href="team-profile.html">Arsenal</a> ít nguy hiểm hơn trong pha phản công.
+              </p>
+
+              <div class="highlight">
+                Khuyến nghị cược: <strong>Man City thắng và có bàn thắng trong cả 2 hiệp</strong> — tỷ lệ 1.85 tại hầu
+                hết các nhà cái.
+              </div>
+
+              <h2>Kết luận</h2>
+              <p>
+                Claude AI dự đoán Man City sẽ giành chiến thắng với tỷ số <strong>2-0</strong> với độ tin cậy 74%.
+                Haaland nhiều khả năng sẽ nổ súng ít nhất 1 lần. Đây là một trong những dự đoán có độ tin cậy cao nhất
+                tuần này.
+              </p>
+
+            </div>
+
+            <!-- Tags -->
+            <div class="article-tags">
+              <a class="article-tag-pill" href="category-tag.html">Premier League</a>
+              <a class="article-tag-pill" href="category-tag.html">Man City</a>
+              <a class="article-tag-pill" href="category-tag.html">Arsenal</a>
+              <a class="article-tag-pill" href="category-tag.html">AI Nhận định</a>
+              <a class="article-tag-pill" href="category-tag.html">Dự đoán tỷ số</a>
+              <a class="article-tag-pill" href="category-tag.html">GW32</a>
+            </div>
+
+            <!-- Related posts -->
+            <div class="related-section">
+              <div class="related-title">Bài viết liên quan</div>
+              <div class="related-grid">
+                <div class="related-card" onclick="location.href='post-detail.html'">
+                  <div class="related-card-img" style="background:linear-gradient(135deg,#1a0a2d,#3a1a5c)">⚽</div>
+                  <div class="related-card-body">
+                    <div class="related-card-tag">🤖 AI · Premier League</div>
+                    <div class="related-card-title">Tottenham vs Man United: Battle for top 4</div>
+                    <div class="related-card-meta">22:15 hôm nay · 2-1 dự đoán</div>
+                  </div>
+                </div>
+                <div class="related-card" onclick="location.href='post-detail.html'">
+                  <div class="related-card-img" style="background:linear-gradient(135deg,#0a1a1a,#1a3a3a)">🏆</div>
+                  <div class="related-card-body">
+                    <div class="related-card-tag">🤖 AI · UCL</div>
+                    <div class="related-card-title">Real Madrid vs Bayern Munich: Đại chiến tứ kết</div>
+                    <div class="related-card-meta">Kết thúc · 3-1 kết quả</div>
+                  </div>
+                </div>
+                <div class="related-card" onclick="location.href='post-detail.html'">
+                  <div class="related-card-img" style="background:linear-gradient(135deg,#1a1a0a,#3a3a10)">🟡</div>
+                  <div class="related-card-body">
+                    <div class="related-card-tag">🤖 AI · Premier League</div>
+                    <div class="related-card-title">Chelsea vs Liverpool: Cuộc chiến nhóm trên</div>
+                    <div class="related-card-meta">Kết thúc · 2-1 kết quả</div>
+                  </div>
+                </div>
+                <div class="related-card" onclick="location.href='post-detail.html'">
+                  <div class="related-card-img" style="background:linear-gradient(135deg,#0a1a0a,#1a3a1a)">🇻🇳</div>
+                  <div class="related-card-body">
+                    <div class="related-card-tag">🤖 AI · V.League 1</div>
+                    <div class="related-card-title">Hải Phòng FC vs Viettel: Cuộc chiến top 3</div>
+                    <div class="related-card-meta">20:00 hôm nay · 1-0 dự đoán</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+    </main>
+
+    <!-- RIGHT SIDEBAR — AI Blog -->
+    <aside class="right-sidebar">
+      <div class="right-header">
+        <div class="right-title">AI Blog</div>
+        <div class="ai-badge">🤖 AI Agent</div>
+      </div>
+      <div class="right-tabs">
+        <button class="right-tab active" onclick="setRightTab(this)">Liên quan</button>
+        <button class="right-tab" onclick="setRightTab(this)">Mới nhất</button>
+      </div>
+      <div class="right-scroll">
+
+        <div class="post-featured" onclick="location.href='post-detail.html'">
+          <div class="post-featured-img" style="background: linear-gradient(135deg, #0f1923, #1a3a5c);">
+            🏆
+            <div class="match-label">
+              <span>Man City vs Arsenal</span>
+              <span style="color:var(--accent)">2-0 dự đoán</span>
+            </div>
+          </div>
+          <div class="post-featured-body">
+            <div class="post-tag">🤖 AI · Premier League</div>
+            <div class="post-title">Man City vs Arsenal: Pháo thủ khó cản vua thành Manchester tại Etihad</div>
+            <div class="post-excerpt">Phân tích chiều sâu đội hình, lịch sử đối đầu và form phong độ. Claude AI dự đoán
+              Man City thắng 2-0 với độ tin cậy 74%.</div>
+            <div class="post-meta">
+              <span class="post-time">2 giờ trước</span>
+              <span class="post-read">Đọc tiếp →</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="post-item" onclick="location.href='post-detail.html'">
+          <div class="post-thumb" style="background: linear-gradient(135deg, #1a0a2d, #3a1a5c);">⚽</div>
+          <div class="post-item-body">
+            <div class="post-item-tag">🤖 AI · Premier League</div>
+            <div class="post-item-title">Tottenham vs Man United: Cuộc chiến top 4</div>
+            <div class="post-item-meta">Lịch đấu · 1 giờ trước</div>
+          </div>
+          <div class="pred-score">
+            <div class="ps-val">2-1</div>
+            <div class="ps-label">AI<br>dự đoán</div>
+          </div>
+        </div>
+
+        <div class="post-item" onclick="location.href='post-detail.html'">
+          <div class="post-thumb" style="background: linear-gradient(135deg, #0a1a1a, #1a3a3a);">🏆</div>
+          <div class="post-item-body">
+            <div class="post-item-tag">🤖 AI · UCL</div>
+            <div class="post-item-title">Real Madrid vs Bayern: Đại chiến tứ kết UCL</div>
+            <div class="post-item-meta">Kết thúc · 5 giờ trước</div>
+          </div>
+          <div class="pred-score" style="opacity:0.5;">
+            <div class="ps-val">3-1</div>
+            <div class="ps-label">Kết<br>quả</div>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- STYLES — skip khi chỉ cần phân tích structure -->
+  <style>
     .article-col {
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
-    .article-scroll { flex: 1; overflow-y: auto; }
 
-    /* Article container */
+    .article-scroll {
+      flex: 1;
+      overflow-y: auto;
+    }
+
     .article-wrap {
       max-width: 780px;
       margin: 0 auto;
       padding: 32px 28px 48px;
     }
 
-    /* Breadcrumb */
     .breadcrumb {
       display: flex;
       align-items: center;
@@ -33,10 +501,17 @@
       color: var(--muted);
       margin-bottom: 20px;
     }
-    .breadcrumb a { color: var(--muted); text-decoration: none; cursor: pointer; }
-    .breadcrumb a:hover { color: var(--accent); }
 
-    /* Hero image */
+    .breadcrumb a {
+      color: var(--muted);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .breadcrumb a:hover {
+      color: var(--accent);
+    }
+
     .article-hero {
       width: 100%;
       height: 280px;
@@ -50,29 +525,36 @@
       justify-content: center;
       font-size: 80px;
     }
+
     .article-hero-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 60%);
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
       padding: 20px 24px;
     }
+
     .article-hero-match {
       display: flex;
       align-items: center;
       gap: 10px;
       margin-bottom: 8px;
     }
+
     .article-hero-teams {
       font-size: 18px;
       font-weight: 900;
       color: #fff;
     }
-    .article-hero-vs { font-size: 14px; color: var(--muted); margin: 0 4px; }
 
-    /* Article meta */
+    .article-hero-vs {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 0 4px;
+    }
+
     .article-meta {
       display: flex;
       align-items: center;
@@ -80,12 +562,13 @@
       flex-wrap: wrap;
       margin-bottom: 16px;
     }
+
     .article-tag {
       display: inline-flex;
       align-items: center;
       gap: 4px;
       background: var(--accent-dim);
-      border: 1px solid rgba(200,240,77,0.2);
+      border: 1px solid rgba(200, 240, 77, 0.2);
       color: var(--accent);
       font-size: 10px;
       font-weight: 700;
@@ -94,6 +577,7 @@
       text-transform: uppercase;
       letter-spacing: 0.4px;
     }
+
     .article-meta-item {
       font-size: 11px;
       color: var(--muted);
@@ -102,7 +586,6 @@
       gap: 4px;
     }
 
-    /* Article title */
     .article-title {
       font-size: 26px;
       font-weight: 900;
@@ -110,6 +593,7 @@
       line-height: 1.25;
       margin-bottom: 12px;
     }
+
     .article-lead {
       font-size: 14px;
       color: var(--muted2);
@@ -119,26 +603,27 @@
       border-bottom: 1px solid var(--border);
     }
 
-    /* AI Prediction box — featured */
     .ai-pred-box {
       background: var(--bg-dark);
-      border: 1px solid rgba(200,240,77,0.2);
+      border: 1px solid rgba(200, 240, 77, 0.2);
       border-radius: 12px;
       padding: 20px;
       margin-bottom: 28px;
     }
+
     .ai-pred-header {
       display: flex;
       align-items: center;
       gap: 10px;
       margin-bottom: 16px;
     }
+
     .ai-pred-badge {
       display: flex;
       align-items: center;
       gap: 5px;
       background: var(--accent-dim);
-      border: 1px solid rgba(200,240,77,0.25);
+      border: 1px solid rgba(200, 240, 77, 0.25);
       color: var(--accent);
       font-size: 10px;
       font-weight: 800;
@@ -146,13 +631,20 @@
       border-radius: 20px;
       text-transform: uppercase;
     }
-    .ai-pred-title { font-size: 13px; font-weight: 700; color: var(--text); }
+
+    .ai-pred-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
     .ai-pred-grid {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
       gap: 12px;
       margin-bottom: 16px;
     }
+
     .ai-pred-item {
       background: var(--bg-card);
       border-radius: 8px;
@@ -160,11 +652,23 @@
       text-align: center;
       border: 1px solid var(--border);
     }
-    .ai-pred-value { font-size: 24px; font-weight: 900; color: var(--accent); }
-    .ai-pred-label { font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+    .ai-pred-value {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--accent);
+    }
+
+    .ai-pred-label {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
     .ai-confidence-bar {
       margin-top: 12px;
     }
+
     .ai-confidence-row {
       display: flex;
       align-items: center;
@@ -173,16 +677,24 @@
       color: var(--muted);
       margin-bottom: 5px;
     }
-    .ai-confidence-row strong { color: var(--text); }
+
+    .ai-confidence-row strong {
+      color: var(--text);
+    }
+
     .ai-bar-track {
       height: 5px;
       background: var(--border2);
       border-radius: 3px;
       overflow: hidden;
     }
-    .ai-bar-fill { height: 100%; border-radius: 3px; background: var(--accent); }
 
-    /* Article body text */
+    .ai-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: var(--accent);
+    }
+
     .article-body h2 {
       font-size: 18px;
       font-weight: 800;
@@ -191,31 +703,41 @@
       padding-bottom: 8px;
       border-bottom: 1px solid var(--border);
     }
+
     .article-body h3 {
       font-size: 15px;
       font-weight: 700;
       color: var(--text);
       margin: 18px 0 8px;
     }
+
     .article-body p {
       font-size: 14px;
       color: var(--muted2);
       line-height: 1.75;
       margin-bottom: 14px;
     }
-    .article-body strong { color: var(--text); font-weight: 700; }
+
+    .article-body strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+
     .article-body a {
       color: var(--accent);
       text-decoration: none;
       font-weight: 600;
     }
+
     .article-body a:hover {
       text-decoration: underline;
     }
+
     .article-body strong a {
       color: inherit;
       font-weight: inherit;
     }
+
     .article-body .highlight {
       background: var(--accent-dim);
       border-left: 3px solid var(--accent);
@@ -227,7 +749,6 @@
       font-style: italic;
     }
 
-    /* Key stats inline table */
     .inline-stats {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -235,6 +756,7 @@
       overflow: hidden;
       margin: 16px 0;
     }
+
     .inline-stats-title {
       padding: 10px 14px;
       font-size: 11px;
@@ -245,19 +767,34 @@
       background: var(--bg-dark);
       border-bottom: 1px solid var(--border);
     }
-    .inline-stats table { width: 100%; border-collapse: collapse; }
+
+    .inline-stats table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
     .inline-stats td {
       padding: 9px 14px;
       font-size: 12px;
       color: var(--muted2);
       border-bottom: 1px solid #1a1a1a;
     }
-    .inline-stats tr:last-child td { border-bottom: none; }
-    .inline-stats td:first-child { color: var(--muted); }
-    .inline-stats td:nth-child(2),
-    .inline-stats td:nth-child(3) { text-align: center; font-weight: 700; color: var(--text); }
 
-    /* Tags */
+    .inline-stats tr:last-child td {
+      border-bottom: none;
+    }
+
+    .inline-stats td:first-child {
+      color: var(--muted);
+    }
+
+    .inline-stats td:nth-child(2),
+    .inline-stats td:nth-child(3) {
+      text-align: center;
+      font-weight: 700;
+      color: var(--text);
+    }
+
     .article-tags {
       display: flex;
       flex-wrap: wrap;
@@ -266,6 +803,7 @@
       padding-top: 20px;
       border-top: 1px solid var(--border);
     }
+
     .article-tag-pill {
       font-size: 11px;
       color: var(--muted2);
@@ -276,21 +814,29 @@
       cursor: pointer;
       transition: all 0.15s;
     }
-    .article-tag-pill:hover { border-color: var(--accent); color: var(--accent); }
 
-    /* Related posts */
-    .related-section { margin-top: 8px; }
+    .article-tag-pill:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .related-section {
+      margin-top: 8px;
+    }
+
     .related-title {
       font-size: 13px;
       font-weight: 800;
       color: var(--text);
       margin-bottom: 14px;
     }
+
     .related-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
+
     .related-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -299,7 +845,12 @@
       cursor: pointer;
       transition: border-color 0.15s, transform 0.15s;
     }
-    .related-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+
+    .related-card:hover {
+      border-color: var(--border2);
+      transform: translateY(-1px);
+    }
+
     .related-card-img {
       height: 90px;
       display: flex;
@@ -307,404 +858,40 @@
       justify-content: center;
       font-size: 28px;
     }
-    .related-card-body { padding: 10px 12px 12px; }
-    .related-card-tag { font-size: 9px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; }
-    .related-card-title { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.4; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
-    .related-card-meta { font-size: 10px; color: var(--muted); margin-top: 6px; }
+
+    .related-card-body {
+      padding: 10px 12px 12px;
+    }
+
+    .related-card-tag {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 4px;
+    }
+
+    .related-card-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .related-card-meta {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
   </style>
-</head>
-<body>
-<div class="app">
 
-  <!-- LEFT SIDEBAR -->
-  <aside class="left-sidebar">
-    <div class="logo-wrap">
-      <div class="logo"><span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span></div>
-      <div class="logo-sub">Kết quả &amp; Nhận định AI</div>
-    </div>
-    <div class="left-search">
-      <div class="search-input-wrap">
-        <svg class="search-icon" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input type="text" placeholder="Tìm giải đấu, đội bóng..." oninput="filterLeagues(this.value)" />
-      </div>
-    </div>
-    <div class="league-tree" id="league-tree">
-
-      <!-- Vietnam -->
-      <div class="country-group" id="cg-vn">
-        <div class="country-header" onclick="toggleCountry('cg-vn')">
-          <span class="country-flag">🇻🇳</span>
-          <span class="country-name">Việt Nam</span>
-          <span class="country-chevron">▾</span>
-        </div>
-        <div class="sub-leagues">
-          <a class="league-item" href="league-page.html?league=vleague1" data-league="vleague1">
-            V.League 1
-            <span class="league-live-count">2</span>
-          </a>
-          <a class="league-item" href="league-page.html?league=vleague2" data-league="vleague2">V.League 2</a>
-          <a class="league-item" href="league-page.html?league=vcup" data-league="vcup">Cúp Quốc gia</a>
-        </div>
-      </div>
-
-      <!-- England -->
-      <div class="country-group" id="cg-eng">
-        <div class="country-header" onclick="toggleCountry('cg-eng')">
-          <span class="country-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
-          <span class="country-name">Anh</span>
-          <span class="country-chevron">▾</span>
-        </div>
-        <div class="sub-leagues">
-          <a class="league-item" href="league-page.html?league=epl" data-league="epl">
-            Premier League
-            <span class="league-live-count">1</span>
-          </a>
-          <a class="league-item" href="league-page.html?league=championship" data-league="championship">Championship</a>
-          <a class="league-item" href="league-page.html?league=facup" data-league="facup">FA Cup</a>
-        </div>
-      </div>
-
-      <!-- UEFA -->
-      <div class="country-group" id="cg-uefa">
-        <div class="country-header" onclick="toggleCountry('cg-uefa')">
-          <span class="country-flag">🏆</span>
-          <span class="country-name">UEFA</span>
-          <span class="country-chevron">▾</span>
-        </div>
-        <div class="sub-leagues">
-          <a class="league-item" href="league-page.html?league=ucl" data-league="ucl">
-            Champions League
-            <span class="league-live-count">1</span>
-          </a>
-          <a class="league-item" href="league-page.html?league=uel" data-league="uel">Europa League</a>
-          <a class="league-item" href="league-page.html?league=uecl" data-league="uecl">Conference League</a>
-        </div>
-      </div>
-
-      <!-- Germany -->
-      <div class="country-group" id="cg-de">
-        <div class="country-header" onclick="toggleCountry('cg-de')">
-          <span class="country-flag">🇩🇪</span>
-          <span class="country-name">Đức</span>
-          <span class="country-chevron">▾</span>
-        </div>
-        <div class="sub-leagues">
-          <a class="league-item" href="league-page.html?league=bund" data-league="bund">Bundesliga</a>
-          <a class="league-item" href="league-page.html?league=bund2" data-league="bund2">2. Bundesliga</a>
-        </div>
-      </div>
-
-      <!-- Spain -->
-      <div class="country-group" id="cg-es">
-        <div class="country-header" onclick="toggleCountry('cg-es')">
-          <span class="country-flag">🇪🇸</span>
-          <span class="country-name">Tây Ban Nha</span>
-          <span class="country-chevron">▾</span>
-        </div>
-        <div class="sub-leagues">
-          <a class="league-item" href="league-page.html?league=laliga" data-league="laliga">La Liga</a>
-          <a class="league-item" href="league-page.html?league=laliga2" data-league="laliga2">La Liga 2</a>
-          <a class="league-item" href="league-page.html?league=cdr" data-league="cdr">Copa del Rey</a>
-        </div>
-      </div>
-
-      <!-- Italy -->
-      <div class="country-group" id="cg-it">
-        <div class="country-header" onclick="toggleCountry('cg-it')">
-          <span class="country-flag">🇮🇹</span>
-          <span class="country-name">Ý</span>
-          <span class="country-chevron">▾</span>
-        </div>
-        <div class="sub-leagues">
-          <a class="league-item" href="league-page.html?league=seriea" data-league="seriea">Serie A</a>
-          <a class="league-item" href="league-page.html?league=serieb" data-league="serieb">Serie B</a>
-          <a class="league-item" href="league-page.html?league=coppait" data-league="coppait">Coppa Italia</a>
-        </div>
-      </div>
-
-      <!-- France -->
-      <div class="country-group" id="cg-fr">
-        <div class="country-header" onclick="toggleCountry('cg-fr')">
-          <span class="country-flag">🇫🇷</span>
-          <span class="country-name">Pháp</span>
-          <span class="country-chevron">▾</span>
-        </div>
-        <div class="sub-leagues">
-          <a class="league-item" href="league-page.html?league=ligue1" data-league="ligue1">Ligue 1</a>
-          <a class="league-item" href="league-page.html?league=ligue2" data-league="ligue2">Ligue 2</a>
-        </div>
-      </div>
-
-    </div>
-    <div class="left-bottom">
-      <button class="settings-btn" style="display:none">
-        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        Cài đặt
-      </button>
-      <div class="user-row">
-        <div class="user-avatar">A</div>
-        <div class="user-info"><div class="user-name">Admin</div><div class="user-email">admin@footballblog.vn</div></div>
-        <button class="logout-btn"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
-      </div>
-    </div>
-  </aside>
-
-  <!-- MAIN CONTENT -->
-  <main class="main-col">
-    <div class="article-col">
-      <div class="article-scroll">
-        <div class="article-wrap">
-
-        <!-- Breadcrumb -->
-        <div class="breadcrumb">
-          <a href="home.html">Trang chủ</a>
-          <span>›</span>
-          <a href="category-tag.html">Premier League</a>
-          <span>›</span>
-          <span style="color:var(--text)">Man City vs Arsenal: AI nhận định</span>
-        </div>
-
-        <!-- Hero image -->
-        <div class="article-hero">
-          🏆
-          <div class="article-hero-overlay">
-            <div class="article-hero-match">
-              <span style="font-size:22px">🔵</span>
-              <span class="article-hero-teams">Manchester City</span>
-              <span class="article-hero-vs">vs</span>
-              <span class="article-hero-teams">Arsenal</span>
-              <span style="font-size:22px">🔴</span>
-            </div>
-            <div style="font-size:11px;color:rgba(255,255,255,0.5)">Premier League · GW 32 · Etihad Stadium · 07/04/2025</div>
-          </div>
-        </div>
-
-        <!-- Meta -->
-        <div class="article-meta">
-          <span class="article-tag">🤖 AI Nhận định</span>
-          <span class="article-tag" style="background:rgba(74,222,128,0.08);border-color:rgba(74,222,128,0.2);color:var(--live)">⚽ Premier League</span>
-          <span class="article-meta-item">
-            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            07/04/2025 · 18:00
-          </span>
-          <span class="article-meta-item">
-            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            2,847 lượt đọc
-          </span>
-        </div>
-
-        <!-- Title -->
-        <h1 class="article-title">Man City vs Arsenal: Pháo thủ khó cản vua thành Manchester — AI dự đoán 2-0</h1>
-
-        <!-- Lead -->
-        <p class="article-lead">
-          Đêm nay lúc 20:00 ICT, Etihad Stadium sẽ là đấu trường cho cuộc đối đầu đỉnh cao giữa <strong><a href="team-profile.html">Manchester City</a></strong> và <strong><a href="team-profile.html">Arsenal</a></strong> trong khuôn khổ vòng 32 Premier League. Đây là trận cầu được kỳ vọng sẽ định hình cuộc đua vô địch mùa giải 2024/25.
-        </p>
-
-        <!-- AI Prediction box -->
-        <div class="ai-pred-box">
-          <div class="ai-pred-header">
-            <div class="ai-pred-badge">🤖 Claude AI · Phân tích</div>
-            <div class="ai-pred-title">Dự đoán tỷ số & nhận định</div>
-          </div>
-          <div class="ai-pred-grid">
-            <div class="ai-pred-item">
-              <div class="ai-pred-value">2 – 0</div>
-              <div class="ai-pred-label">Tỷ số dự đoán</div>
-            </div>
-            <div class="ai-pred-item">
-              <div class="ai-pred-value" style="font-size:20px;">74%</div>
-              <div class="ai-pred-label">Độ tin cậy</div>
-            </div>
-            <div class="ai-pred-item">
-              <div class="ai-pred-value" style="font-size:20px;color:#60a5fa">Over</div>
-              <div class="ai-pred-label">Tài/Xỉu 2.5</div>
-            </div>
-          </div>
-          <div class="ai-confidence-bar">
-            <div class="ai-confidence-row"><span>Man City thắng</span><strong>58%</strong></div>
-            <div class="ai-bar-track"><div class="ai-bar-fill" style="width:58%"></div></div>
-            <div style="display:flex;justify-content:space-between;margin-top:8px;">
-              <div class="ai-confidence-row" style="gap:8px;flex:1;margin-right:16px;"><span>Hòa</span><strong style="color:var(--muted2)">22%</strong></div>
-              <div class="ai-confidence-row" style="gap:8px;flex:1;"><span>Arsenal</span><strong style="color:#60a5fa">20%</strong></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Article body -->
-        <div class="article-body">
-
-          <h2>Phân tích phong độ gần đây</h2>
-
-          <p>
-            <strong><a href="team-profile.html">Manchester City</a></strong> đang trải qua giai đoạn ổn định ấn tượng với 5 chiến thắng liên tiếp tại Premier League. Erling Haaland đã ghi 7 bàn trong 5 trận gần nhất, trong khi Kevin De Bruyne trở lại sau chấn thương và mang theo chất xúc tác sáng tạo không thể thay thế cho Pep Guardiola.
-          </p>
-
-          <div class="highlight">
-            "Man City tại Etihad là pháo đài bất khả xâm phạm — họ chỉ thua 2 trận sân nhà trong toàn mùa. Con số này nói lên tất cả." — Phân tích từ Claude AI
-          </div>
-
-          <p>
-            Ngược lại, <strong><a href="team-profile.html">Arsenal</a></strong> vừa trải qua kết quả không như ý khi hòa 1-1 trước Newcastle tại Emirates. Arteta đang đối mặt với bài toán thiếu Gabriel Jesus (chấn thương) và phải phụ thuộc nhiều vào Leandro Trossard ở vai trò trung phong cắm giả.
-          </p>
-
-          <div class="inline-stats">
-            <div class="inline-stats-title">Thống kê 5 trận gần nhất</div>
-            <table>
-              <tr><td></td><td>Man City</td><td>Arsenal</td></tr>
-              <tr><td>Trận thắng</td><td>5</td><td>3</td></tr>
-              <tr><td>Trận hòa</td><td>0</td><td>2</td></tr>
-              <tr><td>Bàn thắng</td><td>14</td><td>8</td></tr>
-              <tr><td>Bàn thua</td><td>3</td><td>5</td></tr>
-              <tr><td>xG trung bình</td><td>2.31</td><td>1.67</td></tr>
-            </table>
-          </div>
-
-          <h2>Lịch sử đối đầu</h2>
-
-          <p>
-            Trong 17 trận đối đầu gần nhất, <a href="team-profile.html">Man City</a> chiếm ưu thế rõ ràng với 8 chiến thắng so với 5 của <a href="team-profile.html">Arsenal</a> và 4 trận hòa. Đặc biệt tại Etihad, <strong><a href="team-profile.html">Man City</a> bất bại trong 6 trận liên tiếp</strong> trước <a href="team-profile.html">Arsenal</a>. Trận thua gần nhất của The Citizens trước đối thủ này là ngày 12/05/2023.
-          </p>
-
-          <h2>Nhận định chiến thuật</h2>
-
-          <h3>Bộ tứ tấn công Man City</h3>
-          <p>
-            Guardiola nhiều khả năng sẽ triển khai sơ đồ 4-3-3 với Haaland trung phong, De Bruyne và Foden hỗ trợ. Đây là sơ đồ gây khó dễ nhất cho hàng thủ đối phương khi Haaland kéo hai trung vệ ra, tạo khoảng trống cho De Bruyne cắt vào.
-          </p>
-
-          <h3>Điểm yếu của <a href="team-profile.html">Arsenal</a></h3>
-          <p>
-            Hàng thủ <a href="team-profile.html">Arsenal</a> tỏ ra lung lay khi đối mặt với những đường chuyền thẳng vào không gian sau lưng hậu vệ. Trossard đóng vai trung phong giả thiếu kinh nghiệm so với Jesus, điều này khiến <a href="team-profile.html">Arsenal</a> ít nguy hiểm hơn trong pha phản công.
-          </p>
-
-          <div class="highlight">
-            Khuyến nghị cược: <strong>Man City thắng và có bàn thắng trong cả 2 hiệp</strong> — tỷ lệ 1.85 tại hầu hết các nhà cái.
-          </div>
-
-          <h2>Kết luận</h2>
-          <p>
-            Claude AI dự đoán Man City sẽ giành chiến thắng với tỷ số <strong>2-0</strong> với độ tin cậy 74%. Haaland nhiều khả năng sẽ nổ súng ít nhất 1 lần. Đây là một trong những dự đoán có độ tin cậy cao nhất tuần này.
-          </p>
-
-        </div>
-
-        <!-- Tags -->
-        <div class="article-tags">
-          <a class="article-tag-pill" href="category-tag.html">Premier League</a>
-          <a class="article-tag-pill" href="category-tag.html">Man City</a>
-          <a class="article-tag-pill" href="category-tag.html">Arsenal</a>
-          <a class="article-tag-pill" href="category-tag.html">AI Nhận định</a>
-          <a class="article-tag-pill" href="category-tag.html">Dự đoán tỷ số</a>
-          <a class="article-tag-pill" href="category-tag.html">GW32</a>
-        </div>
-
-        <!-- Related posts -->
-        <div class="related-section">
-          <div class="related-title">Bài viết liên quan</div>
-          <div class="related-grid">
-            <div class="related-card" onclick="location.href='post-detail.html'">
-              <div class="related-card-img" style="background:linear-gradient(135deg,#1a0a2d,#3a1a5c)">⚽</div>
-              <div class="related-card-body">
-                <div class="related-card-tag">🤖 AI · Premier League</div>
-                <div class="related-card-title">Tottenham vs Man United: Battle for top 4</div>
-                <div class="related-card-meta">22:15 hôm nay · 2-1 dự đoán</div>
-              </div>
-            </div>
-            <div class="related-card" onclick="location.href='post-detail.html'">
-              <div class="related-card-img" style="background:linear-gradient(135deg,#0a1a1a,#1a3a3a)">🏆</div>
-              <div class="related-card-body">
-                <div class="related-card-tag">🤖 AI · UCL</div>
-                <div class="related-card-title">Real Madrid vs Bayern Munich: Đại chiến tứ kết</div>
-                <div class="related-card-meta">Kết thúc · 3-1 kết quả</div>
-              </div>
-            </div>
-            <div class="related-card" onclick="location.href='post-detail.html'">
-              <div class="related-card-img" style="background:linear-gradient(135deg,#1a1a0a,#3a3a10)">🟡</div>
-              <div class="related-card-body">
-                <div class="related-card-tag">🤖 AI · Premier League</div>
-                <div class="related-card-title">Chelsea vs Liverpool: Cuộc chiến nhóm trên</div>
-                <div class="related-card-meta">Kết thúc · 2-1 kết quả</div>
-              </div>
-            </div>
-            <div class="related-card" onclick="location.href='post-detail.html'">
-              <div class="related-card-img" style="background:linear-gradient(135deg,#0a1a0a,#1a3a1a)">🇻🇳</div>
-              <div class="related-card-body">
-                <div class="related-card-tag">🤖 AI · V.League 1</div>
-                <div class="related-card-title">Hải Phòng FC vs Viettel: Cuộc chiến top 3</div>
-                <div class="related-card-meta">20:00 hôm nay · 1-0 dự đoán</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </main>
-
-  <!-- RIGHT SIDEBAR — AI Blog -->
-  <aside class="right-sidebar">
-    <div class="right-header">
-      <div class="right-title">AI Blog</div>
-      <div class="ai-badge">🤖 AI Agent</div>
-    </div>
-    <div class="right-tabs">
-      <button class="right-tab active" onclick="setRightTab(this)">Liên quan</button>
-      <button class="right-tab" onclick="setRightTab(this)">Mới nhất</button>
-    </div>
-    <div class="right-scroll">
-
-      <div class="post-featured" onclick="location.href='post-detail.html'">
-        <div class="post-featured-img" style="background: linear-gradient(135deg, #0f1923, #1a3a5c);">
-          🏆
-          <div class="match-label">
-            <span>Man City vs Arsenal</span>
-            <span style="color:var(--accent)">2-0 dự đoán</span>
-          </div>
-        </div>
-        <div class="post-featured-body">
-          <div class="post-tag">🤖 AI · Premier League</div>
-          <div class="post-title">Man City vs Arsenal: Pháo thủ khó cản vua thành Manchester tại Etihad</div>
-          <div class="post-excerpt">Phân tích chiều sâu đội hình, lịch sử đối đầu và form phong độ. Claude AI dự đoán Man City thắng 2-0 với độ tin cậy 74%.</div>
-          <div class="post-meta">
-            <span class="post-time">2 giờ trước</span>
-            <span class="post-read">Đọc tiếp →</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="post-item" onclick="location.href='post-detail.html'">
-        <div class="post-thumb" style="background: linear-gradient(135deg, #1a0a2d, #3a1a5c);">⚽</div>
-        <div class="post-item-body">
-          <div class="post-item-tag">🤖 AI · Premier League</div>
-          <div class="post-item-title">Tottenham vs Man United: Cuộc chiến top 4</div>
-          <div class="post-item-meta">Lịch đấu · 1 giờ trước</div>
-        </div>
-        <div class="pred-score">
-          <div class="ps-val">2-1</div>
-          <div class="ps-label">AI<br>dự đoán</div>
-        </div>
-      </div>
-
-      <div class="post-item" onclick="location.href='post-detail.html'">
-        <div class="post-thumb" style="background: linear-gradient(135deg, #0a1a1a, #1a3a3a);">🏆</div>
-        <div class="post-item-body">
-          <div class="post-item-tag">🤖 AI · UCL</div>
-          <div class="post-item-title">Real Madrid vs Bayern: Đại chiến tứ kết UCL</div>
-          <div class="post-item-meta">Kết thúc · 5 giờ trước</div>
-        </div>
-        <div class="pred-score" style="opacity:0.5;">
-          <div class="ps-val">3-1</div>
-          <div class="ps-label">Kết<br>quả</div>
-        </div>
-      </div>
-
-    </div>
-  </aside>
-
-</div>
-<script src="assets/render.js"></script>
-<script src="assets/common.js"></script>
-<script>initPostDetailPage();</script>
+  <script src="assets/render.js"></script>
+  <script src="assets/common.js"></script>
+  <script>initPostDetailPage();</script>
 </body>
+
 </html>

@@ -3,25 +3,19 @@
   "totalResults": 18,
   "matches": [
     {
-      "id": 1001,
-      "homeTeam": { "id": 1, "name": "Hà Nội FC", "logo": "🏅" },
-      "awayTeam": { "id": 2, "name": "HAGL",       "logo": "🟡" },
-      "date": "2025-04-09",
-      "kickoff": "17:00",
-      "competition": "V.League 1 - Vòng 15",
-      "status": "FT",
+      "id": 1001, "kickoff": "2025-04-09T17:00:00", "status": "FT", "elapsed": 90,
+      "homeTeam": { "id": 1, "name": "Hà Nội FC",   "shortName": "HNF",  "logo": "🏅", "profileUrl": "team-profile.html" },
+      "awayTeam": { "id": 2, "name": "HAGL",         "shortName": "HAGL", "logo": "🟡", "profileUrl": "team-profile.html" },
       "score": { "home": 1, "away": 2 },
+      "leagueId": "vleague1", "round": "Vòng 15",
       "detailUrl": "match-detail.html"
     },
     {
-      "id": 7001,
-      "homeTeam": { "id": 1, "name": "Hà Nội FC", "logo": "🏅" },
-      "awayTeam": { "id": 3, "name": "TPHCM FC",  "logo": "🔴" },
-      "date": "2025-04-12",
-      "kickoff": "19:00",
-      "competition": "Cúp Quốc gia - Tứ kết",
-      "status": "SCH",
+      "id": 7001, "kickoff": "2025-04-12T19:00:00", "status": "SCH", "elapsed": null,
+      "homeTeam": { "id": 1, "name": "Hà Nội FC",   "shortName": "HNF",  "logo": "🏅", "profileUrl": "team-profile.html" },
+      "awayTeam": { "id": 3, "name": "TPHCM FC",    "shortName": "TPHCM","logo": "🔴", "profileUrl": "team-profile.html" },
       "score": null,
+      "leagueId": "vcup", "round": "Tứ kết Cúp QG",
       "detailUrl": "match-detail.html"
     }
   ],
@@ -29,30 +23,36 @@
     {
       "id": 7,
       "title": "Hà Nội FC vs HAGL: Cuộc đua vô địch căng thẳng tại vòng 15",
+      "slug": "ha-noi-fc-vs-hagl-vong-15-du-doan",
       "excerpt": "Trận đấu quyết định giữa 2 ứng viên top 3. Hà Nội FC cần thắng để giữ ngôi đầu bảng...",
-      "tag": "🤖 AI Prediction",
-      "thumbEmoji": "🏅",
       "thumbGradient": "linear-gradient(135deg, #0a1a0a, #1a3a1a)",
+      "thumbEmoji": "🏅",
+      "tag": "🤖 AI Prediction",
+      "publishedAt": "2025-04-09T15:00:00",
       "updatedAt": "5 giờ trước",
       "url": "post-detail.html"
     },
     {
       "id": 8,
       "title": "Phân tích chiến thuật Hà Nội FC mùa 2025: Pressing toàn sân thành công",
+      "slug": "phan-tich-chien-thuat-ha-noi-fc-mua-2025",
       "excerpt": "HLV Đặng Trần Chỉnh đã thay đổi lối chơi như thế nào để dẫn đầu V.League 1...",
-      "tag": "📊 Phân tích",
-      "thumbEmoji": "📊",
       "thumbGradient": "linear-gradient(135deg, #0a0a1a, #1a1a3a)",
+      "thumbEmoji": "📊",
+      "tag": "📊 Phân tích",
+      "publishedAt": "2025-04-08T10:00:00",
       "updatedAt": "1 ngày trước",
       "url": "post-detail.html"
     },
     {
       "id": 9,
       "title": "Nguyễn Tiến Linh: Vua phá lưới V.League với 11 bàn sau 14 vòng",
+      "slug": "nguyen-tien-linh-vua-pha-luoi-vleague-2025",
       "excerpt": "Tiền đạo số 9 của Hà Nội FC đang trên đà phá kỷ lục ghi bàn cá nhân mùa giải...",
-      "tag": "📰 Tin tức",
-      "thumbEmoji": "⚽",
       "thumbGradient": "linear-gradient(135deg, #1a0a1a, #3a1a3a)",
+      "thumbEmoji": "⚽",
+      "tag": "📰 Tin tức",
+      "publishedAt": "2025-04-07T14:00:00",
       "updatedAt": "2 ngày trước",
       "url": "post-detail.html"
     }
@@ -61,19 +61,23 @@
     {
       "id": 1,
       "name": "Hà Nội FC",
+      "shortName": "HNF",
       "logo": "🏅",
-      "league": "V.League 1",
+      "profileUrl": "team-profile.html",
+      "leagueId": "vleague1",
+      "leagueName": "V.League 1",
       "country": "🇻🇳",
-      "rank": 1,
-      "profileUrl": "team-profile.html"
+      "rank": 1
     }
   ],
   "players": [
     {
       "id": 501,
       "name": "Nguyễn Tiến Linh",
-      "position": "Tiền đạo",
+      "number": 9,
+      "position": "ST",
       "nationality": "🇻🇳",
+      "teamId": 1,
       "teamName": "Hà Nội FC",
       "teamLogo": "🏅",
       "profileUrl": "player-profile.html"
@@ -81,8 +85,10 @@
     {
       "id": 606,
       "name": "Đỗ Hùng Dũng",
-      "position": "Tiền vệ trung tâm",
+      "number": 6,
+      "position": "CM",
       "nationality": "🇻🇳",
+      "teamId": 1,
       "teamName": "Hà Nội FC",
       "teamLogo": "🏅",
       "profileUrl": "player-profile.html"

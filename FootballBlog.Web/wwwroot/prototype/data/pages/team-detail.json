@@ -3,6 +3,7 @@
   "name": "Hà Nội FC",
   "shortName": "HNF",
   "logo": "🏅",
+  "profileUrl": "team-profile.html",
   "founded": 2010,
   "stadium": "Sân vận động Hàng Đẫy",
   "capacity": 22000,
@@ -44,24 +45,27 @@
   ],
   "fixtures": [
     {
-      "id": 1001, "date": "2025-04-09", "round": "Vòng 15", "status": "FT",
-      "homeTeam": { "id": 1, "name": "Hà Nội FC", "logo": "🏅" },
-      "awayTeam": { "id": 2, "name": "HAGL",       "logo": "🟡" },
+      "id": 1001, "kickoff": "2025-04-09T17:00:00", "status": "FT", "elapsed": 90,
+      "homeTeam": { "id": 1, "name": "Hà Nội FC",   "shortName": "HNF",  "logo": "🏅", "profileUrl": "team-profile.html" },
+      "awayTeam": { "id": 2, "name": "HAGL",         "shortName": "HAGL", "logo": "🟡", "profileUrl": "team-profile.html" },
       "score": { "home": 1, "away": 2 },
+      "leagueId": "vleague1", "round": "Vòng 15",
       "detailUrl": "match-detail.html"
     },
     {
-      "id": 7001, "date": "2025-04-12", "round": "Tứ kết Cúp QG", "status": "SCH",
-      "homeTeam": { "id": 1, "name": "Hà Nội FC", "logo": "🏅" },
-      "awayTeam": { "id": 3, "name": "TPHCM FC",  "logo": "🔴" },
+      "id": 7001, "kickoff": "2025-04-12T19:00:00", "status": "SCH", "elapsed": null,
+      "homeTeam": { "id": 1, "name": "Hà Nội FC",   "shortName": "HNF",  "logo": "🏅", "profileUrl": "team-profile.html" },
+      "awayTeam": { "id": 3, "name": "TPHCM FC",    "shortName": "TPHCM","logo": "🔴", "profileUrl": "team-profile.html" },
       "score": null,
+      "leagueId": "vcup", "round": "Tứ kết Cúp QG",
       "detailUrl": "match-detail.html"
     },
     {
-      "id": 1050, "date": "2025-04-16", "round": "Vòng 16", "status": "SCH",
-      "homeTeam": { "id": 5, "name": "Hải Phòng FC", "logo": "⚓" },
-      "awayTeam": { "id": 1, "name": "Hà Nội FC",    "logo": "🏅" },
+      "id": 1050, "kickoff": "2025-04-16T20:00:00", "status": "SCH", "elapsed": null,
+      "homeTeam": { "id": 5, "name": "Hải Phòng FC", "shortName": "HPF", "logo": "⚓", "profileUrl": "team-profile.html" },
+      "awayTeam": { "id": 1, "name": "Hà Nội FC",    "shortName": "HNF", "logo": "🏅", "profileUrl": "team-profile.html" },
       "score": null,
+      "leagueId": "vleague1", "round": "Vòng 16",
       "detailUrl": "match-detail.html"
     }
   ]

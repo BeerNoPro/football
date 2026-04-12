@@ -1,177 +1,297 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>404 — Trang không tìm thấy | FootballBlog</title>
   <link rel="stylesheet" href="assets/common.css">
+
+</head>
+
+<body>
+  <div class="error-page">
+
+    <!-- Logo -->
+    <a href="home.html" class="error-logo">
+      <span class="bounce">⚽</span>
+      Football<span>Blog</span>
+    </a>
+
+    <!-- 404 -->
+    <div class="error-code">404</div>
+
+    <!-- Message -->
+    <div class="error-title">Trang không tìm thấy</div>
+    <div class="error-sub">
+      Trận đấu bạn tìm đã kết thúc — hoặc trang này chưa bao giờ tồn tại.<br>
+      Đừng lo, còn nhiều trận hay đang chờ bạn!
+    </div>
+
+    <!-- Match card -->
+    <div class="error-card" style="position:relative;">
+      <span class="ec-badge">🔴 404 NOT FOUND</span>
+      <div class="ec-team">
+        <div class="ec-logo">🌐</div>
+        <div class="ec-name">Bạn</div>
+      </div>
+      <div class="ec-score"><span>4</span> – 04</div>
+      <div class="ec-team">
+        <div class="ec-logo">🖥️</div>
+        <div class="ec-name">Server</div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="error-actions">
+      <a href="home.html" class="err-btn err-btn-primary">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        </svg>
+        Về trang chủ
+      </a>
+      <a href="predictions.html" class="err-btn err-btn-secondary">
+        🤖 Xem AI Predictions
+      </a>
+      <a href="news.html" class="err-btn err-btn-secondary">
+        📰 Đọc tin tức
+      </a>
+    </div>
+
+    <!-- Quick links -->
+    <div class="quick-links">
+      <div class="quick-links-title">Hoặc truy cập nhanh</div>
+      <div class="quick-links-row">
+        <a href="home.html" class="quick-link">⚽ Lịch thi đấu</a>
+        <a href="league-page.html" class="quick-link">🏆 V.League 1</a>
+        <a href="team-profile.html" class="quick-link">🏅 Hà Nội FC</a>
+        <a href="search-results.html" class="quick-link">🔍 Tìm kiếm</a>
+        <a href="category-tag.html" class="quick-link">🏷️ Tags</a>
+      </div>
+    </div>
+
+  </div>
+  <!-- STYLES — skip khi chỉ cần phân tích structure -->
   <style>
-    /* ===== 404 PAGE ===== */
-    body { background: var(--bg); }
+    body {
+      background: var(--bg);
+    }
 
     .error-page {
       min-height: 100vh;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 40px 20px; text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      text-align: center;
     }
 
-    /* Logo */
     .error-logo {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 16px; font-weight: 900; color: var(--text);
-      text-decoration: none; margin-bottom: 48px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--text);
+      text-decoration: none;
+      margin-bottom: 48px;
     }
-    .error-logo span { color: var(--accent); }
 
-    /* 404 Big text */
+    .error-logo span {
+      color: var(--accent);
+    }
+
     .error-code {
-      font-size: 120px; font-weight: 900; line-height: 1;
+      font-size: 120px;
+      font-weight: 900;
+      line-height: 1;
       color: transparent;
-      background: linear-gradient(135deg, var(--accent) 0%, rgba(200,240,77,0.25) 100%);
-      -webkit-background-clip: text; background-clip: text;
-      letter-spacing: -4px; margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--accent) 0%, rgba(200, 240, 77, 0.25) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      letter-spacing: -4px;
+      margin-bottom: 8px;
       position: relative;
     }
+
     .error-code::after {
       content: '⚽';
       position: absolute;
       font-size: 48px;
-      top: 50%; left: 50%;
+      top: 50%;
+      left: 50%;
       transform: translate(-50%, -50%);
       opacity: 0.12;
     }
 
-    /* Message */
     .error-title {
-      font-size: 24px; font-weight: 900; color: var(--text);
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--text);
       margin-bottom: 10px;
     }
+
     .error-sub {
-      font-size: 14px; color: var(--muted); max-width: 360px;
-      line-height: 1.6; margin-bottom: 36px;
+      font-size: 14px;
+      color: var(--muted);
+      max-width: 360px;
+      line-height: 1.6;
+      margin-bottom: 36px;
     }
 
-    /* Match-style error card */
     .error-card {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: 14px; padding: 20px 28px; margin-bottom: 36px;
-      display: flex; align-items: center; gap: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 28px;
+      margin-bottom: 36px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
       min-width: 300px;
     }
-    .ec-team { text-align: center; flex: 1; }
-    .ec-logo { font-size: 40px; margin-bottom: 4px; }
-    .ec-name { font-size: 12px; font-weight: 700; color: var(--text); }
+
+    .ec-team {
+      text-align: center;
+      flex: 1;
+    }
+
+    .ec-logo {
+      font-size: 40px;
+      margin-bottom: 4px;
+    }
+
+    .ec-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
     .ec-score {
-      font-size: 32px; font-weight: 900; color: var(--text);
-      padding: 0 16px; border-left: 1px solid var(--border); border-right: 1px solid var(--border);
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--text);
+      padding: 0 16px;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
       letter-spacing: -1px;
     }
-    .ec-score span { color: var(--accent); }
-    .ec-badge {
-      position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-      font-size: 9px; font-weight: 700; background: #f87171; color: #fff;
-      padding: 2px 8px; border-radius: 3px; white-space: nowrap;
+
+    .ec-score span {
+      color: var(--accent);
     }
 
-    /* Action buttons */
-    .error-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .ec-badge {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 9px;
+      font-weight: 700;
+      background: #f87171;
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+
+    .error-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
     .err-btn {
-      display: inline-flex; align-items: center; gap: 7px;
-      padding: 10px 20px; border-radius: 9px; font-size: 13px; font-weight: 700;
-      cursor: pointer; text-decoration: none; transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 20px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
       border: 1px solid transparent;
     }
+
     .err-btn-primary {
-      background: var(--accent); color: #0a0a0a;
+      background: var(--accent);
+      color: #0a0a0a;
     }
-    .err-btn-primary:hover { background: #d4f565; }
+
+    .err-btn-primary:hover {
+      background: #d4f565;
+    }
+
     .err-btn-secondary {
-      background: var(--bg-card); color: var(--text);
+      background: var(--bg-card);
+      color: var(--text);
       border-color: var(--border2);
     }
-    .err-btn-secondary:hover { background: var(--border2); }
 
-    /* Quick links */
+    .err-btn-secondary:hover {
+      background: var(--border2);
+    }
+
     .quick-links {
-      margin-top: 40px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
     }
-    .quick-links-title { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 600; margin-bottom: 4px; }
-    .quick-links-row   { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+
+    .quick-links-title {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .quick-links-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
     .quick-link {
-      font-size: 12px; color: var(--muted2); text-decoration: none;
-      padding: 5px 12px; background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: 6px; transition: all 0.12s;
+      font-size: 12px;
+      color: var(--muted2);
+      text-decoration: none;
+      padding: 5px 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      transition: all 0.12s;
     }
-    .quick-link:hover { color: var(--accent); border-color: rgba(200,240,77,0.3); }
 
-    /* Animated ball */
+    .quick-link:hover {
+      color: var(--accent);
+      border-color: rgba(200, 240, 77, 0.3);
+    }
+
     @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-12px); }
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-12px);
+      }
     }
-    .bounce { animation: bounce 1.8s ease-in-out infinite; display: inline-block; }
+
+    .bounce {
+      animation: bounce 1.8s ease-in-out infinite;
+      display: inline-block;
+    }
   </style>
-</head>
-<body>
-<div class="error-page">
-
-  <!-- Logo -->
-  <a href="home.html" class="error-logo">
-    <span class="bounce">⚽</span>
-    Football<span>Blog</span>
-  </a>
-
-  <!-- 404 -->
-  <div class="error-code">404</div>
-
-  <!-- Message -->
-  <div class="error-title">Trang không tìm thấy</div>
-  <div class="error-sub">
-    Trận đấu bạn tìm đã kết thúc — hoặc trang này chưa bao giờ tồn tại.<br>
-    Đừng lo, còn nhiều trận hay đang chờ bạn!
-  </div>
-
-  <!-- Match card -->
-  <div class="error-card" style="position:relative;">
-    <span class="ec-badge">🔴 404 NOT FOUND</span>
-    <div class="ec-team">
-      <div class="ec-logo">🌐</div>
-      <div class="ec-name">Bạn</div>
-    </div>
-    <div class="ec-score"><span>4</span> – 04</div>
-    <div class="ec-team">
-      <div class="ec-logo">🖥️</div>
-      <div class="ec-name">Server</div>
-    </div>
-  </div>
-
-  <!-- Actions -->
-  <div class="error-actions">
-    <a href="home.html" class="err-btn err-btn-primary">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-      Về trang chủ
-    </a>
-    <a href="predictions.html" class="err-btn err-btn-secondary">
-      🤖 Xem AI Predictions
-    </a>
-    <a href="news.html" class="err-btn err-btn-secondary">
-      📰 Đọc tin tức
-    </a>
-  </div>
-
-  <!-- Quick links -->
-  <div class="quick-links">
-    <div class="quick-links-title">Hoặc truy cập nhanh</div>
-    <div class="quick-links-row">
-      <a href="home.html" class="quick-link">⚽ Lịch thi đấu</a>
-      <a href="league-page.html" class="quick-link">🏆 V.League 1</a>
-      <a href="team-profile.html" class="quick-link">🏅 Hà Nội FC</a>
-      <a href="search-results.html" class="quick-link">🔍 Tìm kiếm</a>
-      <a href="category-tag.html" class="quick-link">🏷️ Tags</a>
-    </div>
-  </div>
-
-</div><!-- /error-page -->
 </body>
+
 </html>

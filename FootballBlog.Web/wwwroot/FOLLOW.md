@@ -12,12 +12,77 @@
 | Tổng trang | 24 HTML |
 | Public pages | 11 (bao gồm 404) |
 | Admin pages | 13 |
-| Data JSON | 10 file |
+| Data JSON | 12 file (`ref/` × 2 + `pages/` × 10) |
 | Shared JS | common.js + render.js |
 | Shared CSS | common.css + admin-common.css |
 | Layout chính | 3-col (240px sidebar + 1fr + 300px) |
 | Layout phụ | 2-col (240px sidebar + 1fr), standalone |
 | Theme | Dark — accent `#c8f04d` (lime) |
+
+---
+
+## TODO / Known Issues
+
+### [Bug] predictions.html — user-row và logout chưa có onclick
+
+- `<div class="user-row">` thiếu `onclick="location.href='admin-dashboard.html'"`
+- `<button class="logout-btn">` thiếu `onclick="event.stopPropagation(); location.href='admin-login.html'"`
+
+### [Bug] post-detail.html — sidebar league-item thiếu `?league=X`
+
+Các `<a class="league-item" href="league-page.html">` trong sidebar của post-detail.html thiếu query param — cần thêm `?league={id}` để đúng với navigation spec.
+
+---
+
+## Mock Data — Cấu trúc JSON cho Prototype
+
+> **Quy tắc:** Mọi trang HTML đều được render từ JSON thông qua `render.js`.  
+> Không có dữ liệu hardcode trong HTML (trừ admin pages — UI-only mock).
+
+### Cấu trúc thư mục
+
+```
+prototype/data/
+├── ref/                        ← "dictionary" — load 1 lần, dùng cho mọi trang
+│   ├── leagues.json            ← sidebar tree: country → leagues (liveCount badge)
+│   └── taxonomy.json           ← categories[] + tags[] (không có recentPosts)
+│
+└── pages/                      ← 1 file = 1 API endpoint = 1 page contract
+    ├── home.json               ← matchDay (byLeague[]) + posts (featured + items[])
+    ├── news.json               ← paginated PostRef[] với slug/excerpt/tags/readTimeMinutes
+    ├── post-detail.json        ← post content + relatedMatch + prediction + relatedPosts[3]
+    ├── category-detail.json    ← category info + paginated PostRef[]
+    ├── league-detail.json      ← standings[] + topScorers[] + recentMatches[]
+    ├── match-detail.json       ← lineups + stats + events (có playerId) + commentary
+    ├── team-detail.json        ← squad[] + fixtures[] (MatchRef chuẩn)
+    ├── player-detail.json      ← seasonStats + careerHistory + upcomingMatches[]
+    ├── predictions.json        ← accuracy block + filters + items[] (TeamRef chuẩn)
+    └── search.json             ← matches[] + posts[] + teams[] + players[] + suggestions[]
+```
+
+### Canonical Reference DTOs
+
+Mọi entity khi nhúng vào file khác phải dùng đúng shape này — không tự định nghĩa sub-object:
+
+| DTO | Fields |
+|-----|--------|
+| `TeamRef` | `{ id, name, shortName, logo, profileUrl }` |
+| `PlayerRef` | `{ id, name, number, position, nationality, teamId, teamName, teamLogo, profileUrl }` |
+| `MatchRef` | `{ id, kickoff, status, elapsed, homeTeam: TeamRef, awayTeam: TeamRef, score, leagueId, round, detailUrl }` |
+| `PostRef` | `{ id, title, slug, thumbGradient, thumbEmoji, tag, excerpt, publishedAt, updatedAt, url }` |
+| `PredictionSnippet` | `{ postUrl, aiScore, confidence, confidenceLevel, summary }` |
+
+### Cách render.js load data
+
+```
+Mọi page init:   fetchData('ref/leagues')       → renderLeagueTree()  [sidebar]
+                 fetchData('pages/<page>')       → render<Page>()      [main content]
+
+Home riêng:      fetchData('pages/home')         → home.matchDay       [matches center]
+                                                 → home.posts          [right panel]
+```
+
+**Khi chuyển sang API thật:** chỉ cần thay `fetchData()` trỏ về `/api/` — mọi `render*()` function giữ nguyên.
 
 ---
 

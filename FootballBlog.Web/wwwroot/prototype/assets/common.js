@@ -31,6 +31,16 @@ function selectLeague(el, leagueId) {
   document.querySelectorAll('.league-item').forEach(i => i.classList.remove('active'));
   el.classList.add('active');
 
+  // Update hero tag text with selected league name
+  const leagueName = el.textContent.trim();
+  const heroTag = document.querySelector('.hero-tag');
+  if (heroTag) {
+    const liveDot = heroTag.querySelector('.live-dot');
+    heroTag.textContent = '';
+    if (liveDot) heroTag.appendChild(liveDot);
+    heroTag.appendChild(document.createTextNode(' ' + leagueName));
+  }
+
   // Scroll center column to show the league group at top
   const target = document.getElementById('m-' + leagueId);
   if (target) {
@@ -51,6 +61,16 @@ function applyLeagueParam() {
     // Expand country group nếu đang collapsed
     const cg = leagueEl.closest('.country-group');
     if (cg) cg.classList.remove('collapsed');
+
+    // Update hero tag text with selected league name
+    const leagueName = leagueEl.textContent.trim();
+    const heroTag = document.querySelector('.hero-tag');
+    if (heroTag) {
+      const liveDot = heroTag.querySelector('.live-dot');
+      heroTag.textContent = '';
+      if (liveDot) heroTag.appendChild(liveDot);
+      heroTag.appendChild(document.createTextNode(' ' + leagueName));
+    }
   }
 
   const target = document.getElementById('m-' + leagueId);

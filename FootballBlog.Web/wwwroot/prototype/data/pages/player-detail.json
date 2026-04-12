@@ -15,6 +15,7 @@
   "currentTeam": {
     "id": 1,
     "name": "Hà Nội FC",
+    "shortName": "HNF",
     "logo": "🏅",
     "profileUrl": "team-profile.html",
     "joinedYear": 2022,
@@ -45,6 +46,7 @@
       "teamId": 1,
       "teamName": "Hà Nội FC",
       "teamLogo": "🏅",
+      "teamProfileUrl": "team-profile.html",
       "from": "2022",
       "to": "nay",
       "apps": 58,
@@ -56,6 +58,7 @@
       "teamId": 2,
       "teamName": "HAGL",
       "teamLogo": "🟡",
+      "teamProfileUrl": "team-profile.html",
       "from": "2018",
       "to": "2022",
       "apps": 91,
@@ -67,6 +70,7 @@
       "teamId": 9,
       "teamName": "Bình Định U21",
       "teamLogo": "🟠",
+      "teamProfileUrl": "team-profile.html",
       "from": "2015",
       "to": "2018",
       "apps": 34,
@@ -77,19 +81,19 @@
   ],
   "upcomingMatches": [
     {
-      "id": 7001,
-      "date": "2025-04-12",
-      "competition": "Cúp Quốc gia - Tứ kết",
-      "homeTeam": { "id": 1, "name": "Hà Nội FC", "logo": "🏅" },
-      "awayTeam": { "id": 3, "name": "TPHCM FC",  "logo": "🔴" },
+      "id": 7001, "kickoff": "2025-04-12T19:00:00", "status": "SCH", "elapsed": null,
+      "homeTeam": { "id": 1, "name": "Hà Nội FC",   "shortName": "HNF",  "logo": "🏅", "profileUrl": "team-profile.html" },
+      "awayTeam": { "id": 3, "name": "TPHCM FC",    "shortName": "TPHCM","logo": "🔴", "profileUrl": "team-profile.html" },
+      "score": null,
+      "leagueId": "vcup", "round": "Tứ kết Cúp QG",
       "detailUrl": "match-detail.html"
     },
     {
-      "id": 1050,
-      "date": "2025-04-16",
-      "competition": "V.League 1 - Vòng 16",
-      "homeTeam": { "id": 5, "name": "Hải Phòng FC", "logo": "⚓" },
-      "awayTeam": { "id": 1, "name": "Hà Nội FC",    "logo": "🏅" },
+      "id": 1050, "kickoff": "2025-04-16T20:00:00", "status": "SCH", "elapsed": null,
+      "homeTeam": { "id": 5, "name": "Hải Phòng FC", "shortName": "HPF", "logo": "⚓", "profileUrl": "team-profile.html" },
+      "awayTeam": { "id": 1, "name": "Hà Nội FC",    "shortName": "HNF", "logo": "🏅", "profileUrl": "team-profile.html" },
+      "score": null,
+      "leagueId": "vleague1", "round": "Vòng 16",
       "detailUrl": "match-detail.html"
     }
   ]

@@ -1,157 +1,295 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FootballBlog — Kết quả & Nhận định bóng đá</title>
-  <link rel="stylesheet" href="assets/common.css">
-  <style>
-    /* Hero */
-    .hero {
-      height: 200px; flex-shrink: 0; position: relative;
-      overflow: hidden;
-      background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 60%, #16213e 100%);
-    }
-    .hero-bg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: flex-end; overflow: hidden; }
-    .hero-number { font-size: 180px; font-weight: 900; color: rgba(255,255,255,0.04); line-height: 1; letter-spacing: -10px; padding-right: 20px; user-select: none; }
-    .hero-content { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px 24px; background: linear-gradient(to right, rgba(0,0,0,0.7) 0%, transparent 70%); }
-    .hero-tag { display: inline-flex; align-items: center; gap: 5px; background: var(--accent-glow); border: 1px solid rgba(200,240,77,0.3); color: var(--accent); font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px; margin-bottom: 8px; width: fit-content; text-transform: uppercase; letter-spacing: 0.5px; }
-    .hero-title { font-size: 26px; font-weight: 900; color: #fff; line-height: 1.1; margin-bottom: 4px; }
-    .hero-sub { font-size: 12px; color: rgba(255,255,255,0.5); }
-    .hero-dots { position: absolute; bottom: 16px; right: 20px; display: flex; gap: 5px; }
-    .hero-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; }
-    .hero-dot.active { background: var(--accent); width: 18px; border-radius: 3px; }
-    /* Match panel */
-    .match-panel { background: var(--bg-card); flex: 1; min-height: 0; display: flex; flex-direction: column; }
-  </style>
+  <link rel="stylesheet" href="assets/common.css" />
 </head>
-<body>
-<div class="app">
 
-  <!-- ===== LEFT SIDEBAR ===== -->
-  <aside class="left-sidebar">
-    <a href="home.html" class="logo-wrap" style="display:block;text-decoration:none;">
-      <div class="logo"><span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span></div>
-      <div class="logo-sub">Kết quả &amp; Nhận định AI</div>
-    </a>
-    <div class="left-search">
-      <div class="search-input-wrap">
-        <svg class="search-icon" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input type="text" placeholder="Tìm giải đấu, đội bóng..." oninput="filterLeagues(this.value)" />
-      </div>
-    </div>
-    <!-- League tree — populated by renderLeagueTree() -->
-    <div class="league-tree" id="league-tree"></div>
-    <div class="left-bottom">
-      <button class="settings-btn" style="display:none">
-        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        Cài đặt
-      </button>
-      <div class="user-row" onclick="location.href='admin-dashboard.html'" style="cursor:pointer;" title="Vào Admin Panel">
-        <div class="user-avatar">A</div>
-        <div class="user-info">
-          <div class="user-name">Admin</div>
-          <div class="user-email">admin@footballblog.vn</div>
+<body>
+  <div class="app">
+    <!-- ===== LEFT SIDEBAR ===== -->
+    <aside class="left-sidebar">
+      <a href="home.html" class="logo-wrap" style="display: block; text-decoration: none">
+        <div class="logo">
+          <span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span>
         </div>
-        <button class="logout-btn" title="Đăng nhập / Admin" onclick="event.stopPropagation(); location.href='admin-login.html'">
-          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <div class="logo-sub">Kết quả &amp; Nhận định AI</div>
+      </a>
+      <div class="left-search">
+        <div class="search-input-wrap">
+          <svg class="search-icon" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"
+            viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+          <input type="text" placeholder="Tìm giải đấu, đội bóng..." oninput="filterLeagues(this.value)" />
+        </div>
+      </div>
+      <!-- League tree — populated by renderLeagueTree() -->
+      <div class="league-tree" id="league-tree"></div>
+      <div class="left-bottom">
+        <button class="settings-btn" style="display: none">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          Cài đặt
+        </button>
+        <div class="user-row" onclick="location.href = 'admin-dashboard.html'" style="cursor: pointer"
+          title="Vào Admin Panel">
+          <div class="user-avatar">A</div>
+          <div class="user-info">
+            <div class="user-name">Admin</div>
+            <div class="user-email">admin@footballblog.vn</div>
+          </div>
+          <button class="logout-btn" title="Đăng nhập / Admin" onclick="
+                event.stopPropagation();
+                location.href = 'admin-login.html';
+              ">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===== CENTER COLUMN ===== -->
+    <main class="main-col">
+      <div class="main-scroll">
+        <!-- Hero -->
+        <div class="hero">
+          <div class="hero-bg">
+            <div class="hero-number">2025</div>
+          </div>
+          <div class="hero-content">
+            <div class="hero-tag">
+              <span class="live-dot"></span> V.League 1 — Mùa giải 2025
+            </div>
+            <div class="hero-title">Kết quả & Lịch thi đấu</div>
+            <div class="hero-sub">
+              Cập nhật trực tiếp · Nhận định AI · Dự đoán tỷ số
+            </div>
+          </div>
+          <div class="hero-dots">
+            <div class="hero-dot active"></div>
+            <div class="hero-dot"></div>
+            <div class="hero-dot"></div>
+          </div>
+        </div>
+
+        <!-- Match panel -->
+        <div class="match-panel">
+          <!-- Toolbar -->
+          <div class="match-toolbar">
+            <div class="live-pill">
+              <span class="live-dot"></span>
+              Live <strong>0</strong>
+            </div>
+            <div class="match-search-bar">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+              <input type="text" placeholder="Tìm trận đấu..." onkeydown="
+                    if (event.key === 'Enter' && this.value.trim())
+                      location.href =
+                        'search-results.html?q=' +
+                        encodeURIComponent(this.value);
+                  " />
+            </div>
+            <div class="filter-btn">
+              Tất cả
+              <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+          </div>
+
+          <!-- Tabs + Date bar -->
+          <div class="tab-date-row">
+            <div class="tabs">
+              <button class="tab-btn" onclick="setTab(this)">Lịch đấu</button>
+              <button class="tab-btn active" onclick="setTab(this)">
+                Trực tiếp <span class="tab-badge">0</span>
+              </button>
+              <button class="tab-btn" onclick="setTab(this)">Kết quả</button>
+              <button class="tab-btn" onclick="location.href = 'predictions.html'">
+                🤖 Dự đoán AI
+              </button>
+              <button class="tab-btn" onclick="location.href = 'news.html'">
+                📰 Tin tức
+              </button>
+            </div>
+            <div class="date-bar">
+              <button class="date-nav">‹</button>
+              <button class="date-btn2" onclick="setDate(this)">
+                <span class="dn">T5</span><span class="dd">03/04</span>
+              </button>
+              <button class="date-btn2" onclick="setDate(this)">
+                <span class="dn">T6</span><span class="dd">04/04</span>
+              </button>
+              <button class="date-btn2" onclick="setDate(this)">
+                <span class="dn">T7</span><span class="dd">05/04</span>
+              </button>
+              <button class="date-btn2 active" onclick="setDate(this)">
+                <span class="dn">CN</span><span class="dd">Hôm nay</span>
+              </button>
+              <button class="date-btn2" onclick="setDate(this)">
+                <span class="dn">T2</span><span class="dd">08/04</span>
+              </button>
+              <button class="date-btn2" onclick="setDate(this)">
+                <span class="dn">T3</span><span class="dd">09/04</span>
+              </button>
+              <button class="date-nav">›</button>
+            </div>
+          </div>
+
+          <!-- Match list — populated by renderMatches() -->
+          <div class="matches-list" id="matches-list"></div>
+        </div>
+        <!-- /match-panel -->
+      </div>
+      <!-- /main-scroll -->
+    </main>
+
+    <!-- ===== RIGHT SIDEBAR — AI Blog ===== -->
+    <aside class="right-sidebar">
+      <div class="right-header">
+        <span class="right-title">Nhận định trận đấu</span>
+        <div class="ai-badge">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 0 2h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1 0-2h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2zm-5 9a5 5 0 0 0-5 5v1h14v-1a5 5 0 0 0-5-5H7zm3 2a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm4 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z" />
+          </svg>
+          AI Agent
+        </div>
+      </div>
+      <div class="right-tabs">
+        <button class="right-tab active" onclick="setRightTab(this)">
+          Nhận định
+        </button>
+        <button class="right-tab" onclick="setRightTab(this)">Dự đoán</button>
+        <button class="right-tab" onclick="setRightTab(this)">
+          Phân tích
         </button>
       </div>
-    </div>
-  </aside>
+      <!-- Posts — populated by renderPosts() -->
+      <div class="right-scroll" id="right-scroll"></div>
+    </aside>
+  </div>
 
-  <!-- ===== CENTER COLUMN ===== -->
-  <main class="main-col">
-    <div class="main-scroll">
+  <!-- STYLES — skip khi chỉ cần phân tích structure -->
+  <style>
+    .hero {
+      height: 200px;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #1a1a2e 0, #0f3460 60%, #16213e 100%)
+    }
 
-      <!-- Hero -->
-      <div class="hero">
-        <div class="hero-bg"><div class="hero-number">2025</div></div>
-        <div class="hero-content">
-          <div class="hero-tag"><span class="live-dot"></span> V.League 1 — Mùa giải 2025</div>
-          <div class="hero-title">Kết quả & Lịch thi đấu</div>
-          <div class="hero-sub">Cập nhật trực tiếp · Nhận định AI · Dự đoán tỷ số</div>
-        </div>
-        <div class="hero-dots">
-          <div class="hero-dot active"></div>
-          <div class="hero-dot"></div>
-          <div class="hero-dot"></div>
-        </div>
-      </div>
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      overflow: hidden
+    }
 
-      <!-- Match panel -->
-      <div class="match-panel">
+    .hero-number {
+      font-size: 180px;
+      font-weight: 900;
+      color: rgba(255, 255, 255, .04);
+      line-height: 1;
+      letter-spacing: -10px;
+      padding-right: 20px;
+      user-select: none
+    }
 
-        <!-- Toolbar -->
-        <div class="match-toolbar">
-          <div class="live-pill">
-            <span class="live-dot"></span>
-            Live <strong>0</strong>
-          </div>
-          <div class="match-search-bar">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input type="text" placeholder="Tìm trận đấu..." onkeydown="if(event.key==='Enter'&&this.value.trim()) location.href='search-results.html?q='+encodeURIComponent(this.value)" />
-          </div>
-          <div class="filter-btn">
-            Tất cả
-            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
-        </div>
+    .hero-content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 20px 24px;
+      background: linear-gradient(to right, rgba(0, 0, 0, .7) 0, transparent 70%)
+    }
 
-        <!-- Tabs + Date bar -->
-        <div class="tab-date-row">
-          <div class="tabs">
-            <button class="tab-btn" onclick="setTab(this)">Lịch đấu</button>
-            <button class="tab-btn active" onclick="setTab(this)">
-              Trực tiếp <span class="tab-badge">0</span>
-            </button>
-            <button class="tab-btn" onclick="setTab(this)">Kết quả</button>
-            <button class="tab-btn" onclick="location.href='predictions.html'">🤖 Dự đoán AI</button>
-            <button class="tab-btn" onclick="location.href='news.html'">📰 Tin tức</button>
-          </div>
-          <div class="date-bar">
-            <button class="date-nav">‹</button>
-            <button class="date-btn2" onclick="setDate(this)"><span class="dn">T5</span><span class="dd">03/04</span></button>
-            <button class="date-btn2" onclick="setDate(this)"><span class="dn">T6</span><span class="dd">04/04</span></button>
-            <button class="date-btn2" onclick="setDate(this)"><span class="dn">T7</span><span class="dd">05/04</span></button>
-            <button class="date-btn2 active" onclick="setDate(this)"><span class="dn">CN</span><span class="dd">Hôm nay</span></button>
-            <button class="date-btn2" onclick="setDate(this)"><span class="dn">T2</span><span class="dd">08/04</span></button>
-            <button class="date-btn2" onclick="setDate(this)"><span class="dn">T3</span><span class="dd">09/04</span></button>
-            <button class="date-nav">›</button>
-          </div>
-        </div>
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--accent-glow);
+      border: 1px solid rgba(200, 240, 77, .3);
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+      margin-bottom: 8px;
+      width: fit-content;
+      text-transform: uppercase;
+      letter-spacing: .5px
+    }
 
-        <!-- Match list — populated by renderMatches() -->
-        <div class="matches-list" id="matches-list"></div>
+    .hero-title {
+      font-size: 26px;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.1;
+      margin-bottom: 4px
+    }
 
-      </div><!-- /match-panel -->
-    </div><!-- /main-scroll -->
-  </main>
+    .hero-sub {
+      font-size: 12px;
+      color: rgba(255, 255, 255, .5)
+    }
 
-  <!-- ===== RIGHT SIDEBAR — AI Blog ===== -->
-  <aside class="right-sidebar">
-    <div class="right-header">
-      <span class="right-title">Nhận định trận đấu</span>
-      <div class="ai-badge">
-        <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 0 2h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1 0-2h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2zm-5 9a5 5 0 0 0-5 5v1h14v-1a5 5 0 0 0-5-5H7zm3 2a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm4 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg>
-        AI Agent
-      </div>
-    </div>
-    <div class="right-tabs">
-      <button class="right-tab active" onclick="setRightTab(this)">Nhận định</button>
-      <button class="right-tab" onclick="setRightTab(this)">Dự đoán</button>
-      <button class="right-tab" onclick="setRightTab(this)">Phân tích</button>
-    </div>
-    <!-- Posts — populated by renderPosts() -->
-    <div class="right-scroll" id="right-scroll"></div>
-  </aside>
+    .hero-dots {
+      position: absolute;
+      bottom: 16px;
+      right: 20px;
+      display: flex;
+      gap: 5px
+    }
 
-</div><!-- /app -->
+    .hero-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .3);
+      cursor: pointer
+    }
 
-<script src="assets/common.js"></script>
-<script src="assets/render.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', initHomePage);
-</script>
+    .hero-dot.active {
+      background: var(--accent);
+      width: 18px;
+      border-radius: 3px
+    }
+
+    .match-panel {
+      background: var(--bg-card);
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column
+    }
+  </style>
+
+  <script src="assets/common.js"></script>
+  <script src="assets/render.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", initHomePage);
+  </script>
 </body>
+
 </html>

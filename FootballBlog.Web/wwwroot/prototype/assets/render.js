@@ -1,43 +1,48 @@
 /* ===================================================
    FOOTBALLBLOG — Render Functions
    Loads data from JSON files (mirrors real API DTOs).
-   When real API is ready: change DATA_BASE to '/api/'
-   and update fetchData() — render functions stay the same.
+
+   Data layout:
+     data/ref/leagues.json   — sidebar tree (always loaded)
+     data/ref/taxonomy.json  — categories + tags
+     data/pages/<page>.json  — one file per page (1 API endpoint)
+
+   When real API is ready: swap fetchData() to hit /api/
+   — all render functions below stay the same.
 =================================================== */
 
 /* ---- DATA LOADER ---- */
 
 const DATA_BASE = 'data/';
 
-async function fetchData(name) {
-  const res = await fetch(`${DATA_BASE}${name}.json`);
-  if (!res.ok) throw new Error(`Failed to load ${name}.json (${res.status})`);
+async function fetchData(path) {
+  const res = await fetch(`${DATA_BASE}${path}.json`);
+  if (!res.ok) throw new Error(`Failed to load ${path}.json (${res.status})`);
   return res.json();
 }
 
 /* ---- PAGE INITIALIZERS ---- */
 
 /**
- * Home page — loads leagues, matches, posts in parallel
+ * Home page — loads ref/leagues + pages/home (matchDay + posts) in parallel
  */
 async function initHomePage() {
   try {
-    const [leagues, matches, posts] = await Promise.all([
-      fetchData('leagues'),
-      fetchData('matches'),
-      fetchData('posts')
+    const [leagues, home] = await Promise.all([
+      fetchData('ref/leagues'),
+      fetchData('pages/home')
     ]);
     const leagueTree = document.querySelector('.league-tree');
     const matchesList = document.querySelector('.matches-list');
     const rightScroll = document.querySelector('.right-scroll');
     if (leagueTree)  renderLeagueTree(leagueTree, leagues);
-    if (matchesList) renderMatches(matchesList, matches);
-    if (rightScroll) renderPosts(rightScroll, posts);
-    updateLivePill(matches.liveCount);
+    if (matchesList) renderMatches(matchesList, home.matchDay);
+    if (rightScroll) renderPosts(rightScroll, home.posts);
+    updateLivePill(home.matchDay.liveCount);
     applyLeagueParam();
 
     // Cache posts for tab filtering
-    window.__homePosts = posts;
+    window.__homePosts = home.posts;
 
     // Tab filter: Nhận định=LIVE, Dự đoán=SCH, Phân tích=FT
     document.addEventListener('rightTabChange', (e) => {
@@ -62,13 +67,13 @@ async function initHomePage() {
 }
 
 /**
- * League page — loads sidebar leagues + league detail (standings, scorers, fixtures)
+ * League page — loads ref/leagues + pages/league-detail
  */
 async function initLeaguePage() {
   try {
     const [leagues, detail] = await Promise.all([
-      fetchData('leagues'),
-      fetchData('league-detail')
+      fetchData('ref/leagues'),
+      fetchData('pages/league-detail')
     ]);
     const leagueTree = document.querySelector('.league-tree');
     if (leagueTree) renderLeagueTree(leagueTree, leagues);
@@ -79,13 +84,13 @@ async function initLeaguePage() {
 }
 
 /**
- * Match detail page — loads sidebar leagues + match detail
+ * Match detail page — loads ref/leagues + pages/match-detail
  */
 async function initMatchDetailPage() {
   try {
     const [leagues, match] = await Promise.all([
-      fetchData('leagues'),
-      fetchData('match-detail')
+      fetchData('ref/leagues'),
+      fetchData('pages/match-detail')
     ]);
     const leagueTree = document.querySelector('.league-tree');
     if (leagueTree) renderLeagueTree(leagueTree, leagues);
@@ -96,13 +101,13 @@ async function initMatchDetailPage() {
 }
 
 /**
- * Team profile page — loads sidebar leagues + team data
+ * Team profile page — loads ref/leagues + pages/team-detail
  */
 async function initTeamPage() {
   try {
     const [leagues, team] = await Promise.all([
-      fetchData('leagues'),
-      fetchData('team')
+      fetchData('ref/leagues'),
+      fetchData('pages/team-detail')
     ]);
     const leagueTree = document.querySelector('.league-tree');
     if (leagueTree) renderLeagueTree(leagueTree, leagues);
@@ -113,13 +118,13 @@ async function initTeamPage() {
 }
 
 /**
- * Player profile page — loads sidebar leagues + player data
+ * Player profile page — loads ref/leagues + pages/player-detail
  */
 async function initPlayerPage() {
   try {
     const [leagues, player] = await Promise.all([
-      fetchData('leagues'),
-      fetchData('player')
+      fetchData('ref/leagues'),
+      fetchData('pages/player-detail')
     ]);
     const leagueTree = document.querySelector('.league-tree');
     if (leagueTree) renderLeagueTree(leagueTree, leagues);
@@ -130,13 +135,13 @@ async function initPlayerPage() {
 }
 
 /**
- * Predictions listing page
+ * Predictions listing page — loads ref/leagues + pages/predictions
  */
 async function initPredictionsPage() {
   try {
     const [leagues, predictions] = await Promise.all([
-      fetchData('leagues'),
-      fetchData('predictions')
+      fetchData('ref/leagues'),
+      fetchData('pages/predictions')
     ]);
     const leagueTree = document.querySelector('.league-tree');
     if (leagueTree) renderLeagueTree(leagueTree, leagues);
@@ -147,55 +152,58 @@ async function initPredictionsPage() {
 }
 
 /**
- * Category / Tag listing page
+ * Category / Tag listing page — loads ref/leagues + pages/category-detail
  */
 async function initCategoryPage() {
   try {
-    const [leagues, categories] = await Promise.all([
-      fetchData('leagues'),
-      fetchData('categories')
+    const [leagues, category] = await Promise.all([
+      fetchData('ref/leagues'),
+      fetchData('pages/category-detail')
     ]);
     const leagueTree = document.querySelector('.league-tree');
     if (leagueTree) renderLeagueTree(leagueTree, leagues);
-    if (typeof renderCategory === 'function') renderCategory(categories);
+    if (typeof renderCategory === 'function') renderCategory(category);
   } catch (e) {
     console.error('[initCategoryPage]', e);
   }
 }
 
 /**
- * Post detail page — loads sidebar leagues only (main content is hardcoded)
+ * Post detail page — loads ref/leagues + pages/post-detail
  */
 async function initPostDetailPage() {
   try {
-    const leagues = await fetchData('leagues');
+    const [leagues, postData] = await Promise.all([
+      fetchData('ref/leagues'),
+      fetchData('pages/post-detail')
+    ]);
     const leagueTree = document.querySelector('.league-tree');
     if (leagueTree) renderLeagueTree(leagueTree, leagues);
+    if (typeof renderPostDetail === 'function') renderPostDetail(postData);
   } catch (e) {
     console.error('[initPostDetailPage]', e);
   }
 }
 
 /**
- * News listing page
+ * News listing page — loads ref/leagues + pages/news
  */
 async function initNewsPage() {
   try {
-    const [leagues, posts] = await Promise.all([
-      fetchData('leagues'),
-      fetchData('posts')
+    const [leagues, news] = await Promise.all([
+      fetchData('ref/leagues'),
+      fetchData('pages/news')
     ]);
     const leagueTree = document.querySelector('.league-tree');
-    const rightScroll = document.querySelector('.right-scroll');
     if (leagueTree) renderLeagueTree(leagueTree, leagues);
-    if (rightScroll) renderPosts(rightScroll, posts);
+    if (typeof renderNews === 'function') renderNews(news);
   } catch (e) {
     console.error('[initNewsPage]', e);
   }
 }
 
 /**
- * Search results page
+ * Search results page — loads ref/leagues + pages/search
  */
 async function initSearchPage() {
   try {
@@ -205,8 +213,8 @@ async function initSearchPage() {
     if (searchInput && q) searchInput.value = q;
 
     const [leagues, results] = await Promise.all([
-      fetchData('leagues'),
-      fetchData('search')
+      fetchData('ref/leagues'),
+      fetchData('pages/search')
     ]);
     const leagueTree = document.querySelector('.league-tree');
     if (leagueTree) renderLeagueTree(leagueTree, leagues);
@@ -299,13 +307,13 @@ function renderMatchRow(m) {
     <div class="match-row" onclick="location.href='${m.detailUrl}'">
       ${timeHtml}
       <div class="mr-home${liveClass}">
-        <span class="tn" onclick="event.stopPropagation(); location.href='${m.homeTeam.url || 'team-profile.html'}'">${m.homeTeam.name}</span>
+        <span class="tn" onclick="event.stopPropagation(); location.href='${m.homeTeam.profileUrl || 'team-profile.html'}'">${m.homeTeam.name}</span>
         <div class="tl">${m.homeTeam.logo}</div>
       </div>
       ${scoreHtml}
       <div class="mr-away${liveClass}">
         <div class="tl">${m.awayTeam.logo}</div>
-        <span class="tn" onclick="event.stopPropagation(); location.href='${m.awayTeam.url || 'team-profile.html'}'">${m.awayTeam.name}</span>
+        <span class="tn" onclick="event.stopPropagation(); location.href='${m.awayTeam.profileUrl || 'team-profile.html'}'">${m.awayTeam.name}</span>
       </div>
       <div class="mr-status">${badge}</div>
     </div>`;

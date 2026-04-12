@@ -1,381 +1,534 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — FootballBlog Admin</title>
   <link rel="stylesheet" href="assets/common.css">
   <link rel="stylesheet" href="assets/admin-common.css">
-  <style>
-    body { overflow: hidden; }
+</head>
 
-    /* Chart bar mock */
+<body class="admin-body">
+  <div class="admin-wrap">
+
+    <!-- Top Nav -->
+    <nav class="admin-topnav">
+      <div class="logo-wrap">
+        <div class="logo"><span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span></div>
+      </div>
+      <div class="admin-topnav-spacer"></div>
+      <div class="admin-topnav-actions">
+        <button class="topnav-btn" onclick="location.href='home.html'">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+          Xem trang chủ
+        </button>
+        <button class="topnav-btn primary" onclick="location.href='admin-post-editor.html'">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Tạo bài viết
+        </button>
+        <div class="user-row" style="padding:4px 8px;border-radius:8px;cursor:pointer;transition:background 0.12s;"
+          onmouseover="this.style.background='var(--bg-card)'" onmouseout="this.style.background='none'">
+          <div class="user-avatar" style="width:26px;height:26px;font-size:11px;">A</div>
+          <div class="user-info">
+            <div class="user-name">Admin</div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="admin-body-area">
+
+      <!-- Sidebar -->
+      <aside class="admin-sidebar">
+        <div class="admin-sidebar-scroll">
+          <div class="admin-menu-group">
+            <div class="admin-menu-label">Tổng quan</div>
+            <a class="admin-menu-item active" href="admin-dashboard.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+              </svg>
+              Dashboard
+            </a>
+          </div>
+          <div class="admin-menu-group">
+            <div class="admin-menu-label">Nội dung</div>
+            <a class="admin-menu-item" href="admin-posts.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+              Bài viết
+              <span class="admin-menu-badge">3</span>
+            </a>
+            <a class="admin-menu-item" href="admin-predictions.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+              AI Predictions
+              <span class="admin-menu-badge">7</span>
+            </a>
+            <a class="admin-menu-item" href="admin-categories.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+              </svg>
+              Categories &amp; Tags
+            </a>
+          </div>
+          <div class="admin-menu-group">
+            <div class="admin-menu-label">Bóng đá</div>
+            <a class="admin-menu-item" href="admin-matches.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+              </svg>
+              Trận đấu
+            </a>
+            <a class="admin-menu-item" href="admin-team.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              Đội bóng
+            </a>
+            <a class="admin-menu-item" href="admin-players.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M20 21a8 8 0 1 0-16 0" />
+              </svg>
+              Cầu thủ
+            </a>
+          </div>
+          <div class="admin-menu-group">
+            <div class="admin-menu-label">Hệ thống</div>
+            <a class="admin-menu-item" href="admin-users.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              Users
+            </a>
+            <a class="admin-menu-item" href="admin-job-monitor.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              </svg>
+              Job Monitor
+            </a>
+            <div class="admin-menu-dropdown" id="dd-settings">
+              <div class="admin-menu-dropdown-trigger" onclick="toggleDD('dd-settings')">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="3" />
+                  <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+                Cài đặt
+                <svg class="dd-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </div>
+              <div class="admin-submenu">
+                <a class="admin-submenu-item" href="admin-settings.html">Cài đặt chung</a>
+                <a class="admin-submenu-item" href="admin-prompts.html">Prompt Templates</a>
+              </div>
+            </div>
+            <a class="admin-menu-item" href="admin-login.html" style="color:#f87171">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              Đăng xuất
+            </a>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main content -->
+      <main class="admin-main">
+        <div class="admin-main-scroll">
+
+          <!-- Page header -->
+          <div class="admin-page-header">
+            <div>
+              <div class="admin-page-title">Dashboard</div>
+              <div class="admin-page-sub">Xin chào Admin · 07/04/2025 · 20:00 ICT</div>
+            </div>
+            <div class="admin-header-actions">
+              <button class="btn btn-ghost">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <polyline points="23 4 23 10 17 10" />
+                  <path d="M20.49 15a9 9 0 1 1-.08-5.01" />
+                </svg>
+                Làm mới
+              </button>
+            </div>
+          </div>
+
+          <!-- Stat cards -->
+          <div class="stat-cards">
+            <div class="stat-card">
+              <div class="stat-card-label">Tổng bài viết</div>
+              <div class="stat-card-value">48</div>
+              <div class="stat-card-delta up">↑ 12 tuần này</div>
+              <div class="stat-card-icon">📝</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-label">Đã xuất bản</div>
+              <div class="stat-card-value">41</div>
+              <div class="stat-card-delta up">↑ 8 tuần này</div>
+              <div class="stat-card-icon">✅</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-label">Bản nháp</div>
+              <div class="stat-card-value">7</div>
+              <div class="stat-card-delta">→ Không đổi</div>
+              <div class="stat-card-icon">📋</div>
+            </div>
+            <div class="stat-card accent">
+              <div class="stat-card-label">AI Predictions hôm nay</div>
+              <div class="stat-card-value">12</div>
+              <div class="stat-card-delta up">↑ 3 so với hôm qua</div>
+              <div class="stat-card-icon">🤖</div>
+            </div>
+          </div>
+
+          <!-- Second row stats -->
+          <div class="stat-cards" style="margin-bottom:24px;">
+            <div class="stat-card">
+              <div class="stat-card-label">Lượt xem hôm nay</div>
+              <div class="stat-card-value">8,247</div>
+              <div class="stat-card-delta up">↑ 23% so với hôm qua</div>
+              <div class="stat-card-icon">👁️</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-label">Dự đoán đúng (7 ngày)</div>
+              <div class="stat-card-value">74%</div>
+              <div class="stat-card-delta up">↑ 6% so với tuần trước</div>
+              <div class="stat-card-icon">🎯</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-label">Trận đang Live</div>
+              <div class="stat-card-value" style="color:var(--live)">4</div>
+              <div class="stat-card-delta" style="color:var(--live)">● Đang cập nhật</div>
+              <div class="stat-card-icon">⚽</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-label">Football API Calls</div>
+              <div class="stat-card-value">67</div>
+              <div class="stat-card-delta">/ 100 hôm nay</div>
+              <div class="stat-card-icon">🔌</div>
+            </div>
+          </div>
+
+          <!-- Two-column layout: chart + activity -->
+          <div style="display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:24px;">
+
+            <!-- Weekly post chart -->
+            <div class="data-table-wrap">
+              <div class="data-table-toolbar">
+                <div class="data-table-toolbar-title">Bài viết 7 ngày qua</div>
+                <span style="font-size:11px;color:var(--muted)">01/04 – 07/04</span>
+              </div>
+              <div style="padding:16px 16px 8px;">
+                <div class="chart-wrap">
+                  <div class="chart-bar-group">
+                    <div class="chart-bar" style="height:35%"></div>
+                    <div class="chart-bar-lbl">T2</div>
+                  </div>
+                  <div class="chart-bar-group">
+                    <div class="chart-bar" style="height:55%"></div>
+                    <div class="chart-bar-lbl">T3</div>
+                  </div>
+                  <div class="chart-bar-group">
+                    <div class="chart-bar" style="height:45%"></div>
+                    <div class="chart-bar-lbl">T4</div>
+                  </div>
+                  <div class="chart-bar-group">
+                    <div class="chart-bar" style="height:70%"></div>
+                    <div class="chart-bar-lbl">T5</div>
+                  </div>
+                  <div class="chart-bar-group">
+                    <div class="chart-bar" style="height:60%"></div>
+                    <div class="chart-bar-lbl">T6</div>
+                  </div>
+                  <div class="chart-bar-group">
+                    <div class="chart-bar" style="height:85%"></div>
+                    <div class="chart-bar-lbl">T7</div>
+                  </div>
+                  <div class="chart-bar-group">
+                    <div class="chart-bar today" style="height:100%"></div>
+                    <div class="chart-bar-lbl" style="color:var(--accent)">CN</div>
+                  </div>
+                </div>
+                <div
+                  style="display:flex;justify-content:space-between;padding:8px 4px 0;font-size:10px;color:var(--muted);">
+                  <span>Tổng 7 ngày: <strong style="color:var(--text)">42 bài</strong></span>
+                  <span>Trung bình: <strong style="color:var(--text)">6/ngày</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent activity -->
+            <div class="data-table-wrap">
+              <div class="data-table-toolbar">
+                <div class="data-table-toolbar-title">Hoạt động gần đây</div>
+              </div>
+              <div style="padding:0 14px;">
+                <div class="activity-item">
+                  <div class="activity-dot" style="background:var(--accent)"></div>
+                  <div class="activity-body">
+                    <div class="activity-text">AI tạo nhận định <strong>Man City vs Arsenal</strong></div>
+                    <div class="activity-time">2 giờ trước · AI Agent</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot" style="background:var(--live)"></div>
+                  <div class="activity-body">
+                    <div class="activity-text">Xuất bản bài viết <strong>Tottenham vs Man United</strong></div>
+                    <div class="activity-time">4 giờ trước · Admin</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot" style="background:#60a5fa"></div>
+                  <div class="activity-body">
+                    <div class="activity-text">Cập nhật dữ liệu trận từ Football API</div>
+                    <div class="activity-time">6 giờ trước · Hệ thống</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot" style="background:#fbbf24"></div>
+                  <div class="activity-body">
+                    <div class="activity-text">AI tạo nhận định <strong>Newcastle vs Everton</strong></div>
+                    <div class="activity-time">8 giờ trước · AI Agent</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot" style="background:var(--muted)"></div>
+                  <div class="activity-body">
+                    <div class="activity-text">Admin sửa bài viết Chelsea 2-1 Liverpool</div>
+                    <div class="activity-time">1 ngày trước · Admin</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Recent posts table -->
+          <div class="data-table-wrap">
+            <div class="data-table-toolbar">
+              <div class="data-table-toolbar-title">Bài viết gần đây</div>
+              <button class="btn btn-ghost" onclick="location.href='admin-posts.html'">Xem tất cả →</button>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Tiêu đề</th>
+                  <th>Danh mục</th>
+                  <th>Trạng thái</th>
+                  <th>Ngày tạo</th>
+                  <th>Lượt đọc</th>
+                  <th>Hành động</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="max-width:240px;">
+                    <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Man City vs
+                      Arsenal: AI dự đoán 2-0</div>
+                  </td>
+                  <td><span class="chip chip-published"
+                      style="background:rgba(96,165,250,0.12);color:#60a5fa;border-color:rgba(96,165,250,0.2)">Premier
+                      League</span></td>
+                  <td><span class="chip chip-published">Đã xuất bản</span></td>
+                  <td class="td-muted">07/04/25 18:00</td>
+                  <td class="td-muted">2,847</td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="btn-icon" onclick="location.href='admin-post-editor.html'" title="Sửa">✏️</button>
+                      <button class="btn-icon danger" title="Xóa">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="max-width:240px;">
+                    <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Tottenham vs
+                      Man United: Battle for top 4</div>
+                  </td>
+                  <td><span class="chip"
+                      style="background:rgba(96,165,250,0.12);color:#60a5fa;border:1px solid rgba(96,165,250,0.2)">Premier
+                      League</span></td>
+                  <td><span class="chip chip-draft">Bản nháp</span></td>
+                  <td class="td-muted">07/04/25 14:30</td>
+                  <td class="td-muted">—</td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="btn-icon" title="Sửa">✏️</button>
+                      <button class="btn-icon danger" title="Xóa">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="max-width:240px;">
+                    <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Chelsea 2-1
+                      Liverpool: Kết quả ngược chỉ số xG</div>
+                  </td>
+                  <td><span class="chip"
+                      style="background:rgba(96,165,250,0.12);color:#60a5fa;border:1px solid rgba(96,165,250,0.2)">Premier
+                      League</span></td>
+                  <td><span class="chip chip-published">Đã xuất bản</span></td>
+                  <td class="td-muted">06/04/25 23:00</td>
+                  <td class="td-muted">4,512</td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="btn-icon" title="Sửa">✏️</button>
+                      <button class="btn-icon danger" title="Xóa">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="max-width:240px;">
+                    <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Real Madrid
+                      3-1 Bayern Munich: Tứ kết UCL</div>
+                  </td>
+                  <td><span class="chip"
+                      style="background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.2)">Champions
+                      League</span></td>
+                  <td><span class="chip chip-published">Đã xuất bản</span></td>
+                  <td class="td-muted">06/04/25 05:00</td>
+                  <td class="td-muted">7,241</td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="btn-icon" title="Sửa">✏️</button>
+                      <button class="btn-icon danger" title="Xóa">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="max-width:240px;">
+                    <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Hải Phòng FC
+                      vs Viettel: Cuộc chiến top 3</div>
+                  </td>
+                  <td><span class="chip"
+                      style="background:rgba(74,222,128,0.12);color:var(--live);border:1px solid rgba(74,222,128,0.2)">V.League
+                      1</span></td>
+                  <td><span class="chip chip-pending">Chờ duyệt</span></td>
+                  <td class="td-muted">07/04/25 10:00</td>
+                  <td class="td-muted">—</td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="btn-icon" title="Sửa">✏️</button>
+                      <button class="btn-icon danger" title="Xóa">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </main>
+
+    </div>
+  </div>
+  <!-- STYLES — skip khi chỉ cần phân tích structure -->
+  <style>
+    body {
+      overflow: hidden
+    }
+
     .chart-wrap {
       display: flex;
       align-items: flex-end;
       gap: 6px;
       height: 80px;
-      padding: 0 4px;
+      padding: 0 4px
     }
-    .chart-bar-group { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; }
+
+    .chart-bar-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      flex: 1
+    }
+
     .chart-bar {
       width: 100%;
       border-radius: 3px 3px 0 0;
       background: var(--accent-dim);
-      border: 1px solid rgba(200,240,77,0.2);
-      transition: background 0.15s;
+      border: 1px solid rgba(200, 240, 77, .2);
+      transition: background .15s
     }
-    .chart-bar:hover { background: rgba(200,240,77,0.2); }
-    .chart-bar.today { background: var(--accent); opacity: 0.7; }
-    .chart-bar-lbl { font-size: 8px; color: var(--muted); }
 
-    /* Activity list */
+    .chart-bar:hover {
+      background: rgba(200, 240, 77, .2)
+    }
+
+    .chart-bar.today {
+      background: var(--accent);
+      opacity: .7
+    }
+
+    .chart-bar-lbl {
+      font-size: 8px;
+      color: var(--muted)
+    }
+
     .activity-item {
       display: flex;
       align-items: flex-start;
       gap: 10px;
       padding: 10px 0;
-      border-bottom: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a
     }
-    .activity-item:last-child { border-bottom: none; }
+
+    .activity-item:last-child {
+      border-bottom: none
+    }
+
     .activity-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
       margin-top: 4px;
-      flex-shrink: 0;
+      flex-shrink: 0
     }
-    .activity-body { flex: 1; }
-    .activity-text { font-size: 12px; color: var(--text); line-height: 1.4; }
-    .activity-time { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+    .activity-body {
+      flex: 1
+    }
+
+    .activity-text {
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.4
+    }
+
+    .activity-time {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 2px
+    }
   </style>
-</head>
-<body class="admin-body">
-<div class="admin-wrap">
-
-  <!-- Top Nav -->
-  <nav class="admin-topnav">
-    <div class="logo-wrap">
-      <div class="logo"><span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span></div>
-    </div>
-    <div class="admin-topnav-spacer"></div>
-    <div class="admin-topnav-actions">
-      <button class="topnav-btn" onclick="location.href='home.html'">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        Xem trang chủ
-      </button>
-      <button class="topnav-btn primary" onclick="location.href='admin-post-editor.html'">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Tạo bài viết
-      </button>
-      <div class="user-row" style="padding:4px 8px;border-radius:8px;cursor:pointer;transition:background 0.12s;" onmouseover="this.style.background='var(--bg-card)'" onmouseout="this.style.background='none'">
-        <div class="user-avatar" style="width:26px;height:26px;font-size:11px;">A</div>
-        <div class="user-info"><div class="user-name">Admin</div></div>
-      </div>
-    </div>
-  </nav>
-
-  <div class="admin-body-area">
-
-    <!-- Sidebar -->
-    <aside class="admin-sidebar">
-      <div class="admin-sidebar-scroll">
-        <div class="admin-menu-group">
-          <div class="admin-menu-label">Tổng quan</div>
-          <a class="admin-menu-item active" href="admin-dashboard.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            Dashboard
-          </a>
-        </div>
-        <div class="admin-menu-group">
-          <div class="admin-menu-label">Nội dung</div>
-          <a class="admin-menu-item" href="admin-posts.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            Bài viết
-            <span class="admin-menu-badge">3</span>
-          </a>
-          <a class="admin-menu-item" href="admin-predictions.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            AI Predictions
-            <span class="admin-menu-badge">7</span>
-          </a>
-          <a class="admin-menu-item" href="admin-categories.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-            Categories &amp; Tags
-          </a>
-        </div>
-        <div class="admin-menu-group">
-          <div class="admin-menu-label">Bóng đá</div>
-          <a class="admin-menu-item" href="admin-matches.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
-            Trận đấu
-          </a>
-          <a class="admin-menu-item" href="admin-team.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Đội bóng
-          </a>
-          <a class="admin-menu-item" href="admin-players.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
-            Cầu thủ
-          </a>
-        </div>
-        <div class="admin-menu-group">
-          <div class="admin-menu-label">Hệ thống</div>
-          <a class="admin-menu-item" href="admin-users.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            Users
-          </a>
-          <a class="admin-menu-item" href="admin-job-monitor.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            Job Monitor
-          </a>
-          <div class="admin-menu-dropdown" id="dd-settings">
-            <div class="admin-menu-dropdown-trigger" onclick="toggleDD('dd-settings')">
-              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-              Cài đặt
-              <svg class="dd-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-            </div>
-            <div class="admin-submenu">
-              <a class="admin-submenu-item" href="admin-settings.html">Cài đặt chung</a>
-              <a class="admin-submenu-item" href="admin-prompts.html">Prompt Templates</a>
-            </div>
-          </div>
-          <a class="admin-menu-item" href="admin-login.html" style="color:#f87171">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            Đăng xuất
-          </a>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Main content -->
-    <main class="admin-main">
-      <div class="admin-main-scroll">
-
-        <!-- Page header -->
-        <div class="admin-page-header">
-          <div>
-            <div class="admin-page-title">Dashboard</div>
-            <div class="admin-page-sub">Xin chào Admin · 07/04/2025 · 20:00 ICT</div>
-          </div>
-          <div class="admin-header-actions">
-            <button class="btn btn-ghost">
-              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.08-5.01"/></svg>
-              Làm mới
-            </button>
-          </div>
-        </div>
-
-        <!-- Stat cards -->
-        <div class="stat-cards">
-          <div class="stat-card">
-            <div class="stat-card-label">Tổng bài viết</div>
-            <div class="stat-card-value">48</div>
-            <div class="stat-card-delta up">↑ 12 tuần này</div>
-            <div class="stat-card-icon">📝</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card-label">Đã xuất bản</div>
-            <div class="stat-card-value">41</div>
-            <div class="stat-card-delta up">↑ 8 tuần này</div>
-            <div class="stat-card-icon">✅</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card-label">Bản nháp</div>
-            <div class="stat-card-value">7</div>
-            <div class="stat-card-delta">→ Không đổi</div>
-            <div class="stat-card-icon">📋</div>
-          </div>
-          <div class="stat-card accent">
-            <div class="stat-card-label">AI Predictions hôm nay</div>
-            <div class="stat-card-value">12</div>
-            <div class="stat-card-delta up">↑ 3 so với hôm qua</div>
-            <div class="stat-card-icon">🤖</div>
-          </div>
-        </div>
-
-        <!-- Second row stats -->
-        <div class="stat-cards" style="margin-bottom:24px;">
-          <div class="stat-card">
-            <div class="stat-card-label">Lượt xem hôm nay</div>
-            <div class="stat-card-value">8,247</div>
-            <div class="stat-card-delta up">↑ 23% so với hôm qua</div>
-            <div class="stat-card-icon">👁️</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card-label">Dự đoán đúng (7 ngày)</div>
-            <div class="stat-card-value">74%</div>
-            <div class="stat-card-delta up">↑ 6% so với tuần trước</div>
-            <div class="stat-card-icon">🎯</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card-label">Trận đang Live</div>
-            <div class="stat-card-value" style="color:var(--live)">4</div>
-            <div class="stat-card-delta" style="color:var(--live)">● Đang cập nhật</div>
-            <div class="stat-card-icon">⚽</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card-label">Football API Calls</div>
-            <div class="stat-card-value">67</div>
-            <div class="stat-card-delta">/ 100 hôm nay</div>
-            <div class="stat-card-icon">🔌</div>
-          </div>
-        </div>
-
-        <!-- Two-column layout: chart + activity -->
-        <div style="display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:24px;">
-
-          <!-- Weekly post chart -->
-          <div class="data-table-wrap">
-            <div class="data-table-toolbar">
-              <div class="data-table-toolbar-title">Bài viết 7 ngày qua</div>
-              <span style="font-size:11px;color:var(--muted)">01/04 – 07/04</span>
-            </div>
-            <div style="padding:16px 16px 8px;">
-              <div class="chart-wrap">
-                <div class="chart-bar-group"><div class="chart-bar" style="height:35%"></div><div class="chart-bar-lbl">T2</div></div>
-                <div class="chart-bar-group"><div class="chart-bar" style="height:55%"></div><div class="chart-bar-lbl">T3</div></div>
-                <div class="chart-bar-group"><div class="chart-bar" style="height:45%"></div><div class="chart-bar-lbl">T4</div></div>
-                <div class="chart-bar-group"><div class="chart-bar" style="height:70%"></div><div class="chart-bar-lbl">T5</div></div>
-                <div class="chart-bar-group"><div class="chart-bar" style="height:60%"></div><div class="chart-bar-lbl">T6</div></div>
-                <div class="chart-bar-group"><div class="chart-bar" style="height:85%"></div><div class="chart-bar-lbl">T7</div></div>
-                <div class="chart-bar-group"><div class="chart-bar today" style="height:100%"></div><div class="chart-bar-lbl" style="color:var(--accent)">CN</div></div>
-              </div>
-              <div style="display:flex;justify-content:space-between;padding:8px 4px 0;font-size:10px;color:var(--muted);">
-                <span>Tổng 7 ngày: <strong style="color:var(--text)">42 bài</strong></span>
-                <span>Trung bình: <strong style="color:var(--text)">6/ngày</strong></span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Recent activity -->
-          <div class="data-table-wrap">
-            <div class="data-table-toolbar">
-              <div class="data-table-toolbar-title">Hoạt động gần đây</div>
-            </div>
-            <div style="padding:0 14px;">
-              <div class="activity-item">
-                <div class="activity-dot" style="background:var(--accent)"></div>
-                <div class="activity-body">
-                  <div class="activity-text">AI tạo nhận định <strong>Man City vs Arsenal</strong></div>
-                  <div class="activity-time">2 giờ trước · AI Agent</div>
-                </div>
-              </div>
-              <div class="activity-item">
-                <div class="activity-dot" style="background:var(--live)"></div>
-                <div class="activity-body">
-                  <div class="activity-text">Xuất bản bài viết <strong>Tottenham vs Man United</strong></div>
-                  <div class="activity-time">4 giờ trước · Admin</div>
-                </div>
-              </div>
-              <div class="activity-item">
-                <div class="activity-dot" style="background:#60a5fa"></div>
-                <div class="activity-body">
-                  <div class="activity-text">Cập nhật dữ liệu trận từ Football API</div>
-                  <div class="activity-time">6 giờ trước · Hệ thống</div>
-                </div>
-              </div>
-              <div class="activity-item">
-                <div class="activity-dot" style="background:#fbbf24"></div>
-                <div class="activity-body">
-                  <div class="activity-text">AI tạo nhận định <strong>Newcastle vs Everton</strong></div>
-                  <div class="activity-time">8 giờ trước · AI Agent</div>
-                </div>
-              </div>
-              <div class="activity-item">
-                <div class="activity-dot" style="background:var(--muted)"></div>
-                <div class="activity-body">
-                  <div class="activity-text">Admin sửa bài viết Chelsea 2-1 Liverpool</div>
-                  <div class="activity-time">1 ngày trước · Admin</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Recent posts table -->
-        <div class="data-table-wrap">
-          <div class="data-table-toolbar">
-            <div class="data-table-toolbar-title">Bài viết gần đây</div>
-            <button class="btn btn-ghost" onclick="location.href='admin-posts.html'">Xem tất cả →</button>
-          </div>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Tiêu đề</th>
-                <th>Danh mục</th>
-                <th>Trạng thái</th>
-                <th>Ngày tạo</th>
-                <th>Lượt đọc</th>
-                <th>Hành động</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style="max-width:240px;"><div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Man City vs Arsenal: AI dự đoán 2-0</div></td>
-                <td><span class="chip chip-published" style="background:rgba(96,165,250,0.12);color:#60a5fa;border-color:rgba(96,165,250,0.2)">Premier League</span></td>
-                <td><span class="chip chip-published">Đã xuất bản</span></td>
-                <td class="td-muted">07/04/25 18:00</td>
-                <td class="td-muted">2,847</td>
-                <td><div class="action-btns">
-                  <button class="btn-icon" onclick="location.href='admin-post-editor.html'" title="Sửa">✏️</button>
-                  <button class="btn-icon danger" title="Xóa">🗑️</button>
-                </div></td>
-              </tr>
-              <tr>
-                <td style="max-width:240px;"><div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Tottenham vs Man United: Battle for top 4</div></td>
-                <td><span class="chip" style="background:rgba(96,165,250,0.12);color:#60a5fa;border:1px solid rgba(96,165,250,0.2)">Premier League</span></td>
-                <td><span class="chip chip-draft">Bản nháp</span></td>
-                <td class="td-muted">07/04/25 14:30</td>
-                <td class="td-muted">—</td>
-                <td><div class="action-btns">
-                  <button class="btn-icon" title="Sửa">✏️</button>
-                  <button class="btn-icon danger" title="Xóa">🗑️</button>
-                </div></td>
-              </tr>
-              <tr>
-                <td style="max-width:240px;"><div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Chelsea 2-1 Liverpool: Kết quả ngược chỉ số xG</div></td>
-                <td><span class="chip" style="background:rgba(96,165,250,0.12);color:#60a5fa;border:1px solid rgba(96,165,250,0.2)">Premier League</span></td>
-                <td><span class="chip chip-published">Đã xuất bản</span></td>
-                <td class="td-muted">06/04/25 23:00</td>
-                <td class="td-muted">4,512</td>
-                <td><div class="action-btns">
-                  <button class="btn-icon" title="Sửa">✏️</button>
-                  <button class="btn-icon danger" title="Xóa">🗑️</button>
-                </div></td>
-              </tr>
-              <tr>
-                <td style="max-width:240px;"><div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Real Madrid 3-1 Bayern Munich: Tứ kết UCL</div></td>
-                <td><span class="chip" style="background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.2)">Champions League</span></td>
-                <td><span class="chip chip-published">Đã xuất bản</span></td>
-                <td class="td-muted">06/04/25 05:00</td>
-                <td class="td-muted">7,241</td>
-                <td><div class="action-btns">
-                  <button class="btn-icon" title="Sửa">✏️</button>
-                  <button class="btn-icon danger" title="Xóa">🗑️</button>
-                </div></td>
-              </tr>
-              <tr>
-                <td style="max-width:240px;"><div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Hải Phòng FC vs Viettel: Cuộc chiến top 3</div></td>
-                <td><span class="chip" style="background:rgba(74,222,128,0.12);color:var(--live);border:1px solid rgba(74,222,128,0.2)">V.League 1</span></td>
-                <td><span class="chip chip-pending">Chờ duyệt</span></td>
-                <td class="td-muted">07/04/25 10:00</td>
-                <td class="td-muted">—</td>
-                <td><div class="action-btns">
-                  <button class="btn-icon" title="Sửa">✏️</button>
-                  <button class="btn-icon danger" title="Xóa">🗑️</button>
-                </div></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-      </div>
-    </main>
-
-  </div>
-</div>
-<script src="assets/common.js"></script>
+  <script src="assets/common.js"></script>
 </body>
+
 </html>

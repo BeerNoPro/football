@@ -85,6 +85,9 @@ Quy tắc:
 2. **Plan implement một phần** → ghi phần còn lại vào TODO.md rồi xóa plan
 3. **Plan trùng nội dung nhau** → giữ 1 cái mới nhất, xóa các bản cũ
 4. **Plan là "analysis/reference" không còn dùng** → xóa, nội dung quan trọng đã nằm trong code/TODO
+5. **Khi đọc HTML prototype để phân tích structure / logic / navigation**
+- Đọc từ đầu file tới comment <!-- STYLES --> là đủ
+- Không cần đọc <style> block trừ khi task yêu cầu sửa CSS cụ thể
 
 Khi thêm config/rule mới vào `.claude/`:
 - Kiểm tra xem thông tin đó đã có ở file khác chưa (CLAUDE.md, rules/, commands/)

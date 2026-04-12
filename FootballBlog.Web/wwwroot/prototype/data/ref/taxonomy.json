@@ -50,27 +50,5 @@
     { "id": 10, "name": "Real Madrid",       "slug": "real-madrid",       "postCount": 12 },
     { "id": 11, "name": "Chuyển nhượng",     "slug": "chuyen-nhuong",     "postCount": 14 },
     { "id": 12, "name": "Chấn thương",       "slug": "chan-thuong",        "postCount": 9  }
-  ],
-  "featuredCategory": {
-    "id": 1,
-    "name": "AI Prediction",
-    "slug": "ai-prediction",
-    "icon": "🤖",
-    "description": "Nhận định & dự đoán tỷ số bằng AI — cập nhật trước mỗi trận đấu lớn",
-    "postCount": 41,
-    "recentPosts": [
-      {
-        "id": 1, "title": "Man City vs Arsenal: Guardiola sắp giành 3 điểm quan trọng",
-        "tag": "Premier League", "updatedAt": "2 giờ trước", "url": "post-detail.html"
-      },
-      {
-        "id": 2, "title": "Inter vs Atlético: Simone Inzaghi lên kế hoạch bẫy phản công",
-        "tag": "Champions League", "updatedAt": "3 giờ trước", "url": "post-detail.html"
-      },
-      {
-        "id": 3, "title": "Hải Phòng vs Viettel: Cuộc chiến top 3",
-        "tag": "V.League 1", "updatedAt": "4 giờ trước", "url": "post-detail.html"
-      }
-    ]
-  }
+  ]
 }

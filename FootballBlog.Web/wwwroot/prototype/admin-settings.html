@@ -1,624 +1,559 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cài đặt — FootballBlog Admin</title>
   <link rel="stylesheet" href="assets/common.css">
   <link rel="stylesheet" href="assets/admin-common.css">
-  <style>
-    body { overflow: hidden; }
-
-    /* Tabs */
-    .settings-tabs {
-      display: flex; gap: 0; border-bottom: 1px solid var(--border);
-      padding: 0 24px; flex-shrink: 0;
-    }
-    .settings-tab {
-      font-size: 13px; font-weight: 600; color: var(--muted);
-      padding: 12px 16px; border-bottom: 2px solid transparent;
-      cursor: pointer; transition: color 0.15s; white-space: nowrap;
-    }
-    .settings-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-    .settings-tab:hover:not(.active) { color: var(--text); }
-
-    /* Scroll area */
-    .settings-scroll { flex: 1; overflow-y: auto; padding: 24px; }
-
-    /* Section card */
-    .settings-section {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: 10px; margin-bottom: 16px; overflow: hidden;
-    }
-    .settings-section-header {
-      padding: 14px 18px; border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; gap: 10px;
-    }
-    .settings-section-icon { font-size: 18px; }
-    .settings-section-title { font-size: 14px; font-weight: 700; color: var(--text); }
-    .settings-section-desc  { font-size: 11px; color: var(--muted); margin-top: 2px; }
-    .settings-section-body  { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
-
-    /* Field row */
-    .field-row {
-      display: grid; grid-template-columns: 200px 1fr; align-items: center; gap: 16px;
-    }
-    .field-row.top { align-items: flex-start; }
-    .field-label { font-size: 12px; font-weight: 600; color: var(--text); }
-    .field-hint  { font-size: 10px; color: var(--muted); margin-top: 2px; }
-    .field-input {
-      background: var(--bg); border: 1px solid var(--border2); color: var(--text);
-      border-radius: 7px; padding: 8px 12px; font-size: 13px; width: 100%;
-    }
-    .field-input:focus { outline: none; border-color: var(--accent); }
-    .field-input::placeholder { color: var(--muted); }
-    .field-input.password { font-family: monospace; letter-spacing: 2px; }
-    .field-select {
-      background: var(--bg); border: 1px solid var(--border2); color: var(--text);
-      border-radius: 7px; padding: 8px 12px; font-size: 13px; width: 100%; cursor: pointer;
-    }
-    .field-select:focus { outline: none; border-color: var(--accent); }
-
-    /* Toggle */
-    .toggle-wrap { display: flex; align-items: center; gap: 10px; }
-    .toggle {
-      position: relative; width: 40px; height: 22px; cursor: pointer;
-    }
-    .toggle input { opacity: 0; width: 0; height: 0; }
-    .toggle-slider {
-      position: absolute; inset: 0; background: var(--border2);
-      border-radius: 11px; transition: background 0.2s;
-    }
-    .toggle-slider:before {
-      content: ''; position: absolute; width: 16px; height: 16px;
-      left: 3px; top: 3px; background: #fff; border-radius: 50%;
-      transition: transform 0.2s;
-    }
-    .toggle input:checked + .toggle-slider { background: var(--accent); }
-    .toggle input:checked + .toggle-slider:before { transform: translateX(18px); }
-    .toggle-label { font-size: 12px; color: var(--text); }
-
-    /* Status pill */
-    .status-pill {
-      display: inline-flex; align-items: center; gap: 5px;
-      font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
-    }
-    .status-ok      { background: rgba(74,222,128,0.12); color: var(--live); }
-    .status-error   { background: rgba(248,113,113,0.1); color: #f87171; }
-    .status-unknown { background: rgba(255,255,255,0.06); color: var(--muted); }
-    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-
-    /* Quota bar */
-    .quota-wrap { display: flex; flex-direction: column; gap: 4px; }
-    .quota-bar-bg { height: 6px; background: var(--border2); border-radius: 3px; overflow: hidden; }
-    .quota-bar-fill { height: 100%; border-radius: 3px; background: var(--accent); transition: width 0.3s; }
-    .quota-bar-fill.warn { background: #fbbf24; }
-    .quota-bar-fill.danger { background: #f87171; }
-    .quota-text { font-size: 11px; color: var(--muted); }
-
-    /* Test button */
-    .test-btn {
-      font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 6px; cursor: pointer;
-      border: 1px solid var(--border2); background: var(--bg); color: var(--text);
-      transition: all 0.12s;
-    }
-    .test-btn:hover { background: var(--border2); }
-    .test-btn.primary { background: rgba(200,240,77,0.1); color: var(--accent); border-color: rgba(200,240,77,0.3); }
-    .test-btn.primary:hover { background: rgba(200,240,77,0.2); }
-
-    /* Divider */
-    .field-divider { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
-
-    /* Input with badge */
-    .input-with-action { display: flex; gap: 6px; align-items: center; }
-    .input-with-action .field-input { flex: 1; }
-
-    /* Tab panels */
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-
-    /* Save bar */
-    .save-bar {
-      flex-shrink: 0; padding: 12px 24px;
-      border-top: 1px solid var(--border); background: var(--bg);
-      display: flex; align-items: center; justify-content: flex-end; gap: 10px;
-    }
-  </style>
 </head>
+
 <body class="admin-body">
-<div class="admin-wrap">
+  <div class="admin-wrap">
 
-  <!-- Top Nav -->
-  <nav class="admin-topnav">
-    <div class="logo-wrap">
-      <div class="logo"><span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span></div>
-    </div>
-    <div class="admin-topnav-spacer"></div>
-    <div class="admin-topnav-actions">
-      <button class="topnav-btn" onclick="location.href='home.html'">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-        Xem trang chủ
-      </button>
-      <div class="user-row" style="padding:4px 8px;border-radius:8px;cursor:pointer;" onmouseover="this.style.background='var(--bg-card)'" onmouseout="this.style.background='none'">
-        <div class="user-avatar" style="width:26px;height:26px;font-size:11px;">A</div>
-        <div class="user-info"><div class="user-name">Admin</div></div>
+    <!-- Top Nav -->
+    <nav class="admin-topnav">
+      <div class="logo-wrap">
+        <div class="logo"><span class="logo-white">FOOTBALL</span><span class="logo-accent">BLOG</span></div>
       </div>
-    </div>
-  </nav>
-
-  <div class="admin-body-area">
-
-    <!-- Sidebar -->
-    <aside class="admin-sidebar">
-      <div class="admin-sidebar-scroll">
-        <div class="admin-menu-group">
-          <div class="admin-menu-label">Tổng quan</div>
-          <a class="admin-menu-item" href="admin-dashboard.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            Dashboard
-          </a>
-        </div>
-        <div class="admin-menu-group">
-          <div class="admin-menu-label">Nội dung</div>
-          <a class="admin-menu-item" href="admin-posts.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            Bài viết
-          </a>
-          <a class="admin-menu-item" href="admin-predictions.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            AI Predictions
-          </a>
-          <a class="admin-menu-item" href="admin-categories.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-            Categories &amp; Tags
-          </a>
-        </div>
-        <div class="admin-menu-group">
-          <div class="admin-menu-label">Bóng đá</div>
-          <a class="admin-menu-item" href="admin-matches.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
-            Trận đấu
-          </a>
-          <a class="admin-menu-item" href="admin-team.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Đội bóng
-          </a>
-          <a class="admin-menu-item" href="admin-players.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
-            Cầu thủ
-          </a>
-        </div>
-        <div class="admin-menu-group">
-          <div class="admin-menu-label">Hệ thống</div>
-          <a class="admin-menu-item" href="admin-users.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            Users
-          </a>
-          <a class="admin-menu-item" href="admin-job-monitor.html">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            Job Monitor
-          </a>
-          <div class="admin-menu-dropdown open" id="dd-settings">
-            <div class="admin-menu-dropdown-trigger active" onclick="toggleDD('dd-settings')">
-              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-              Cài đặt
-              <svg class="dd-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-            </div>
-            <div class="admin-submenu">
-              <a class="admin-submenu-item active" href="admin-settings.html">Cài đặt chung</a>
-              <a class="admin-submenu-item" href="admin-prompts.html">Prompt Templates</a>
-            </div>
-          </div>
-          <a class="admin-menu-item" href="admin-login.html" style="color:#f87171">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            Đăng xuất
-          </a>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Main content -->
-    <main class="admin-main">
-      <div class="admin-main-scroll" style="display:flex;flex-direction:column;height:100%;">
-
-        <!-- Page Header -->
-        <div class="admin-page-header">
-          <div>
-            <div class="admin-page-title">Cài đặt hệ thống</div>
-            <div class="admin-page-sub">Cấu hình AI, Football API, Telegram và tùy chọn chung</div>
+      <div class="admin-topnav-spacer"></div>
+      <div class="admin-topnav-actions">
+        <button class="topnav-btn" onclick="location.href='home.html'">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          </svg>
+          Xem trang chủ
+        </button>
+        <div class="user-row" style="padding:4px 8px;border-radius:8px;cursor:pointer;"
+          onmouseover="this.style.background='var(--bg-card)'" onmouseout="this.style.background='none'">
+          <div class="user-avatar" style="width:26px;height:26px;font-size:11px;">A</div>
+          <div class="user-info">
+            <div class="user-name">Admin</div>
           </div>
         </div>
+      </div>
+    </nav>
 
-        <!-- Tabs -->
-        <div class="settings-tabs">
-          <div class="settings-tab active" onclick="switchTab(this,'tab-general')">Chung</div>
-          <div class="settings-tab" onclick="switchTab(this,'tab-ai')">🤖 AI Config</div>
-          <div class="settings-tab" onclick="switchTab(this,'tab-football')">⚽ Football API</div>
-          <div class="settings-tab" onclick="switchTab(this,'tab-telegram')">✈️ Telegram</div>
+    <div class="admin-body-area">
+
+      <!-- Sidebar -->
+      <aside class="admin-sidebar">
+        <div class="admin-sidebar-scroll">
+          <div class="admin-menu-group">
+            <div class="admin-menu-label">Tổng quan</div>
+            <a class="admin-menu-item" href="admin-dashboard.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+              </svg>
+              Dashboard
+            </a>
+          </div>
+          <div class="admin-menu-group">
+            <div class="admin-menu-label">Nội dung</div>
+            <a class="admin-menu-item" href="admin-posts.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
+              Bài viết
+            </a>
+            <a class="admin-menu-item" href="admin-predictions.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+              AI Predictions
+            </a>
+            <a class="admin-menu-item" href="admin-categories.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+              </svg>
+              Categories &amp; Tags
+            </a>
+          </div>
+          <div class="admin-menu-group">
+            <div class="admin-menu-label">Bóng đá</div>
+            <a class="admin-menu-item" href="admin-matches.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+              </svg>
+              Trận đấu
+            </a>
+            <a class="admin-menu-item" href="admin-team.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              Đội bóng
+            </a>
+            <a class="admin-menu-item" href="admin-players.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M20 21a8 8 0 1 0-16 0" />
+              </svg>
+              Cầu thủ
+            </a>
+          </div>
+          <div class="admin-menu-group">
+            <div class="admin-menu-label">Hệ thống</div>
+            <a class="admin-menu-item" href="admin-users.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              Users
+            </a>
+            <a class="admin-menu-item" href="admin-job-monitor.html">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              </svg>
+              Job Monitor
+            </a>
+            <div class="admin-menu-dropdown open" id="dd-settings">
+              <div class="admin-menu-dropdown-trigger active" onclick="toggleDD('dd-settings')">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="3" />
+                  <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+                Cài đặt
+                <svg class="dd-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </div>
+              <div class="admin-submenu">
+                <a class="admin-submenu-item active" href="admin-settings.html">Cài đặt chung</a>
+                <a class="admin-submenu-item" href="admin-prompts.html">Prompt Templates</a>
+              </div>
+            </div>
+            <a class="admin-menu-item" href="admin-login.html" style="color:#f87171">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              Đăng xuất
+            </a>
+          </div>
         </div>
+      </aside>
 
-        <!-- Scroll area -->
-        <div class="settings-scroll">
+      <!-- Main content -->
+      <main class="admin-main">
+        <div class="admin-main-scroll" style="display:flex;flex-direction:column;height:100%;">
 
-          <!-- ==================== TAB: GENERAL ==================== -->
-          <div id="tab-general" class="tab-panel active">
-
-            <div class="settings-section">
-              <div class="settings-section-header">
-                <span class="settings-section-icon">🌐</span>
-                <div>
-                  <div class="settings-section-title">Thông tin website</div>
-                  <div class="settings-section-desc">Tên site, URL và múi giờ</div>
-                </div>
-              </div>
-              <div class="settings-section-body">
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">Tên website</div>
-                    <div class="field-hint">Hiển thị trên tab trình duyệt &amp; header</div>
-                  </div>
-                  <input class="field-input" type="text" value="FootballBlog" />
-                </div>
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">URL Web (public)</div>
-                  </div>
-                  <input class="field-input" type="text" value="https://localhost:7241" />
-                </div>
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">URL API (internal)</div>
-                  </div>
-                  <input class="field-input" type="text" value="https://localhost:7007" />
-                </div>
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">Múi giờ</div>
-                    <div class="field-hint">Dùng cho hiển thị giờ thi đấu</div>
-                  </div>
-                  <select class="field-select">
-                    <option selected>Asia/Ho_Chi_Minh (UTC+7)</option>
-                    <option>UTC</option>
-                    <option>Europe/London (UTC+0)</option>
-                  </select>
-                </div>
-              </div>
+          <!-- Page Header -->
+          <div class="admin-page-header">
+            <div>
+              <div class="admin-page-title">Cài đặt hệ thống</div>
+              <div class="admin-page-sub">Cấu hình AI, Football API, Telegram và tùy chọn chung</div>
             </div>
+          </div>
 
-            <div class="settings-section">
-              <div class="settings-section-header">
-                <span class="settings-section-icon">⚙️</span>
-                <div>
-                  <div class="settings-section-title">Tự động hóa</div>
-                  <div class="settings-section-desc">Điều khiển hành vi tự động của hệ thống</div>
-                </div>
-              </div>
-              <div class="settings-section-body">
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">Tự động xuất bản prediction</div>
-                    <div class="field-hint">Sau khi AI generate xong → publish bài ngay</div>
-                  </div>
-                  <div class="toggle-wrap">
-                    <label class="toggle">
-                      <input type="checkbox" checked onchange="toggleChanged(this,'auto-publish')">
-                      <span class="toggle-slider"></span>
-                    </label>
-                    <span class="toggle-label" id="lbl-auto-publish">Bật</span>
-                  </div>
-                </div>
-                <hr class="field-divider">
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">Gửi Telegram sau khi publish</div>
-                    <div class="field-hint">Tự động post lên channel Telegram</div>
-                  </div>
-                  <div class="toggle-wrap">
-                    <label class="toggle">
-                      <input type="checkbox" checked onchange="toggleChanged(this,'auto-telegram')">
-                      <span class="toggle-slider"></span>
-                    </label>
-                    <span class="toggle-label" id="lbl-auto-telegram">Bật</span>
-                  </div>
-                </div>
-                <hr class="field-divider">
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">Generate prediction trước (giờ)</div>
-                    <div class="field-hint">Trước giờ kick-off bao nhiêu giờ thì generate</div>
-                  </div>
-                  <input class="field-input" type="number" value="24" min="1" max="72" style="width:100px;" />
-                </div>
-              </div>
-            </div>
+          <!-- Tabs -->
+          <div class="settings-tabs">
+            <div class="settings-tab active" onclick="switchTab(this,'tab-general')">Chung</div>
+            <div class="settings-tab" onclick="switchTab(this,'tab-ai')">🤖 AI Config</div>
+            <div class="settings-tab" onclick="switchTab(this,'tab-football')">⚽ Football API</div>
+            <div class="settings-tab" onclick="switchTab(this,'tab-telegram')">✈️ Telegram</div>
+          </div>
 
-          </div><!-- /tab-general -->
+          <!-- Scroll area -->
+          <div class="settings-scroll">
 
-          <!-- ==================== TAB: AI ==================== -->
-          <div id="tab-ai" class="tab-panel">
+            <!-- ==================== TAB: GENERAL ==================== -->
+            <div id="tab-general" class="tab-panel active">
 
-            <div class="settings-section">
-              <div class="settings-section-header">
-                <span class="settings-section-icon">🤖</span>
-                <div>
-                  <div class="settings-section-title">AI Provider mặc định</div>
-                  <div class="settings-section-desc">Chọn AI nào được dùng để generate prediction</div>
-                </div>
-              </div>
-              <div class="settings-section-body">
-                <div class="field-row">
+              <div class="settings-section">
+                <div class="settings-section-header">
+                  <span class="settings-section-icon">🌐</span>
                   <div>
-                    <div class="field-label">Provider mặc định</div>
-                  </div>
-                  <select class="field-select" style="max-width:220px;">
-                    <option selected>Claude (Anthropic)</option>
-                    <option>Gemini (Google)</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div class="settings-section">
-              <div class="settings-section-header">
-                <span class="settings-section-icon">🟣</span>
-                <div>
-                  <div class="settings-section-title">Claude — Anthropic</div>
-                  <div class="settings-section-desc">Cấu hình Anthropic API key và model</div>
-                </div>
-                <span class="status-pill status-ok" style="margin-left:auto;">
-                  <span class="status-dot"></span>Đã kết nối
-                </span>
-              </div>
-              <div class="settings-section-body">
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">API Key</div>
-                    <div class="field-hint">sk-ant-...</div>
-                  </div>
-                  <div class="input-with-action">
-                    <input class="field-input password" type="password" value="sk-ant-api03-••••••••••••••••" id="claude-key" />
-                    <button class="test-btn" onclick="togglePassword('claude-key')">👁</button>
-                    <button class="test-btn primary" onclick="testConnection('Claude')">Test</button>
+                    <div class="settings-section-title">Thông tin website</div>
+                    <div class="settings-section-desc">Tên site, URL và múi giờ</div>
                   </div>
                 </div>
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">Model</div>
-                  </div>
-                  <select class="field-select" style="max-width:300px;">
-                    <option selected>claude-opus-4-6 (Recommended)</option>
-                    <option>claude-sonnet-4-6</option>
-                    <option>claude-haiku-4-5-20251001</option>
-                  </select>
-                </div>
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">Max Tokens</div>
-                    <div class="field-hint">Giới hạn độ dài mỗi prediction</div>
-                  </div>
-                  <input class="field-input" type="number" value="2000" min="500" max="8000" style="width:120px;" />
-                </div>
-              </div>
-            </div>
-
-            <div class="settings-section">
-              <div class="settings-section-header">
-                <span class="settings-section-icon">🔵</span>
-                <div>
-                  <div class="settings-section-title">Gemini — Google</div>
-                  <div class="settings-section-desc">Cấu hình Google AI Studio API key và model</div>
-                </div>
-                <span class="status-pill status-unknown" style="margin-left:auto;">
-                  <span class="status-dot"></span>Chưa cấu hình
-                </span>
-              </div>
-              <div class="settings-section-body">
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">API Key</div>
-                    <div class="field-hint">AIza...</div>
-                  </div>
-                  <div class="input-with-action">
-                    <input class="field-input" type="password" placeholder="Chưa nhập" id="gemini-key" />
-                    <button class="test-btn primary" onclick="testConnection('Gemini')" disabled style="opacity:0.4;">Test</button>
-                  </div>
-                </div>
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">Model</div>
-                  </div>
-                  <select class="field-select" style="max-width:300px;">
-                    <option selected>gemini-2.0-flash</option>
-                    <option>gemini-2.0-pro</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-          </div><!-- /tab-ai -->
-
-          <!-- ==================== TAB: FOOTBALL API ==================== -->
-          <div id="tab-football" class="tab-panel">
-
-            <div class="settings-section">
-              <div class="settings-section-header">
-                <span class="settings-section-icon">⚽</span>
-                <div>
-                  <div class="settings-section-title">api-football.com</div>
-                  <div class="settings-section-desc">API lấy lịch thi đấu, live score, lineup, thống kê</div>
-                </div>
-                <span class="status-pill status-ok" style="margin-left:auto;">
-                  <span class="status-dot"></span>Đã kết nối
-                </span>
-              </div>
-              <div class="settings-section-body">
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">API Key</div>
-                    <div class="field-hint">Lấy tại rapidapi.com/api-sports</div>
-                  </div>
-                  <div class="input-with-action">
-                    <input class="field-input password" type="password" value="••••••••••••••••••••••••••" id="football-key" />
-                    <button class="test-btn" onclick="togglePassword('football-key')">👁</button>
-                    <button class="test-btn primary" onclick="testConnection('Football API')">Test</button>
-                  </div>
-                </div>
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">Base URL</div>
-                  </div>
-                  <input class="field-input" type="text" value="https://v3.football.api-sports.io" />
-                </div>
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">Daily Request Limit</div>
-                    <div class="field-hint">Gói miễn phí: 100 req/ngày</div>
-                  </div>
-                  <input class="field-input" type="number" value="100" style="width:120px;" />
-                </div>
-              </div>
-            </div>
-
-            <div class="settings-section">
-              <div class="settings-section-header">
-                <span class="settings-section-icon">📊</span>
-                <div>
-                  <div class="settings-section-title">Quota hôm nay</div>
-                  <div class="settings-section-desc">09/04/2025 — reset lúc 00:00 UTC</div>
-                </div>
-              </div>
-              <div class="settings-section-body">
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">Request đã dùng</div>
-                    <div class="field-hint">FetchUpcomingMatches + LiveScore polling</div>
-                  </div>
-                  <div class="quota-wrap" style="flex:1;">
-                    <div class="quota-bar-bg">
-                      <div class="quota-bar-fill warn" style="width:67%;"></div>
+                <div class="settings-section-body">
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">Tên website</div>
+                      <div class="field-hint">Hiển thị trên tab trình duyệt &amp; header</div>
                     </div>
-                    <div class="quota-text">67 / 100 request — còn 33</div>
+                    <input class="field-input" type="text" value="FootballBlog" />
                   </div>
-                </div>
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">FetchUpcomingMatches</div>
-                  </div>
-                  <div class="quota-wrap" style="flex:1;">
-                    <div class="quota-bar-bg">
-                      <div class="quota-bar-fill" style="width:16%;"></div>
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">URL Web (public)</div>
                     </div>
-                    <div class="quota-text">4 request (chạy mỗi 6h)</div>
+                    <input class="field-input" type="text" value="https://localhost:7241" />
                   </div>
-                </div>
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">LiveScore polling</div>
-                  </div>
-                  <div class="quota-wrap" style="flex:1;">
-                    <div class="quota-bar-bg">
-                      <div class="quota-bar-fill" style="width:52%;"></div>
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">URL API (internal)</div>
                     </div>
-                    <div class="quota-text">52 request (chạy mỗi 30s khi có live)</div>
+                    <input class="field-input" type="text" value="https://localhost:7007" />
                   </div>
-                </div>
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">Cảnh báo khi còn</div>
-                  </div>
-                  <div style="display:flex; align-items:center; gap:8px;">
-                    <input class="field-input" type="number" value="20" style="width:80px;" />
-                    <span style="font-size:12px; color:var(--muted);">request → gửi cảnh báo Telegram</span>
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">Múi giờ</div>
+                      <div class="field-hint">Dùng cho hiển thị giờ thi đấu</div>
+                    </div>
+                    <select class="field-select">
+                      <option selected>Asia/Ho_Chi_Minh (UTC+7)</option>
+                      <option>UTC</option>
+                      <option>Europe/London (UTC+0)</option>
+                    </select>
                   </div>
                 </div>
               </div>
-            </div>
 
-          </div><!-- /tab-football -->
+              <div class="settings-section">
+                <div class="settings-section-header">
+                  <span class="settings-section-icon">⚙️</span>
+                  <div>
+                    <div class="settings-section-title">Tự động hóa</div>
+                    <div class="settings-section-desc">Điều khiển hành vi tự động của hệ thống</div>
+                  </div>
+                </div>
+                <div class="settings-section-body">
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">Tự động xuất bản prediction</div>
+                      <div class="field-hint">Sau khi AI generate xong → publish bài ngay</div>
+                    </div>
+                    <div class="toggle-wrap">
+                      <label class="toggle">
+                        <input type="checkbox" checked onchange="toggleChanged(this,'auto-publish')">
+                        <span class="toggle-slider"></span>
+                      </label>
+                      <span class="toggle-label" id="lbl-auto-publish">Bật</span>
+                    </div>
+                  </div>
+                  <hr class="field-divider">
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">Gửi Telegram sau khi publish</div>
+                      <div class="field-hint">Tự động post lên channel Telegram</div>
+                    </div>
+                    <div class="toggle-wrap">
+                      <label class="toggle">
+                        <input type="checkbox" checked onchange="toggleChanged(this,'auto-telegram')">
+                        <span class="toggle-slider"></span>
+                      </label>
+                      <span class="toggle-label" id="lbl-auto-telegram">Bật</span>
+                    </div>
+                  </div>
+                  <hr class="field-divider">
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">Generate prediction trước (giờ)</div>
+                      <div class="field-hint">Trước giờ kick-off bao nhiêu giờ thì generate</div>
+                    </div>
+                    <input class="field-input" type="number" value="24" min="1" max="72" style="width:100px;" />
+                  </div>
+                </div>
+              </div>
 
-          <!-- ==================== TAB: TELEGRAM ==================== -->
-          <div id="tab-telegram" class="tab-panel">
+            </div><!-- /tab-general -->
 
-            <div class="settings-section">
-              <div class="settings-section-header">
-                <span class="settings-section-icon">✈️</span>
-                <div>
-                  <div class="settings-section-title">Telegram Bot</div>
-                  <div class="settings-section-desc">Cấu hình bot token để gửi thông báo và đăng prediction</div>
-                </div>
-                <span class="status-pill status-ok" style="margin-left:auto;">
-                  <span class="status-dot"></span>Bot hoạt động
-                </span>
-              </div>
-              <div class="settings-section-body">
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">Bot Token</div>
-                    <div class="field-hint">Lấy từ @BotFather</div>
-                  </div>
-                  <div class="input-with-action">
-                    <input class="field-input password" type="password" value="••••••••:••••••••••••••••••••••" id="tg-token" />
-                    <button class="test-btn" onclick="togglePassword('tg-token')">👁</button>
-                    <button class="test-btn primary" onclick="testConnection('Telegram')">Test</button>
-                  </div>
-                </div>
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">Bot Username</div>
-                  </div>
-                  <input class="field-input" type="text" value="@FootballBlogVN_bot" readonly style="opacity:0.6;" />
-                </div>
-              </div>
-            </div>
+            <!-- ==================== TAB: AI ==================== -->
+            <div id="tab-ai" class="tab-panel">
 
-            <div class="settings-section">
-              <div class="settings-section-header">
-                <span class="settings-section-icon">📢</span>
-                <div>
-                  <div class="settings-section-title">Channels</div>
-                  <div class="settings-section-desc">Chat ID nơi bot sẽ gửi tin nhắn</div>
-                </div>
-              </div>
-              <div class="settings-section-body">
-                <div class="field-row">
+              <div class="settings-section">
+                <div class="settings-section-header">
+                  <span class="settings-section-icon">🤖</span>
                   <div>
-                    <div class="field-label">Default Chat ID</div>
-                    <div class="field-hint">Channel/group nhận thông báo hệ thống</div>
-                  </div>
-                  <div class="input-with-action">
-                    <input class="field-input" type="text" value="-1001234567890" />
-                    <button class="test-btn primary" onclick="sendTestMsg('default')">Gửi test</button>
+                    <div class="settings-section-title">AI Provider mặc định</div>
+                    <div class="settings-section-desc">Chọn AI nào được dùng để generate prediction</div>
                   </div>
                 </div>
-                <hr class="field-divider">
-                <div class="field-row">
-                  <div>
-                    <div class="field-label">Prediction Channel ID</div>
-                    <div class="field-hint">Channel công khai — đăng AI prediction bài viết</div>
-                  </div>
-                  <div class="input-with-action">
-                    <input class="field-input" type="text" value="-1009876543210" />
-                    <button class="test-btn primary" onclick="sendTestMsg('prediction')">Gửi test</button>
+                <div class="settings-section-body">
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">Provider mặc định</div>
+                    </div>
+                    <select class="field-select" style="max-width:220px;">
+                      <option selected>Claude (Anthropic)</option>
+                      <option>Gemini (Google)</option>
+                    </select>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="settings-section">
-              <div class="settings-section-header">
-                <span class="settings-section-icon">📋</span>
-                <div>
-                  <div class="settings-section-title">Message Template</div>
-                  <div class="settings-section-desc">Template tin nhắn khi publish prediction</div>
+              <div class="settings-section">
+                <div class="settings-section-header">
+                  <span class="settings-section-icon">🟣</span>
+                  <div>
+                    <div class="settings-section-title">Claude — Anthropic</div>
+                    <div class="settings-section-desc">Cấu hình Anthropic API key và model</div>
+                  </div>
+                  <span class="status-pill status-ok" style="margin-left:auto;">
+                    <span class="status-dot"></span>Đã kết nối
+                  </span>
+                </div>
+                <div class="settings-section-body">
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">API Key</div>
+                      <div class="field-hint">sk-ant-...</div>
+                    </div>
+                    <div class="input-with-action">
+                      <input class="field-input password" type="password" value="sk-ant-api03-••••••••••••••••"
+                        id="claude-key" />
+                      <button class="test-btn" onclick="togglePassword('claude-key')">👁</button>
+                      <button class="test-btn primary" onclick="testConnection('Claude')">Test</button>
+                    </div>
+                  </div>
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">Model</div>
+                    </div>
+                    <select class="field-select" style="max-width:300px;">
+                      <option selected>claude-opus-4-6 (Recommended)</option>
+                      <option>claude-sonnet-4-6</option>
+                      <option>claude-haiku-4-5-20251001</option>
+                    </select>
+                  </div>
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">Max Tokens</div>
+                      <div class="field-hint">Giới hạn độ dài mỗi prediction</div>
+                    </div>
+                    <input class="field-input" type="number" value="2000" min="500" max="8000" style="width:120px;" />
+                  </div>
                 </div>
               </div>
-              <div class="settings-section-body">
-                <div class="field-row top">
+
+              <div class="settings-section">
+                <div class="settings-section-header">
+                  <span class="settings-section-icon">🔵</span>
                   <div>
-                    <div class="field-label">Template</div>
-                    <div class="field-hint">Biến: {home}, {away}, {score}, {confidence}, {url}</div>
+                    <div class="settings-section-title">Gemini — Google</div>
+                    <div class="settings-section-desc">Cấu hình Google AI Studio API key và model</div>
                   </div>
-                  <textarea class="field-input" rows="5" style="resize:vertical; font-family:monospace; font-size:12px;">🤖 <b>AI Prediction</b>
+                  <span class="status-pill status-unknown" style="margin-left:auto;">
+                    <span class="status-dot"></span>Chưa cấu hình
+                  </span>
+                </div>
+                <div class="settings-section-body">
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">API Key</div>
+                      <div class="field-hint">AIza...</div>
+                    </div>
+                    <div class="input-with-action">
+                      <input class="field-input" type="password" placeholder="Chưa nhập" id="gemini-key" />
+                      <button class="test-btn primary" onclick="testConnection('Gemini')" disabled
+                        style="opacity:0.4;">Test</button>
+                    </div>
+                  </div>
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">Model</div>
+                    </div>
+                    <select class="field-select" style="max-width:300px;">
+                      <option selected>gemini-2.0-flash</option>
+                      <option>gemini-2.0-pro</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- /tab-ai -->
+
+            <!-- ==================== TAB: FOOTBALL API ==================== -->
+            <div id="tab-football" class="tab-panel">
+
+              <div class="settings-section">
+                <div class="settings-section-header">
+                  <span class="settings-section-icon">⚽</span>
+                  <div>
+                    <div class="settings-section-title">api-football.com</div>
+                    <div class="settings-section-desc">API lấy lịch thi đấu, live score, lineup, thống kê</div>
+                  </div>
+                  <span class="status-pill status-ok" style="margin-left:auto;">
+                    <span class="status-dot"></span>Đã kết nối
+                  </span>
+                </div>
+                <div class="settings-section-body">
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">API Key</div>
+                      <div class="field-hint">Lấy tại rapidapi.com/api-sports</div>
+                    </div>
+                    <div class="input-with-action">
+                      <input class="field-input password" type="password" value="••••••••••••••••••••••••••"
+                        id="football-key" />
+                      <button class="test-btn" onclick="togglePassword('football-key')">👁</button>
+                      <button class="test-btn primary" onclick="testConnection('Football API')">Test</button>
+                    </div>
+                  </div>
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">Base URL</div>
+                    </div>
+                    <input class="field-input" type="text" value="https://v3.football.api-sports.io" />
+                  </div>
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">Daily Request Limit</div>
+                      <div class="field-hint">Gói miễn phí: 100 req/ngày</div>
+                    </div>
+                    <input class="field-input" type="number" value="100" style="width:120px;" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-section">
+                <div class="settings-section-header">
+                  <span class="settings-section-icon">📊</span>
+                  <div>
+                    <div class="settings-section-title">Quota hôm nay</div>
+                    <div class="settings-section-desc">09/04/2025 — reset lúc 00:00 UTC</div>
+                  </div>
+                </div>
+                <div class="settings-section-body">
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">Request đã dùng</div>
+                      <div class="field-hint">FetchUpcomingMatches + LiveScore polling</div>
+                    </div>
+                    <div class="quota-wrap" style="flex:1;">
+                      <div class="quota-bar-bg">
+                        <div class="quota-bar-fill warn" style="width:67%;"></div>
+                      </div>
+                      <div class="quota-text">67 / 100 request — còn 33</div>
+                    </div>
+                  </div>
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">FetchUpcomingMatches</div>
+                    </div>
+                    <div class="quota-wrap" style="flex:1;">
+                      <div class="quota-bar-bg">
+                        <div class="quota-bar-fill" style="width:16%;"></div>
+                      </div>
+                      <div class="quota-text">4 request (chạy mỗi 6h)</div>
+                    </div>
+                  </div>
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">LiveScore polling</div>
+                    </div>
+                    <div class="quota-wrap" style="flex:1;">
+                      <div class="quota-bar-bg">
+                        <div class="quota-bar-fill" style="width:52%;"></div>
+                      </div>
+                      <div class="quota-text">52 request (chạy mỗi 30s khi có live)</div>
+                    </div>
+                  </div>
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">Cảnh báo khi còn</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <input class="field-input" type="number" value="20" style="width:80px;" />
+                      <span style="font-size:12px; color:var(--muted);">request → gửi cảnh báo Telegram</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- /tab-football -->
+
+            <!-- ==================== TAB: TELEGRAM ==================== -->
+            <div id="tab-telegram" class="tab-panel">
+
+              <div class="settings-section">
+                <div class="settings-section-header">
+                  <span class="settings-section-icon">✈️</span>
+                  <div>
+                    <div class="settings-section-title">Telegram Bot</div>
+                    <div class="settings-section-desc">Cấu hình bot token để gửi thông báo và đăng prediction</div>
+                  </div>
+                  <span class="status-pill status-ok" style="margin-left:auto;">
+                    <span class="status-dot"></span>Bot hoạt động
+                  </span>
+                </div>
+                <div class="settings-section-body">
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">Bot Token</div>
+                      <div class="field-hint">Lấy từ @BotFather</div>
+                    </div>
+                    <div class="input-with-action">
+                      <input class="field-input password" type="password" value="••••••••:••••••••••••••••••••••"
+                        id="tg-token" />
+                      <button class="test-btn" onclick="togglePassword('tg-token')">👁</button>
+                      <button class="test-btn primary" onclick="testConnection('Telegram')">Test</button>
+                    </div>
+                  </div>
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">Bot Username</div>
+                    </div>
+                    <input class="field-input" type="text" value="@FootballBlogVN_bot" readonly style="opacity:0.6;" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-section">
+                <div class="settings-section-header">
+                  <span class="settings-section-icon">📢</span>
+                  <div>
+                    <div class="settings-section-title">Channels</div>
+                    <div class="settings-section-desc">Chat ID nơi bot sẽ gửi tin nhắn</div>
+                  </div>
+                </div>
+                <div class="settings-section-body">
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">Default Chat ID</div>
+                      <div class="field-hint">Channel/group nhận thông báo hệ thống</div>
+                    </div>
+                    <div class="input-with-action">
+                      <input class="field-input" type="text" value="-1001234567890" />
+                      <button class="test-btn primary" onclick="sendTestMsg('default')">Gửi test</button>
+                    </div>
+                  </div>
+                  <hr class="field-divider">
+                  <div class="field-row">
+                    <div>
+                      <div class="field-label">Prediction Channel ID</div>
+                      <div class="field-hint">Channel công khai — đăng AI prediction bài viết</div>
+                    </div>
+                    <div class="input-with-action">
+                      <input class="field-input" type="text" value="-1009876543210" />
+                      <button class="test-btn primary" onclick="sendTestMsg('prediction')">Gửi test</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-section">
+                <div class="settings-section-header">
+                  <span class="settings-section-icon">📋</span>
+                  <div>
+                    <div class="settings-section-title">Message Template</div>
+                    <div class="settings-section-desc">Template tin nhắn khi publish prediction</div>
+                  </div>
+                </div>
+                <div class="settings-section-body">
+                  <div class="field-row top">
+                    <div>
+                      <div class="field-label">Template</div>
+                      <div class="field-hint">Biến: {home}, {away}, {score}, {confidence}, {url}</div>
+                    </div>
+                    <textarea class="field-input" rows="5"
+                      style="resize:vertical; font-family:monospace; font-size:12px;">🤖 <b>AI Prediction</b>
 
 ⚽ {home} vs {away}
 🎯 Dự đoán: <b>{score}</b> (tin cậy {confidence}%)
@@ -626,75 +561,397 @@
 {summary}
 
 📖 Đọc phân tích chi tiết: {url}</textarea>
+                  </div>
                 </div>
               </div>
-            </div>
 
-          </div><!-- /tab-telegram -->
+            </div><!-- /tab-telegram -->
 
-        </div><!-- /settings-scroll -->
+          </div><!-- /settings-scroll -->
 
-        <!-- Save bar -->
-        <div class="save-bar">
-          <button class="btn btn-outline" onclick="resetChanges()">Hủy thay đổi</button>
-          <button class="btn btn-primary" onclick="saveSettings()">Lưu cài đặt</button>
-        </div>
+          <!-- Save bar -->
+          <div class="save-bar">
+            <button class="btn btn-outline" onclick="resetChanges()">Hủy thay đổi</button>
+            <button class="btn btn-primary" onclick="saveSettings()">Lưu cài đặt</button>
+          </div>
 
-      </div><!-- /admin-main-scroll -->
-    </main>
+        </div><!-- /admin-main-scroll -->
+      </main>
 
-  </div><!-- /admin-body-area -->
-</div><!-- /admin-wrap -->
+    </div><!-- /admin-body-area -->
+  </div>
 
-<script>
-  function toggleDD(id) {
-    document.getElementById(id).classList.toggle('open');
-  }
+  <!-- STYLES — skip khi chỉ cần phân tích structure -->
+  <style>
+    body {
+      overflow: hidden;
+    }
 
-  function switchTab(el, panelId) {
-    document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    el.classList.add('active');
-    document.getElementById(panelId).classList.add('active');
-  }
+    .settings-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      flex-shrink: 0;
+    }
 
-  function togglePassword(id) {
-    const el = document.getElementById(id);
-    el.type = el.type === 'password' ? 'text' : 'password';
-  }
+    .settings-tab {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 12px 16px;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: color 0.15s;
+      white-space: nowrap;
+    }
 
-  function toggleChanged(checkbox, key) {
-    document.getElementById('lbl-' + key).textContent = checkbox.checked ? 'Bật' : 'Tắt';
-  }
+    .settings-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
 
-  function testConnection(service) {
-    alert(`Testing ${service}... Kết nối thành công ✅`);
-  }
+    .settings-tab:hover:not(.active) {
+      color: var(--text);
+    }
 
-  function sendTestMsg(channel) {
-    alert(`Đã gửi tin nhắn test đến channel "${channel}" ✅`);
-  }
+    .settings-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
 
-  function saveSettings() {
-    const btn = event.target;
-    btn.textContent = 'Đang lưu...';
-    btn.disabled = true;
-    setTimeout(() => {
-      btn.textContent = 'Đã lưu ✓';
-      btn.style.background = 'rgba(74,222,128,0.15)';
-      btn.style.color = 'var(--live)';
+    .settings-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .settings-section-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .settings-section-icon {
+      font-size: 18px;
+    }
+
+    .settings-section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .settings-section-desc {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .settings-section-body {
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .field-row.top {
+      align-items: flex-start;
+    }
+
+    .field-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .field-hint {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .field-input {
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      border-radius: 7px;
+      padding: 8px 12px;
+      font-size: 13px;
+      width: 100%;
+    }
+
+    .field-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .field-input::placeholder {
+      color: var(--muted);
+    }
+
+    .field-input.password {
+      font-family: monospace;
+      letter-spacing: 2px;
+    }
+
+    .field-select {
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      border-radius: 7px;
+      padding: 8px 12px;
+      font-size: 13px;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .field-select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toggle {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      cursor: pointer;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--border2);
+      border-radius: 11px;
+      transition: background 0.2s;
+    }
+
+    .toggle-slider:before {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      left: 3px;
+      top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+
+    .toggle input:checked+.toggle-slider {
+      background: var(--accent);
+    }
+
+    .toggle input:checked+.toggle-slider:before {
+      transform: translateX(18px);
+    }
+
+    .toggle-label {
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .status-ok {
+      background: rgba(74, 222, 128, 0.12);
+      color: var(--live);
+    }
+
+    .status-error {
+      background: rgba(248, 113, 113, 0.1);
+      color: #f87171;
+    }
+
+    .status-unknown {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--muted);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .quota-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .quota-bar-bg {
+      height: 6px;
+      background: var(--border2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .quota-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: var(--accent);
+      transition: width 0.3s;
+    }
+
+    .quota-bar-fill.warn {
+      background: #fbbf24;
+    }
+
+    .quota-bar-fill.danger {
+      background: #f87171;
+    }
+
+    .quota-text {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .test-btn {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid var(--border2);
+      background: var(--bg);
+      color: var(--text);
+      transition: all 0.12s;
+    }
+
+    .test-btn:hover {
+      background: var(--border2);
+    }
+
+    .test-btn.primary {
+      background: rgba(200, 240, 77, 0.1);
+      color: var(--accent);
+      border-color: rgba(200, 240, 77, 0.3);
+    }
+
+    .test-btn.primary:hover {
+      background: rgba(200, 240, 77, 0.2);
+    }
+
+    .field-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 4px 0;
+    }
+
+    .input-with-action {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .input-with-action .field-input {
+      flex: 1;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .save-bar {
+      flex-shrink: 0;
+      padding: 12px 24px;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+  </style>
+
+  <script>
+    function toggleDD(id) {
+      document.getElementById(id).classList.toggle('open');
+    }
+
+    function switchTab(el, panelId) {
+      document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById(panelId).classList.add('active');
+    }
+
+    function togglePassword(id) {
+      const el = document.getElementById(id);
+      el.type = el.type === 'password' ? 'text' : 'password';
+    }
+
+    function toggleChanged(checkbox, key) {
+      document.getElementById('lbl-' + key).textContent = checkbox.checked ? 'Bật' : 'Tắt';
+    }
+
+    function testConnection(service) {
+      alert(`Testing ${service}... Kết nối thành công ✅`);
+    }
+
+    function sendTestMsg(channel) {
+      alert(`Đã gửi tin nhắn test đến channel "${channel}" ✅`);
+    }
+
+    function saveSettings() {
+      const btn = event.target;
+      btn.textContent = 'Đang lưu...';
+      btn.disabled = true;
       setTimeout(() => {
-        btn.textContent = 'Lưu cài đặt';
-        btn.disabled = false;
-        btn.style.background = '';
-        btn.style.color = '';
-      }, 2000);
-    }, 800);
-  }
+        btn.textContent = 'Đã lưu ✓';
+        btn.style.background = 'rgba(74,222,128,0.15)';
+        btn.style.color = 'var(--live)';
+        setTimeout(() => {
+          btn.textContent = 'Lưu cài đặt';
+          btn.disabled = false;
+          btn.style.background = '';
+          btn.style.color = '';
+        }, 2000);
+      }, 800);
+    }
 
-  function resetChanges() {
-    if (confirm('Hủy tất cả thay đổi chưa lưu?')) location.reload();
-  }
-</script>
+    function resetChanges() {
+      if (confirm('Hủy tất cả thay đổi chưa lưu?')) location.reload();
+    }
+  </script>
 </body>
+
 </html>

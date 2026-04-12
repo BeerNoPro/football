@@ -1,0 +1,511 @@
+{
+  "matchDay": {
+    "date": "2025-04-09",
+    "liveCount": 4,
+    "byLeague": [
+      {
+        "leagueId": "vleague1", "leagueName": "V.League 1",
+        "country": "Vietnam", "countryFlag": "🇻🇳", "round": "Vòng 15",
+        "matches": [
+          {
+            "id": 1001, "kickoff": "17:00", "status": "FT", "elapsed": 90,
+            "homeTeam": { "id": 1, "name": "Hà Nội FC",   "shortName": "HNF",  "logo": "🏅", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 2, "name": "HAGL",         "shortName": "HAGL", "logo": "🟡", "profileUrl": "team-profile.html" },
+            "score": { "home": 1, "away": 2 },
+            "leagueId": "vleague1", "round": "Vòng 15",
+            "detailUrl": "match-detail.html"
+          },
+          {
+            "id": 1002, "kickoff": "19:45", "status": "LIVE", "elapsed": 65,
+            "homeTeam": { "id": 3, "name": "TPHCM FC",    "shortName": "TPHCM", "logo": "🔴", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 4, "name": "Bình Dương",  "shortName": "BDG",   "logo": "🔵", "profileUrl": "team-profile.html" },
+            "score": { "home": 0, "away": 0 },
+            "leagueId": "vleague1", "round": "Vòng 15",
+            "detailUrl": "match-detail.html"
+          },
+          {
+            "id": 1003, "kickoff": "20:00", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 5, "name": "Hải Phòng FC", "shortName": "HPF",  "logo": "⚓", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 6, "name": "Viettel FC",   "shortName": "VTL",  "logo": "🔴", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "vleague1", "round": "Vòng 15",
+            "detailUrl": "match-detail.html"
+          },
+          {
+            "id": 1004, "kickoff": "20:00", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 7, "name": "Nam Định", "shortName": "NDC", "logo": "🟥", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 8, "name": "Đà Nẵng",  "shortName": "SHB", "logo": "🔵", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "vleague1", "round": "Vòng 15",
+            "detailUrl": "match-detail.html"
+          }
+        ]
+      },
+      {
+        "leagueId": "epl", "leagueName": "Premier League",
+        "country": "England", "countryFlag": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "round": "GW 32",
+        "matches": [
+          {
+            "id": 2001, "kickoff": "19:45", "status": "LIVE", "elapsed": 78,
+            "homeTeam": { "id": 10, "name": "Manchester City", "shortName": "Man City", "logo": "🔵", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 11, "name": "Arsenal",         "shortName": "Arsenal",  "logo": "🔴", "profileUrl": "team-profile.html" },
+            "score": { "home": 1, "away": 0 },
+            "leagueId": "epl", "round": "GW 32",
+            "detailUrl": "match-detail.html"
+          },
+          {
+            "id": 2002, "kickoff": "20:00", "status": "FT", "elapsed": 90,
+            "homeTeam": { "id": 12, "name": "Chelsea",   "shortName": "Chelsea",    "logo": "🔵", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 13, "name": "Liverpool", "shortName": "Liverpool",  "logo": "🔴", "profileUrl": "team-profile.html" },
+            "score": { "home": 2, "away": 1 },
+            "leagueId": "epl", "round": "GW 32",
+            "detailUrl": "match-detail.html"
+          },
+          {
+            "id": 2003, "kickoff": "22:15", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 14, "name": "Tottenham",  "shortName": "Spurs",    "logo": "⚪", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 15, "name": "Man United", "shortName": "Man Utd",  "logo": "🔴", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "epl", "round": "GW 32",
+            "detailUrl": "match-detail.html"
+          },
+          {
+            "id": 2004, "kickoff": "22:15", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 16, "name": "Newcastle Utd", "shortName": "Newcastle", "logo": "⚫", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 17, "name": "Everton",       "shortName": "Everton",   "logo": "🔵", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "epl", "round": "GW 32",
+            "detailUrl": "match-detail.html"
+          }
+        ]
+      },
+      {
+        "leagueId": "ucl", "leagueName": "Champions League",
+        "country": "UEFA", "countryFlag": "🏆", "round": "Tứ kết",
+        "matches": [
+          {
+            "id": 3001, "kickoff": "02:00", "status": "FT", "elapsed": 90,
+            "homeTeam": { "id": 20, "name": "Real Madrid",   "shortName": "Real",   "logo": "⚪", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 21, "name": "Bayern Munich", "shortName": "Bayern", "logo": "🔴", "profileUrl": "team-profile.html" },
+            "score": { "home": 3, "away": 1 },
+            "leagueId": "ucl", "round": "Tứ kết",
+            "detailUrl": "match-detail.html"
+          },
+          {
+            "id": 3002, "kickoff": "02:00", "status": "FT", "elapsed": 90,
+            "homeTeam": { "id": 22, "name": "Barcelona", "shortName": "Barca", "logo": "🔵", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 23, "name": "PSG",       "shortName": "PSG",   "logo": "🔴", "profileUrl": "team-profile.html" },
+            "score": { "home": 2, "away": 2 },
+            "leagueId": "ucl", "round": "Tứ kết",
+            "detailUrl": "match-detail.html"
+          },
+          {
+            "id": 3003, "kickoff": "02:00", "status": "LIVE", "elapsed": 45,
+            "homeTeam": { "id": 24, "name": "Inter Milan",     "shortName": "Inter",    "logo": "🔵", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 25, "name": "Atlético Madrid", "shortName": "Atlético", "logo": "🔴", "profileUrl": "team-profile.html" },
+            "score": { "home": 1, "away": 0 },
+            "leagueId": "ucl", "round": "Tứ kết",
+            "detailUrl": "match-detail.html"
+          }
+        ]
+      },
+      {
+        "leagueId": "bund", "leagueName": "Bundesliga",
+        "country": "Germany", "countryFlag": "🇩🇪", "round": "Vòng 28",
+        "matches": [
+          {
+            "id": 4001, "kickoff": "21:30", "status": "FT", "elapsed": 90,
+            "homeTeam": { "id": 30, "name": "Bayern Munich", "shortName": "Bayern",   "logo": "🔴", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 31, "name": "B. Dortmund",   "shortName": "Dortmund", "logo": "🟡", "profileUrl": "team-profile.html" },
+            "score": { "home": 4, "away": 0 },
+            "leagueId": "bund", "round": "Vòng 28",
+            "detailUrl": "match-detail.html"
+          },
+          {
+            "id": 4002, "kickoff": "21:30", "status": "FT", "elapsed": 90,
+            "homeTeam": { "id": 32, "name": "Bayer Leverkusen", "shortName": "Leverkusen", "logo": "🔴", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 33, "name": "RB Leipzig",       "shortName": "Leipzig",    "logo": "🔴", "profileUrl": "team-profile.html" },
+            "score": { "home": 1, "away": 1 },
+            "leagueId": "bund", "round": "Vòng 28",
+            "detailUrl": "match-detail.html"
+          }
+        ]
+      },
+      {
+        "leagueId": "laliga", "leagueName": "La Liga",
+        "country": "Spain", "countryFlag": "🇪🇸", "round": "Vòng 31",
+        "matches": [
+          {
+            "id": 5001, "kickoff": "22:00", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 40, "name": "Atlético Madrid", "shortName": "Atlético",  "logo": "🔴", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 41, "name": "Real Sociedad",   "shortName": "Sociedad",  "logo": "🔵", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "laliga", "round": "Vòng 31",
+            "detailUrl": "match-detail.html"
+          },
+          {
+            "id": 5002, "kickoff": "00:30", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 42, "name": "Sevilla",    "shortName": "Sevilla",   "logo": "🔴", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 43, "name": "Villarreal", "shortName": "Villarreal","logo": "🟡", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "laliga", "round": "Vòng 31",
+            "detailUrl": "match-detail.html"
+          }
+        ]
+      },
+      {
+        "leagueId": "vleague2", "leagueName": "V.League 2",
+        "country": "Vietnam", "countryFlag": "🇻🇳", "round": "Vòng 12",
+        "matches": [
+          {
+            "id": 6001, "kickoff": "18:00", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 50, "name": "Phù Đổng",   "shortName": "PĐG", "logo": "🟢", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 51, "name": "Đà Nẵng II", "shortName": "DNII","logo": "🔵", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "vleague2", "round": "Vòng 12",
+            "detailUrl": "match-detail.html"
+          },
+          {
+            "id": 6002, "kickoff": "19:30", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 52, "name": "Quảng Nam", "shortName": "QNM", "logo": "🟡", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 53, "name": "Long An",   "shortName": "LA",  "logo": "🔴", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "vleague2", "round": "Vòng 12",
+            "detailUrl": "match-detail.html"
+          }
+        ]
+      },
+      {
+        "leagueId": "vcup", "leagueName": "Cúp Quốc gia",
+        "country": "Vietnam", "countryFlag": "🇻🇳", "round": "Tứ kết",
+        "matches": [
+          {
+            "id": 7001, "kickoff": "19:00", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 1, "name": "Hà Nội FC", "shortName": "HNF",  "logo": "🏅", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 3, "name": "TPHCM FC",  "shortName": "TPHCM","logo": "🔴", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "vcup", "round": "Tứ kết",
+            "detailUrl": "match-detail.html"
+          }
+        ]
+      },
+      {
+        "leagueId": "championship", "leagueName": "Championship",
+        "country": "England", "countryFlag": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "round": "Matchday 40",
+        "matches": [
+          {
+            "id": 8001, "kickoff": "20:45", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 60, "name": "Leeds United", "shortName": "Leeds",   "logo": "⚪", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 61, "name": "Norwich City", "shortName": "Norwich", "logo": "🟡", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "championship", "round": "Matchday 40",
+            "detailUrl": "match-detail.html"
+          },
+          {
+            "id": 8002, "kickoff": "21:00", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 62, "name": "Middlesbrough", "shortName": "Boro",    "logo": "🔴", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 63, "name": "Cardiff City",  "shortName": "Cardiff", "logo": "🔵", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "championship", "round": "Matchday 40",
+            "detailUrl": "match-detail.html"
+          }
+        ]
+      },
+      {
+        "leagueId": "facup", "leagueName": "FA Cup",
+        "country": "England", "countryFlag": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "round": "Semi-finals",
+        "matches": [
+          {
+            "id": 9001, "kickoff": "17:30", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 10, "name": "Manchester City", "shortName": "Man City", "logo": "🔵", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 12, "name": "Chelsea",         "shortName": "Chelsea",  "logo": "🔵", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "facup", "round": "Semi-finals",
+            "detailUrl": "match-detail.html"
+          }
+        ]
+      },
+      {
+        "leagueId": "uel", "leagueName": "Europa League",
+        "country": "UEFA", "countryFlag": "🏆", "round": "Round of 16",
+        "matches": [
+          {
+            "id": 10001, "kickoff": "21:00", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 70, "name": "Roma",     "shortName": "Roma",    "logo": "🟡", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 71, "name": "Brighton", "shortName": "Brighton","logo": "🔵", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "uel", "round": "Round of 16",
+            "detailUrl": "match-detail.html"
+          },
+          {
+            "id": 10002, "kickoff": "21:00", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 72, "name": "Marseille",  "shortName": "OM",        "logo": "🔵", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 73, "name": "AEK Athens", "shortName": "AEK Athens","logo": "⚪", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "uel", "round": "Round of 16",
+            "detailUrl": "match-detail.html"
+          }
+        ]
+      },
+      {
+        "leagueId": "uecl", "leagueName": "Conference League",
+        "country": "UEFA", "countryFlag": "🏆", "round": "Quarter-finals",
+        "matches": [
+          {
+            "id": 11001, "kickoff": "20:00", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 80, "name": "Fiorentina",  "shortName": "Fiorentina",  "logo": "🟣", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 81, "name": "Club Brugge", "shortName": "Club Brugge", "logo": "🔵", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "uecl", "round": "Quarter-finals",
+            "detailUrl": "match-detail.html"
+          }
+        ]
+      },
+      {
+        "leagueId": "bund2", "leagueName": "2. Bundesliga",
+        "country": "Germany", "countryFlag": "🇩🇪", "round": "Matchday 28",
+        "matches": [
+          {
+            "id": 12001, "kickoff": "19:30", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 90, "name": "Hamburger SV", "shortName": "HSV",    "logo": "🔵", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 91, "name": "Hertha BSC",   "shortName": "Hertha", "logo": "🔵", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "bund2", "round": "Matchday 28",
+            "detailUrl": "match-detail.html"
+          },
+          {
+            "id": 12002, "kickoff": "20:30", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 92, "name": "Fortuna Düsseldorf", "shortName": "Düsseldorf","logo": "🔴", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 93, "name": "Paderborn",          "shortName": "Paderborn", "logo": "⚪", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "bund2", "round": "Matchday 28",
+            "detailUrl": "match-detail.html"
+          }
+        ]
+      },
+      {
+        "leagueId": "laliga2", "leagueName": "La Liga 2",
+        "country": "Spain", "countryFlag": "🇪🇸", "round": "Matchday 33",
+        "matches": [
+          {
+            "id": 13001, "kickoff": "21:00", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 100, "name": "Albacete",         "shortName": "Albacete","logo": "⚪", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 101, "name": "Racing Santander", "shortName": "Racing", "logo": "🔵", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "laliga2", "round": "Matchday 33",
+            "detailUrl": "match-detail.html"
+          }
+        ]
+      },
+      {
+        "leagueId": "cdr", "leagueName": "Copa del Rey",
+        "country": "Spain", "countryFlag": "🇪🇸", "round": "Quarter-finals",
+        "matches": [
+          {
+            "id": 14001, "kickoff": "21:30", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 20, "name": "Real Madrid", "shortName": "Real",  "logo": "⚪", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 22, "name": "Barcelona",   "shortName": "Barca", "logo": "🔵", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "cdr", "round": "Quarter-finals",
+            "detailUrl": "match-detail.html"
+          }
+        ]
+      },
+      {
+        "leagueId": "seriea", "leagueName": "Serie A",
+        "country": "Italy", "countryFlag": "🇮🇹", "round": "Matchday 31",
+        "matches": [
+          {
+            "id": 15001, "kickoff": "20:45", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 110, "name": "Juventus", "shortName": "Juve",  "logo": "⚪", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 111, "name": "Napoli",   "shortName": "Napoli","logo": "🔵", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "seriea", "round": "Matchday 31",
+            "detailUrl": "match-detail.html"
+          },
+          {
+            "id": 15002, "kickoff": "20:45", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 112, "name": "AC Milan",   "shortName": "Milan","logo": "🔴", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 24,  "name": "Inter Milan", "shortName": "Inter","logo": "🔵", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "seriea", "round": "Matchday 31",
+            "detailUrl": "match-detail.html"
+          }
+        ]
+      },
+      {
+        "leagueId": "serieb", "leagueName": "Serie B",
+        "country": "Italy", "countryFlag": "🇮🇹", "round": "Matchday 32",
+        "matches": [
+          {
+            "id": 16001, "kickoff": "18:00", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 120, "name": "Parma",   "shortName": "Parma",  "logo": "🟡", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 121, "name": "Venezia", "shortName": "Venezia","logo": "🔵", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "serieb", "round": "Matchday 32",
+            "detailUrl": "match-detail.html"
+          }
+        ]
+      },
+      {
+        "leagueId": "coppait", "leagueName": "Coppa Italia",
+        "country": "Italy", "countryFlag": "🇮🇹", "round": "Semi-finals",
+        "matches": [
+          {
+            "id": 17001, "kickoff": "21:00", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 80,  "name": "Fiorentina", "shortName": "Fiorentina","logo": "🟣", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 130, "name": "Atalanta",   "shortName": "Atalanta",  "logo": "🔵", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "coppait", "round": "Semi-finals",
+            "detailUrl": "match-detail.html"
+          }
+        ]
+      },
+      {
+        "leagueId": "ligue1", "leagueName": "Ligue 1",
+        "country": "France", "countryFlag": "🇫🇷", "round": "Matchday 29",
+        "matches": [
+          {
+            "id": 18001, "kickoff": "21:00", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 23,  "name": "PSG",       "shortName": "PSG",      "logo": "🔵", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 72,  "name": "Marseille", "shortName": "Marseille","logo": "🔴", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "ligue1", "round": "Matchday 29",
+            "detailUrl": "match-detail.html"
+          },
+          {
+            "id": 18002, "kickoff": "21:00", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 140, "name": "Lyon",   "shortName": "Lyon",  "logo": "🔵", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 141, "name": "Monaco", "shortName": "Monaco","logo": "⚪", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "ligue1", "round": "Matchday 29",
+            "detailUrl": "match-detail.html"
+          }
+        ]
+      },
+      {
+        "leagueId": "ligue2", "leagueName": "Ligue 2",
+        "country": "France", "countryFlag": "🇫🇷", "round": "Matchday 30",
+        "matches": [
+          {
+            "id": 19001, "kickoff": "20:00", "status": "SCH", "elapsed": null,
+            "homeTeam": { "id": 150, "name": "Toulouse II", "shortName": "TII",  "logo": "🟣", "profileUrl": "team-profile.html" },
+            "awayTeam": { "id": 151, "name": "Amiens",      "shortName": "Amiens","logo": "🔵", "profileUrl": "team-profile.html" },
+            "score": null,
+            "leagueId": "ligue2", "round": "Matchday 30",
+            "detailUrl": "match-detail.html"
+          }
+        ]
+      }
+    ]
+  },
+  "posts": {
+    "featured": {
+      "id": 1,
+      "title": "Man City vs Arsenal: De Bruyne tung hoành, Guardiola sắp giành 3 điểm quan trọng",
+      "slug": "man-city-vs-arsenal-de-bruyne-tung-hoanh",
+      "excerpt": "Với lợi thế 1-0, Man City đang kiểm soát thế trận hoàn toàn. De Bruyne và Haaland phối hợp ăn ý, Arsenal đang gặp khó ở hàng thủ khi Saliba mắc lỗi định vị...",
+      "tag": "🤖 AI Nhận định · Premier League",
+      "thumbGradient": "linear-gradient(135deg, #1a1a3e 0%, #0f2860 50%, #1e3a6e 100%)",
+      "thumbEmoji": "⚽",
+      "match": { "home": "Man City", "away": "Arsenal", "status": "LIVE", "elapsed": 78 },
+      "aiScore": "1-0",
+      "actualScore": null,
+      "publishedAt": "2025-04-09T19:45:00",
+      "updatedAt": "21:45",
+      "url": "post-detail.html"
+    },
+    "items": [
+      {
+        "id": 2,
+        "title": "Inter Milan vs Atlético: Simone Inzaghi lên kế hoạch bẫy phản công hoàn hảo",
+        "slug": "inter-milan-vs-atletico-inzaghi-ke-hoach-bay-phan-cong",
+        "excerpt": "Với lối chơi phản công sắc bén và sân San Siro là lợi thế lớn, Inter Milan đang có cơ hội vượt qua Atlético ở tứ kết Champions League.",
+        "tag": "🤖 AI · Champions League",
+        "thumbGradient": "linear-gradient(135deg, #0d2137, #1a3a5c)",
+        "thumbEmoji": "🏆",
+        "match": { "home": "Inter Milan", "away": "Atlético", "status": "LIVE", "elapsed": 45 },
+        "aiScore": "2-0",
+        "actualScore": null,
+        "publishedAt": "2025-04-09T02:00:00",
+        "updatedAt": "5 phút trước",
+        "url": "post-detail.html"
+      },
+      {
+        "id": 3,
+        "title": "TPHCM FC vs Bình Dương: Trận derby miền Nam căng thẳng, 0-0 vẫn là kịch bản chưa ngã ngũ",
+        "slug": "tphcm-fc-vs-binh-duong-derby-mien-nam-vong-15",
+        "excerpt": "Hai đội đang thể hiện sức mạnh phòng thủ khi 0-0 kéo dài đến phút 65. Đây là trận derby miền Nam đầy căng thẳng.",
+        "tag": "🤖 AI · V.League 1",
+        "thumbGradient": "linear-gradient(135deg, #1a3a0a, #2d5a0f)",
+        "thumbEmoji": "🇻🇳",
+        "match": { "home": "TPHCM FC", "away": "Bình Dương", "status": "LIVE", "elapsed": 65 },
+        "aiScore": "1-1",
+        "actualScore": null,
+        "publishedAt": "2025-04-09T19:45:00",
+        "updatedAt": "12 phút trước",
+        "url": "post-detail.html"
+      },
+      {
+        "id": 4,
+        "title": "Tottenham vs Man United 22:15: Mourinho trên sân cũ — ai sẽ phá vỡ thế đối đầu?",
+        "slug": "tottenham-vs-man-united-gw32-du-doan",
+        "excerpt": "Tottenham đang có phong độ tốt tại sân nhà. Man United bất ổn định ở hàng thủ với 3 trận thủng lưới liên tiếp.",
+        "tag": "🤖 AI · Premier League",
+        "thumbGradient": "linear-gradient(135deg, #2d1a0a, #5a3010)",
+        "thumbEmoji": "🔴",
+        "match": { "home": "Tottenham", "away": "Man United", "status": "SCH", "elapsed": null },
+        "aiScore": "2-1",
+        "actualScore": null,
+        "publishedAt": "2025-04-09T16:00:00",
+        "updatedAt": "1 giờ trước",
+        "url": "post-detail.html"
+      },
+      {
+        "id": 5,
+        "title": "Real Madrid 3-1 Bayern: Vinicius Jr lập cú đúp, Los Blancos thẳng tiến bán kết",
+        "slug": "real-madrid-3-1-bayern-phan-tich-sau-tran",
+        "excerpt": "Vinicius Jr và Bellingham tỏa sáng giúp Real Madrid thắng thuyết phục. Đây là chiến thắng thứ 5 liên tiếp của họ trước Bayern tại Bernabeu.",
+        "tag": "🤖 AI · Champions League",
+        "thumbGradient": "linear-gradient(135deg, #1a0a0a, #3a1a1a)",
+        "thumbEmoji": "⚪",
+        "match": { "home": "Real Madrid", "away": "Bayern", "status": "FT", "elapsed": 90 },
+        "aiScore": null,
+        "actualScore": "3-1",
+        "publishedAt": "2025-04-09T04:00:00",
+        "updatedAt": "3 giờ trước",
+        "url": "post-detail.html"
+      },
+      {
+        "id": 6,
+        "title": "Hải Phòng FC vs Viettel FC 20:00: Cuộc chiến top 3 — ai sẽ bứt phá?",
+        "slug": "hai-phong-vs-viettel-vong-15-du-doan",
+        "excerpt": "Hải Phòng FC bất bại 5 trận gần nhất tại sân nhà. Viettel FC vắng Pedro Paulo do chấn thương. Đây sẽ là trận quyết định cuộc đua top 3.",
+        "tag": "🤖 AI · V.League 1",
+        "thumbGradient": "linear-gradient(135deg, #0a1a2d, #1a3a5c)",
+        "thumbEmoji": "🔵",
+        "match": { "home": "Hải Phòng FC", "away": "Viettel FC", "status": "SCH", "elapsed": null },
+        "aiScore": "1-0",
+        "actualScore": null,
+        "publishedAt": "2025-04-09T15:00:00",
+        "updatedAt": "2 giờ trước",
+        "url": "post-detail.html"
+      },
+      {
+        "id": 7,
+        "title": "Bayern 4-0 Dortmund: Der Klassiker một chiều — Kane lập hat-trick",
+        "slug": "bayern-4-0-dortmund-der-klassiker-phan-tich",
+        "excerpt": "Harry Kane lập hat-trick trong Der Klassiker giúp Bayern Munich thống trị hoàn toàn. Dortmund không có câu trả lời trước lối pressing cao của đối thủ.",
+        "tag": "🤖 AI · Bundesliga",
+        "thumbGradient": "linear-gradient(135deg, #1a1a0a, #3a3a10)",
+        "thumbEmoji": "🟡",
+        "match": { "home": "Bayern", "away": "Dortmund", "status": "FT", "elapsed": 90 },
+        "aiScore": null,
+        "actualScore": "4-0",
+        "publishedAt": "2025-04-09T23:30:00",
+        "updatedAt": "5 giờ trước",
+        "url": "post-detail.html"
+      }
+    ]
+  }
+}

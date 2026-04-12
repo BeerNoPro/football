@@ -1,0 +1,76 @@
+{
+  "post": {
+    "id": 1,
+    "title": "Man City vs Arsenal: De Bruyne tung hoành, Guardiola sắp giành 3 điểm quan trọng",
+    "slug": "man-city-vs-arsenal-de-bruyne-tung-hoanh",
+    "excerpt": "Với lợi thế 1-0, Man City đang kiểm soát thế trận hoàn toàn. De Bruyne và Haaland phối hợp ăn ý, Arsenal đang gặp khó ở hàng thủ khi Saliba mắc lỗi định vị.",
+    "content": "<p>Trận đại chiến tại <strong>Etihad Stadium</strong> giữa <strong>Manchester City</strong> và <strong>Arsenal</strong> đang diễn ra vô cùng kịch tính. Với tỷ số hiện tại <strong>1-0</strong> nghiêng về Man City, Pep Guardiola đang có những khoảnh khắc đáng nhớ khi đội bóng của ông thể hiện lối chơi kiểm soát bóng quen thuộc.</p><h2>Diễn biến chính</h2><p>Bàn thắng duy nhất đến ở phút 23 từ pha phối hợp đẹp mắt giữa De Bruyne và Haaland. Tiền đạo người Na Uy đã đánh đầu chính xác vào góc xa khi Raya không thể phản ứng kịp.</p><p>Arsenal đang cố gắng tìm kiếm bàn gỡ hòa nhưng hàng thủ Man City quá chắc chắn. Ederson hầu như chưa phải thực hiện pha cứu thua nào thực sự khó.</p><h2>Nhận định AI</h2><p>Dựa trên phân tích dữ liệu thống kê, <strong>AI dự đoán tỷ số cuối cùng là 2-1</strong> nghiêng về Man City. Có 72% khả năng Man City sẽ giành chiến thắng với ít nhất 1 bàn thắng nữa.</p><blockquote><p>Man City có lợi thế sân nhà và De Bruyne đang trong phong độ tốt. Arsenal thiếu vắng Saka ở hàng công — đây là sự thiếu hụt quan trọng trong giai đoạn then chốt của mùa giải.</p></blockquote><h2>Số liệu thống kê nổi bật</h2><ul><li>Kiểm soát bóng: Man City 58% — Arsenal 42%</li><li>Cú sút: 14 — 8 (trên khung: 6 — 3)</li><li>Đường chuyền chính xác: Man City 89% — Arsenal 82%</li><li>Góc cú: 7 — 4</li></ul><p>Trận đấu vẫn còn khoảng 12 phút thi đấu chính thức. Arsenal sẽ cần một màn trình diễn thần kỳ để lật ngược thế cờ.</p>",
+    "thumbGradient": "linear-gradient(135deg, #1a1a3e 0%, #0f2860 50%, #1e3a6e 100%)",
+    "thumbEmoji": "⚽",
+    "categoryName": "AI Prediction",
+    "categorySlug": "ai-prediction",
+    "tags": ["Premier League", "Man City", "Arsenal"],
+    "authorName": "AI Football Bot",
+    "authorAvatar": null,
+    "publishedAt": "2025-04-09T19:45:00",
+    "updatedAt": "2025-04-09T21:45:00",
+    "readTimeMinutes": 4
+  },
+  "relatedMatch": {
+    "id": 2001,
+    "kickoff": "2025-04-09T19:45:00",
+    "status": "LIVE",
+    "elapsed": 78,
+    "homeTeam": { "id": 10, "name": "Manchester City", "shortName": "Man City", "logo": "🔵", "profileUrl": "team-profile.html" },
+    "awayTeam": { "id": 11, "name": "Arsenal",         "shortName": "Arsenal",  "logo": "🔴", "profileUrl": "team-profile.html" },
+    "score": { "home": 1, "away": 0 },
+    "leagueId": "epl",
+    "round": "GW 32",
+    "detailUrl": "match-detail.html"
+  },
+  "prediction": {
+    "postUrl": "post-detail.html",
+    "aiScore": "2-1",
+    "confidence": 72,
+    "confidenceLevel": "HIGH",
+    "summary": "Man City có lợi thế sân nhà và De Bruyne đang trong phong độ tốt. Arsenal thiếu vắng Saka ở hàng công."
+  },
+  "relatedPosts": [
+    {
+      "id": 4,
+      "title": "Tottenham vs Man United 22:15: Mourinho trên sân cũ — ai sẽ phá vỡ thế đối đầu?",
+      "slug": "tottenham-vs-man-united-gw32-du-doan",
+      "excerpt": "Tottenham đang có phong độ tốt tại sân nhà. Man United bất ổn định ở hàng thủ với 3 trận thủng lưới liên tiếp.",
+      "thumbGradient": "linear-gradient(135deg, #2d1a0a, #5a3010)",
+      "thumbEmoji": "🔴",
+      "tag": "🤖 AI · Premier League",
+      "publishedAt": "2025-04-09T16:00:00",
+      "updatedAt": "1 giờ trước",
+      "url": "post-detail.html"
+    },
+    {
+      "id": 12,
+      "title": "Arsenal: Mục tiêu vô địch Premier League có còn khả thi?",
+      "slug": "arsenal-muc-tieu-vo-dich-premier-league-2025",
+      "excerpt": "Sau trận thua tại Etihad, Arsenal phải nhìn lại cơ hội vô địch khi còn 7 vòng đấu. Man City và Liverpool đang bám sát.",
+      "thumbGradient": "linear-gradient(135deg, #2a0a0a, #4a1a1a)",
+      "thumbEmoji": "🔴",
+      "tag": "📊 Phân tích",
+      "publishedAt": "2025-04-04T22:00:00",
+      "updatedAt": "5 ngày trước",
+      "url": "post-detail.html"
+    },
+    {
+      "id": 5,
+      "title": "Real Madrid 3-1 Bayern: Vinicius Jr lập cú đúp, Los Blancos thẳng tiến bán kết",
+      "slug": "real-madrid-3-1-bayern-phan-tich-sau-tran",
+      "excerpt": "Vinicius Jr và Bellingham tỏa sáng giúp Real Madrid thắng thuyết phục. Đây là chiến thắng thứ 5 liên tiếp của họ trước Bayern.",
+      "thumbGradient": "linear-gradient(135deg, #1a0a0a, #3a1a1a)",
+      "thumbEmoji": "⚪",
+      "tag": "🤖 AI · Champions League",
+      "publishedAt": "2025-04-09T04:00:00",
+      "updatedAt": "3 giờ trước",
+      "url": "post-detail.html"
+    }
+  ]
+}

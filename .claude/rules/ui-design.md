@@ -5,7 +5,10 @@
 Không dùng Figma. UI được thiết kế trực tiếp bằng cách:
 1. Lấy tham khảo từ **URL web** hoặc **ảnh screenshot** do user cung cấp
 2. Tạo **file HTML tĩnh** để xem trực tiếp trên browser
-3. User review, chỉnh sửa, approve rồi mới tách Blazor component
+3. **Khi đọc HTML prototype để phân tích structure / logic / navigation**
+- Đọc từ đầu file tới comment <!-- STYLES --> là đủ
+- Không cần đọc <style> block trừ khi task yêu cầu sửa CSS cụ thể
+4. User review, chỉnh sửa, approve rồi mới tách Blazor component
 
 ---
 
