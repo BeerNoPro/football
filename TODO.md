@@ -94,11 +94,12 @@ FootballBlog/
 - [ ] Rich text editor (Quill.js qua JS interop)
 - [ ] Upload ảnh → MediaController → S3/Local
 
-### Phase 4 — Realtime Football ⬜
-- [ ] FootballApiClient (IHttpClientFactory + Polly retry)
-- [ ] Redis rate limit counter (100 req/ngày)
-- [ ] Match + MatchEvent schema: enum MatchStatus, EventType
-- [ ] Hangfire jobs: FetchUpcomingMatchesJob (6h), LiveScorePollingJob (30s)
+### Phase 4 — Realtime Football 🔄 (In Progress)
+- [x] FootballApiClient (IHttpClientFactory + Polly retry)
+- [x] Redis rate limit counter (100 req/ngày)
+- [x] Match + MatchEvent schema: enum MatchStatus, EventType
+- [x] Hangfire jobs: FetchUpcomingMatchesJob (cron 6h), LiveScorePollingJob (1 min, adaptive gate)
+- [ ] ILiveScoreService implementation (LiveScoreService) + register DI
 - [ ] SignalR Hub (LiveScoreHub) + Redis backplane
 - [ ] Blazor LiveScore pages + widget (InteractiveServer)
 

@@ -28,20 +28,37 @@ uow.MatchPredictions // IMatchPredictionRepository
 - **Dev ports**: API `https://localhost:7007` | Web `https://localhost:7241`
 - **EF migration**: `--project FootballBlog.Infrastructure --startup-project FootballBlog.API`
 
-## appsettings Hiện Tại (thực tế đã có)
+## Token Optimization
+- **Search**: `grep_search` (50 tokens) ≫ `semantic_search` (500+ tokens)
+- **Read file**: Always grep first → read narrow range (not full file)
+- **Conversation**: Close at 15-20 messages → use `/cleanup` → new tab (resets context)
+
+---
+
+## appsettings Hiện Tại (thực tế đã có — Phase 4)
 ```json
 {
-  "ConnectionStrings": { "DefaultConnection": "" },
-  "WebBaseUrl": "https://localhost:7241",
-  "ApiBaseUrl": "https://localhost:7007",
+  "ConnectionStrings": {
+    "DefaultConnection": "",
+    "Redis": "localhost:6379"
+  },
+  "WebBaseUrl": "",
+  "FootballApi": {
+    "BaseUrl": "https://v3.football.api-sports.io",
+    "ApiKey": "",
+    "DailyRequestLimit": 100,
+    "FixturesPerLeague": 20,
+    "LeagueIds": [39, 140, 135, 78, 61, 94, 2, 3, 848, 531, 1, 45, 48, 253, 307]
+  },
   "Serilog": { "MinimumLevel": { "Default": "Information" } }
 }
 ```
+> Dev overrides: `appsettings.Development.json` (không commit) — set `DefaultConnection`, `WebBaseUrl="https://localhost:7241"`, `FootballApi:ApiKey`.
+> Secrets: `dotnet user-secrets set "FootballApi:ApiKey" "YOUR_KEY"`
 
-## appsettings Phase 4-6 (chưa có, sẽ thêm khi implement)
+## appsettings Phase 5-6 (chưa có, sẽ thêm khi implement)
 ```json
 {
-  "FootballApi": { "BaseUrl": "", "ApiKey": "", "DailyRequestLimit": 100 },
   "AI": {
     "DefaultProvider": "Claude",
     "Claude": { "ApiKey": "", "Model": "claude-opus-4-6", "MaxTokens": 2000 },
@@ -52,20 +69,22 @@ uow.MatchPredictions // IMatchPredictionRepository
 }
 ```
 
-## Service Abstractions Phase 4-6 (CHƯA implement)
+## Service Abstractions Phase 4-6
 ```
-IAIPredictionProvider   — [Phase 5] abstraction Claude/Gemini
-INotificationChannel    — [Phase 6] abstraction Telegram/Email
-ITelegramService        — [Phase 6] gửi + edit message theo chatId
-IFootballApiClient      — [Phase 4] wrapper api-football.com + rate limit
+IFootballApiClient      — [Phase 4] ✅ implemented (FootballApiClient + RedisRateLimiter)
+ILiveScoreService       — [Phase 4] ❌ interface exists, NO implementation yet
+IAIPredictionProvider   — [Phase 5] ❌ abstraction Claude/Gemini
+INotificationChannel    — [Phase 6] ❌ abstraction Telegram/Email
+ITelegramService        — [Phase 6] ❌ gửi + edit message theo chatId
 ```
 
-## Hangfire Jobs Pipeline (CHƯA implement — Phase 4-5)
+## Hangfire Jobs Pipeline
 ```
-[Cron 6h]   FetchUpcomingMatchesJob    — lấy trận 48h tới từ Football API
-[Cron 1h]   GeneratePredictionJob      — query Match chưa có prediction, gọi AI
-[Trigger]   PublishPredictionJob        — tạo blog post + gửi Telegram
-[Cron 30s]  LiveScorePollingJob         — chỉ chạy khi có live match
+[Cron 6h]   FetchUpcomingMatchesJob    ✅ — lấy trận 48h tới từ Football API
+[Cron 1min] LiveScorePollingJob        ✅ — adaptive gate, chỉ poll khi có live match trong DB
+[Scheduled] PreMatchDataJob            ✅ — H2H (5h trước kickoff) + Lineups (15min trước)
+[Cron 1h]   GeneratePredictionJob      ❌ — Phase 5: query Match chưa có prediction, gọi AI
+[Trigger]   PublishPredictionJob        ❌ — Phase 5: tạo blog post + gửi Telegram
 ```
 
 ## Cleanup Sau Khi Implement

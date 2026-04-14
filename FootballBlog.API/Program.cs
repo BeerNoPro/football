@@ -1,14 +1,24 @@
+using FootballBlog.API.ApiClients.FootballApi;
+using FootballBlog.API.Jobs;
 using FootballBlog.Core.Interfaces;
 using FootballBlog.Core.Interfaces.Services;
 using FootballBlog.Core.Models;
+using FootballBlog.Core.Options;
 using FootballBlog.Core.Services;
 using FootballBlog.Infrastructure.Data;
 using FootballBlog.Infrastructure.Repositories;
+using FootballBlog.Infrastructure.Services;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using Polly;
+using Polly.Extensions.Http;
 using Serilog;
 using Serilog.Events;
+using StackExchange.Redis;
 
 const string OutputTemplate = "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {SourceContext} | {Message:lj}{NewLine}{Exception}";
 
@@ -45,11 +55,11 @@ try
                 .WriteTo.File(Path.Combine(logBasePath, "api", "api-.log"),
                     rollingInterval: RollingInterval.Day,
                     outputTemplate: OutputTemplate))
-            // jobs/ — Hangfire background jobs (Phase 4)
+            // jobs/ — Hangfire background jobs + job classes
             .WriteTo.Logger(lc => lc
                 .Filter.ByIncludingOnly(e =>
                     e.Properties.TryGetValue("SourceContext", out var sc) &&
-                    sc.ToString().Contains("Hangfire"))
+                    (sc.ToString().Contains("Hangfire") || sc.ToString().Contains(".Jobs.")))
                 .WriteTo.File(Path.Combine(logBasePath, "jobs", "jobs-.log"),
                     rollingInterval: RollingInterval.Day,
                     outputTemplate: OutputTemplate)));
@@ -85,9 +95,50 @@ try
         options.AddPolicy("BlogPages", p => p.Expire(TimeSpan.FromMinutes(5)).Tag("posts"));
     });
 
+    // ── Phase 4: Football API Integration ────────────────────────────────────
+
+    // 1. Options
+    builder.Services.Configure<FootballApiOptions>(
+        builder.Configuration.GetSection(FootballApiOptions.SectionName));
+
+    // 2. Redis connection — singleton, thread-safe
+    builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+        ConnectionMultiplexer.Connect(
+            builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379"));
+
+    // 3. Rate limiter — singleton (chia sẻ Redis singleton)
+    builder.Services.AddSingleton<IFootballApiRateLimiter, RedisFootballApiRateLimiter>();
+
+    // 4. Football API typed HttpClient + Polly retry (3 lần, exponential backoff)
+    builder.Services.AddHttpClient<IFootballApiClient, FootballApiClient>(client =>
+    {
+        client.BaseAddress = new Uri(
+            builder.Configuration["FootballApi:BaseUrl"] ?? "https://v3.football.api-sports.io");
+        client.DefaultRequestHeaders.Add(
+            "x-apisports-key",
+            builder.Configuration["FootballApi:ApiKey"] ?? string.Empty);
+    })
+    .AddPolicyHandler(HttpPolicyExtensions
+        .HandleTransientHttpError()
+        .WaitAndRetryAsync(3, attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt))));
+
+    // 5. Hangfire — PostgreSQL storage
+    builder.Services.AddHangfire(cfg => cfg
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UsePostgreSqlStorage(
+            builder.Configuration.GetConnectionString("DefaultConnection"),
+            new PostgreSqlStorageOptions { SchemaName = "hangfire" }));
+
+    builder.Services.AddHangfireServer(opt => { opt.WorkerCount = 2; });
+
+    // ── End Phase 4 ───────────────────────────────────────────────────────────
+
     // Health checks
     builder.Services.AddHealthChecks()
-        .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!);
+        .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!)
+        .AddRedis(builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379");
 
     // CORS — chỉ allow Web project gọi vào API
     builder.Services.AddCors(options =>
@@ -114,7 +165,21 @@ try
         app.UseDeveloperExceptionPage();
         app.UseSwagger();
         app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "FootballBlog API v1"));
+        app.UseHangfireDashboard("/hangfire");
     }
+
+    // Recurring jobs
+    RecurringJob.AddOrUpdate<FetchUpcomingMatchesJob>(
+        "fetch-upcoming-matches",
+        j => j.ExecuteAsync(),
+        "0 */6 * * *",
+        new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+
+    RecurringJob.AddOrUpdate<LiveScorePollingJob>(
+        "live-score-polling",
+        j => j.ExecuteAsync(),
+        Cron.Minutely(),
+        new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
 
     app.UseHttpsRedirection();
     app.UseCors("BlazorWeb");
