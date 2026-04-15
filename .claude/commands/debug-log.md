@@ -1,25 +1,28 @@
 # Đọc và Phân Tích Log
 
-Khi được gọi (`/debug-log` hoặc `/debug-log error`):
+Khi được gọi (`/debug-log [loại]`):
 
-1. Xác định loại log cần xem:
-   - `/debug-log` → đọc log chung hôm nay
-   - `/debug-log error` → chỉ đọc error log
-   - `/debug-log jobs` → log Hangfire jobs
-   - `/debug-log api` → log HTTP requests
+## Chọn log cần đọc
 
-2. Đọc file log tương ứng (log hôm nay):
-```
-logs/app/app-{ngày hôm nay}.log
-logs/error/error-{ngày hôm nay}.log
-logs/api/api-{ngày hôm nay}.log
-logs/jobs/jobs-{ngày hôm nay}.log
-```
+| Lệnh | File |
+|------|------|
+| `/debug-log` | `logs/app/app-{hôm nay}.log` |
+| `/debug-log error` | `logs/error/error-{hôm nay}.log` |
+| `/debug-log jobs` | `logs/jobs/jobs-{hôm nay}.log` |
+| `/debug-log api` | `logs/api/api-{hôm nay}.log` |
 
-3. Phân tích và tóm tắt:
-   - Có Error hoặc Fatal nào không?
-   - Pattern lỗi lặp lại?
-   - Timestamp để xác định thời điểm xảy ra
-   - Gợi ý nguyên nhân và hướng fix
+Nếu file chưa có → nhắc chạy app trước.
 
-4. Nếu log chưa có (app chưa chạy) → nhắc chạy app trước
+## Phân tích log
+
+1. Lọc các dòng `ERR` / `FTL` — bỏ qua `INF` / `DBG` trừ khi liên quan trực tiếp
+2. Với mỗi lỗi tìm được, output:
+   - **Timestamp** — khi nào xảy ra
+   - **Exception** — type + message
+   - **Location** — file:line từ stacktrace
+   - **Pattern** — lỗi lặp lại mấy lần?
+
+3. Nếu tìm thấy lỗi cần fix → gợi ý dùng `/fix-bug` với stacktrace đó:
+   > "Tìm thấy lỗi tại `XxxService.cs:42`. Dùng `/fix-bug` để phân tích và fix an toàn."
+
+**KHÔNG tự ý sửa code** khi chỉ đọc log — chuyển sang `/fix-bug` nếu muốn fix.

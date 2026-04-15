@@ -1,3 +1,4 @@
+using FootballBlog.Core.DTOs;
 using FootballBlog.Core.Interfaces;
 using FootballBlog.Core.Models;
 using Microsoft.Extensions.Logging;
@@ -10,11 +11,11 @@ public class PreMatchDataJob(
     ILogger<PreMatchDataJob> logger)
 {
     /// <summary>Chạy 5h trước kickoff. Fetch H2H để chuẩn bị context cho AI Prediction (Phase 5).</summary>
-    public async Task FetchH2HAsync(int fixtureExternalId, int homeTeamId, int awayTeamId)
+    public async Task FetchH2HAsync(int fixtureExternalId, int homeTeamExternalId, int awayTeamExternalId)
     {
         logger.LogInformation(
             "PreMatchDataJob FetchH2H started for fixture {FixtureId} ({Home} vs {Away})",
-            fixtureExternalId, homeTeamId, awayTeamId);
+            fixtureExternalId, homeTeamExternalId, awayTeamExternalId);
 
         Match? match = await uow.Matches.GetByExternalIdAsync(fixtureExternalId);
         if (match is null)
@@ -23,18 +24,18 @@ public class PreMatchDataJob(
             return;
         }
 
-        IEnumerable<Match>? h2hMatches = await apiClient.GetHeadToHeadAsync(homeTeamId, awayTeamId);
-        if (h2hMatches is null)
+        IEnumerable<FixtureRawDto>? h2hFixtures = await apiClient.GetHeadToHeadAsync(homeTeamExternalId, awayTeamExternalId);
+        if (h2hFixtures is null)
         {
             logger.LogWarning("H2H fetch returned null for fixture {FixtureId} (rate limit or HTTP error)", fixtureExternalId);
             return;
         }
 
-        // Phase 5 sẽ persist H2H data vào DB (Match.H2HJson hoặc bảng riêng)
+        // Phase 5 sẽ persist H2H data vào MatchContextData.ContextJson
         // Hiện tại chỉ log để xác nhận data có sẵn
         logger.LogInformation(
             "H2H fetch complete for fixture {FixtureId}. Found {Count} historical matches.",
-            fixtureExternalId, h2hMatches.Count());
+            fixtureExternalId, h2hFixtures.Count());
     }
 
     /// <summary>Chạy 15min trước kickoff. Fetch confirmed lineups để chuẩn bị context cho AI Prediction (Phase 5).</summary>
@@ -57,7 +58,7 @@ public class PreMatchDataJob(
             return;
         }
 
-        // Phase 5 sẽ lưu vào Match.LineupsJson
+        // Phase 5 sẽ lưu vào MatchContextData.ContextJson
         logger.LogInformation(
             "Lineup fetch complete for fixture {FixtureId}. JSON length: {Length} chars.",
             fixtureExternalId, lineupsJson.Length);

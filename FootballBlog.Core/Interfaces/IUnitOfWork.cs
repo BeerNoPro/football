@@ -8,6 +8,10 @@ public interface IUnitOfWork : IDisposable
     ILiveMatchRepository LiveMatches { get; }
     IMatchRepository Matches { get; }
     IMatchPredictionRepository MatchPredictions { get; }
+    ICountryRepository Countries { get; }
+    ILeagueRepository Leagues { get; }
+    ITeamRepository Teams { get; }
+    IMatchContextRepository MatchContexts { get; }
 
     /// <summary>Commit tất cả thay đổi trong 1 transaction.</summary>
     Task<int> CommitAsync();

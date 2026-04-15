@@ -8,9 +8,6 @@ public class MatchEvent
 
     public int Minute { get; set; }
 
-    /// <summary>
-    /// Loại sự kiện: GOAL, YELLOW_CARD, RED_CARD, SUBSTITUTION
-    /// </summary>
-    public string Type { get; set; } = string.Empty;
+    public EventType Type { get; set; }
     public string Description { get; set; } = string.Empty;
 }

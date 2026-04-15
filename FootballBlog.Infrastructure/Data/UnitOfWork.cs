@@ -14,6 +14,10 @@ public class UnitOfWork : IUnitOfWork
     public ILiveMatchRepository LiveMatches { get; }
     public IMatchRepository Matches { get; }
     public IMatchPredictionRepository MatchPredictions { get; }
+    public ICountryRepository Countries { get; }
+    public ILeagueRepository Leagues { get; }
+    public ITeamRepository Teams { get; }
+    public IMatchContextRepository MatchContexts { get; }
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -24,6 +28,10 @@ public class UnitOfWork : IUnitOfWork
         LiveMatches = new LiveMatchRepository(context);
         Matches = new MatchRepository(context);
         MatchPredictions = new MatchPredictionRepository(context);
+        Countries = new CountryRepository(context);
+        Leagues = new LeagueRepository(context);
+        Teams = new TeamRepository(context);
+        MatchContexts = new MatchContextRepository(context);
     }
 
     public Task<int> CommitAsync() => _context.SaveChangesAsync();

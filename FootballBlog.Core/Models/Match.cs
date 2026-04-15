@@ -7,15 +7,15 @@ public class Match
     /// <summary>Fixture ID từ Football API.</summary>
     public int ExternalId { get; set; }
 
-    public string HomeTeam { get; set; } = string.Empty;
-    public string AwayTeam { get; set; } = string.Empty;
-    public int HomeTeamExternalId { get; set; }
-    public int AwayTeamExternalId { get; set; }
+    // FK thay vì strings
+    public int HomeTeamId { get; set; }
+    public int AwayTeamId { get; set; }
 
+    /// <summary>FK → Leagues.Id (internal ID, không phải external API ID).</summary>
     public int LeagueId { get; set; }
-    public string LeagueName { get; set; } = string.Empty;
-    public string Season { get; set; } = string.Empty;
-    public string? Round { get; set; }
+
+    public string Season { get; set; } = string.Empty; // "2024/2025"
+    public string? Round { get; set; }                  // "Round 10"
 
     public DateTime KickoffUtc { get; set; }
     public MatchStatus Status { get; set; } = MatchStatus.Scheduled;
@@ -29,7 +29,12 @@ public class Match
     /// <summary>Thời điểm cuối cùng fetch dữ liệu từ Football API.</summary>
     public DateTime FetchedAt { get; set; }
 
+    // Navigations
+    public Team HomeTeam { get; set; } = null!;
+    public Team AwayTeam { get; set; } = null!;
+    public League League { get; set; } = null!;
     public MatchPrediction? Prediction { get; set; }
+    public MatchContextData? ContextData { get; set; }  // AI input — lazy loaded
 
     /// <summary>LiveMatch tương ứng khi trận đang diễn ra. Null nếu chưa live.</summary>
     public LiveMatch? LiveMatch { get; set; }

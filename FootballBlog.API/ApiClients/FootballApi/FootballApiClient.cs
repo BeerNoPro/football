@@ -1,4 +1,5 @@
 using System.Text.Json;
+using FootballBlog.Core.DTOs;
 using FootballBlog.Core.Interfaces;
 using FootballBlog.Core.Models;
 using FootballBlog.Core.Options;
@@ -18,7 +19,7 @@ public class FootballApiClient(
         PropertyNameCaseInsensitive = true
     };
 
-    public async Task<IEnumerable<Match>?> GetUpcomingFixturesAsync(int leagueId, int next = 20)
+    public async Task<IEnumerable<FixtureRawDto>?> GetUpcomingFixturesAsync(int leagueId, int next = 20)
     {
         if (!await rateLimiter.TryConsumeAsync())
         {
@@ -42,9 +43,9 @@ public class FootballApiClient(
                 return null;
             }
 
-            IEnumerable<Match> matches = envelope.Response.Select(MapToMatch);
-            logger.LogInformation("Fetched {Count} upcoming fixtures for league {LeagueId}", matches.Count(), leagueId);
-            return matches;
+            IEnumerable<FixtureRawDto> fixtures = envelope.Response.Select(MapToFixtureDto);
+            logger.LogInformation("Fetched {Count} upcoming fixtures for league {LeagueId}", fixtures.Count(), leagueId);
+            return fixtures;
         }
         catch (Exception ex)
         {
@@ -83,7 +84,7 @@ public class FootballApiClient(
         }
     }
 
-    public async Task<IEnumerable<Match>?> GetHeadToHeadAsync(int homeTeamId, int awayTeamId, int last = 10)
+    public async Task<IEnumerable<FixtureRawDto>?> GetHeadToHeadAsync(int homeTeamExternalId, int awayTeamExternalId, int last = 10)
     {
         if (!await rateLimiter.TryConsumeAsync())
         {
@@ -92,23 +93,23 @@ public class FootballApiClient(
 
         try
         {
-            logger.LogDebug("Fetching H2H for {Home} vs {Away}", homeTeamId, awayTeamId);
+            logger.LogDebug("Fetching H2H for {Home} vs {Away}", homeTeamExternalId, awayTeamExternalId);
 
             var envelope = await httpClient.GetFromJsonAsync<FootballApiEnvelope<FixtureResponse>>(
-                $"fixtures/headtohead?h2h={homeTeamId}-{awayTeamId}&last={last}", JsonOptions);
+                $"fixtures/headtohead?h2h={homeTeamExternalId}-{awayTeamExternalId}&last={last}", JsonOptions);
 
             if (envelope?.Response is null)
             {
                 return [];
             }
 
-            IEnumerable<Match> matches = envelope.Response.Select(MapToMatch);
-            logger.LogInformation("Fetched {Count} H2H matches for {Home} vs {Away}", matches.Count(), homeTeamId, awayTeamId);
-            return matches;
+            IEnumerable<FixtureRawDto> fixtures = envelope.Response.Select(MapToFixtureDto);
+            logger.LogInformation("Fetched {Count} H2H matches for {Home} vs {Away}", fixtures.Count(), homeTeamExternalId, awayTeamExternalId);
+            return fixtures;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to fetch H2H for {Home} vs {Away}", homeTeamId, awayTeamId);
+            logger.LogError(ex, "Failed to fetch H2H for {Home} vs {Away}", homeTeamExternalId, awayTeamExternalId);
             return null;
         }
     }
@@ -140,25 +141,34 @@ public class FootballApiClient(
 
     // ── Mappers ────────────────────────────────────────────────────────────────
 
-    private static Match MapToMatch(FixtureResponse r) => new()
-    {
-        ExternalId = r.Fixture.Id,
-        HomeTeam = r.Teams.Home.Name,
-        AwayTeam = r.Teams.Away.Name,
-        HomeTeamExternalId = r.Teams.Home.Id,
-        AwayTeamExternalId = r.Teams.Away.Id,
-        LeagueId = r.League.Id,
-        LeagueName = r.League.Name,
-        Season = r.League.Season.ToString(),
-        Round = r.League.Round,
-        KickoffUtc = r.Fixture.Date,
-        Status = MapStatus(r.Fixture.Status.Short),
-        HomeScore = r.Goals.Home,
-        AwayScore = r.Goals.Away,
-        VenueName = r.Fixture.Venue?.Name,
-        RefereeName = r.Fixture.Referee,
-        FetchedAt = DateTime.UtcNow
-    };
+    private static FixtureRawDto MapToFixtureDto(FixtureResponse r) => new(
+        ExternalId: r.Fixture.Id,
+        KickoffUtc: r.Fixture.Date,
+        StatusShort: r.Fixture.Status.Short,
+        HomeScore: r.Goals.Home,
+        AwayScore: r.Goals.Away,
+        VenueName: r.Fixture.Venue?.Name,
+        RefereeName: r.Fixture.Referee,
+
+        HomeTeamExternalId: r.Teams.Home.Id,
+        HomeTeamName: r.Teams.Home.Name,
+        HomeTeamLogo: r.Teams.Home.Logo,
+
+        AwayTeamExternalId: r.Teams.Away.Id,
+        AwayTeamName: r.Teams.Away.Name,
+        AwayTeamLogo: r.Teams.Away.Logo,
+
+        LeagueExternalId: r.League.Id,
+        LeagueName: r.League.Name,
+        LeagueLogo: r.League.Logo,
+
+        CountryName: r.League.Country,
+        CountryCode: DeriveCountryCode(r.League.Country, r.League.Flag),
+        CountryFlag: r.League.Flag,
+
+        Season: r.League.Season.ToString(),
+        Round: r.League.Round
+    );
 
     private static LiveMatch MapToLiveMatch(FixtureResponse r) => new()
     {
@@ -171,6 +181,26 @@ public class FootballApiClient(
         Minute = r.Fixture.Status.Elapsed,
         StartedAt = r.Fixture.Date
     };
+
+    /// <summary>
+    /// Derive country code từ flag URL (e.g. ".../flags/gb.svg" → "GB")
+    /// hoặc fallback về 3 ký tự đầu của country name.
+    /// </summary>
+    private static string DeriveCountryCode(string countryName, string? flagUrl)
+    {
+        if (!string.IsNullOrEmpty(flagUrl))
+        {
+            string fileName = Path.GetFileNameWithoutExtension(flagUrl.Split('/').Last());
+            if (!string.IsNullOrEmpty(fileName))
+            {
+                return fileName.ToUpperInvariant()[..Math.Min(10, fileName.Length)];
+            }
+        }
+
+        // Fallback: uppercase, no spaces, max 10 chars
+        string normalized = countryName.ToUpperInvariant().Replace(" ", "");
+        return normalized[..Math.Min(10, normalized.Length)];
+    }
 
     private static MatchStatus MapStatus(string s) => s switch
     {

@@ -48,20 +48,6 @@ FootballBlog/
 
 ---
 
-## Database Schema (Draft)
-
-- **Posts** — id, title, slug, content, thumbnail, category_id, author_id, published_at, created_at
-- **Categories** — id, name, slug
-- **Tags** — id, name, slug
-- **PostTags** — post_id, tag_id
-- **Users** — id, username, email, password_hash, role (admin/author)
-- **LiveMatches** — id, home_team, away_team, score, status, started_at
-- **MatchEvents** — id, match_id, minute, type (goal/card/sub), description
-- **Matches** — id, external_id, home_team_id, away_team_id, kickoff_utc, status, league_id
-- **MatchPredictions** — id, match_id, ai_provider, predicted_score, confidence_score, analysis_summary, telegram_message_id, generated_at
-
----
-
 ## Phases
 
 ### Phase 1 — Setup & Foundation ✅
@@ -70,25 +56,27 @@ FootballBlog/
 - [x] EF Core + InitialCreate migration (7 entities)
 - [x] Serilog multi-sink (app/error/api/jobs)
 - [x] IUnitOfWork + UnitOfWork pattern
-- [x] DTOs: PostSummaryDto, PostDetailDto, CategoryDto, LiveMatchDto
+- [x] DTOs: PostSummaryDto, PostDetailDto, CategoryDto, LiveMatchDto, MatchSummaryDto, MatchPredictionDto, PagedResult<T>
 - [x] Service Layer: IPostService/PostService, ICategoryService
 - [x] Typed HttpClient IPostApiClient + ICategoryApiClient trong Web
 - [x] API Controllers: PostsController, CategoriesController (CRUD + filter by category/tag)
-- [x] CountByCategoryAsync / CountByTagAsync (fix pagination bug)
 - [x] SlugService (static, hỗ trợ tiếng Việt + GenerateUnique)
 - [x] Tailwind CSS setup (npm build pipeline)
 - [x] Claude hooks: build-check, dbcontext-check, stop-notify
 
-### Phase 2 — Blog Core (SEO) ⬜
-- [ ] Blazor SSR pages: Home, Bài viết, Danh mục, Tag
-- [ ] SEO: meta tags, Open Graph, sitemap.xml, robots.txt
-- [ ] Schema.org JSON-LD cho bài viết thể thao
+### Phase 2 — Blog Core (SEO) ✅
+- [x] Blazor SSR pages: Home, PostDetail, CategoryDetail, TagDetail, News, SearchResults
+- [x] SEO: meta tags, Open Graph (SeoHead.razor)
+- [x] Schema.org JSON-LD cho bài viết (PostDetail.razor + SeoHead.razor)
+- [x] sitemap.xml (Sitemap.razor), robots.txt
+- [x] Shared components: LeftSidebar, RightSidebar, PostCard, PostCardCompact, Pagination, TagPill
+- [x] Layout: PublicLayout2Col, PublicLayout3Col
 - [ ] Upload ảnh lên S3 (hoặc local khi dev)
-- [ ] Tailwind CSS public pages
 
-### Phase 3 — Admin Panel ⬜
-- [x] Replace ApplicationUser → extend IdentityUser<int> + migration (IdentityMigration)
-- [ ] ASP.NET Core Identity (Cookie Auth cho Blazor, JWT cho API)
+### Phase 3 — Admin Panel 🔄 (In Progress)
+- [x] Replace ApplicationUser → extend IdentityUser<int> + migration
+- [x] ASP.NET Core Identity đã register (AddIdentity<ApplicationUser, IdentityRole<int>>)
+- [ ] Cookie Auth cho Blazor + JWT cho API (endpoints chưa wire)
 - [ ] Install MudBlazor (chỉ cho Admin routes)
 - [ ] Admin pages: Dashboard, Posts CRUD, Categories, Tags
 - [ ] Rich text editor (Quill.js qua JS interop)
@@ -97,19 +85,22 @@ FootballBlog/
 ### Phase 4 — Realtime Football 🔄 (In Progress)
 - [x] FootballApiClient (IHttpClientFactory + Polly retry)
 - [x] Redis rate limit counter (100 req/ngày)
-- [x] Match + MatchEvent schema: enum MatchStatus, EventType
-- [x] Hangfire jobs: FetchUpcomingMatchesJob (cron 6h), LiveScorePollingJob (1 min, adaptive gate)
+- [x] Match + MatchContext + MatchContextData entities
+- [x] Country, League, Team entities + repositories (upsert by ExternalId)
+- [x] MatchStatus enum
+- [x] Hangfire jobs: FetchUpcomingMatchesJob (cron 6h), LiveScorePollingJob (1min adaptive), PreMatchDataJob (H2H + Lineups)
+- [x] EF migration: RefactorMatchSchema (Country/League/Team/MatchContextData)
+- [x] MatchEvent.Type → EventType enum + migration
 - [ ] ILiveScoreService implementation (LiveScoreService) + register DI
 - [ ] SignalR Hub (LiveScoreHub) + Redis backplane
 - [ ] Blazor LiveScore pages + widget (InteractiveServer)
 
 ### Phase 5 — AI Match Prediction ⬜
-- [x] Domain entities: Match (từ Football API), MatchPrediction, MatchStatus enum
-- [x] EF Core migration cho Match + MatchPrediction (AddMatchAndPrediction)
-- [x] IMatchRepository / IMatchPredictionRepository + implementations
-- [x] MatchSummaryDto / MatchPredictionDto
+- [x] Domain: MatchContext (H2H, TeamForm, Lineup, Referee, Fatigue POCOs)
+- [x] MatchContextData entity (JSONB blob, 1-to-1 với Match)
+- [x] IMatchContextRepository + implementation
+- [x] FixtureRawDto (raw API response mapping)
 - [ ] IAIPredictionProvider interface + Claude implementation
-- [ ] MatchContext object (h2h, form, lineup, referee)
 - [ ] Prompt template lưu DB để A/B test
 - [ ] Hangfire GeneratePredictionJob (trigger 24h trước kickoff)
 - [ ] PublishPredictionJob → tạo blog post từ prediction

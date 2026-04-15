@@ -16,6 +16,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<MatchEvent> MatchEvents => Set<MatchEvent>();
     public DbSet<Match> Matches => Set<Match>();
     public DbSet<MatchPrediction> MatchPredictions => Set<MatchPrediction>();
+    public DbSet<Country> Countries => Set<Country>();
+    public DbSet<League> Leagues => Set<League>();
+    public DbSet<Team> Teams => Set<Team>();
+    public DbSet<MatchContextData> MatchContexts => Set<MatchContextData>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -94,13 +98,46 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.Property(e => e.Type).HasMaxLength(50).IsRequired();
         });
 
-        // Match (từ Football API)
+        // Country
+        modelBuilder.Entity<Country>(entity =>
+        {
+            entity.HasIndex(c => c.Code).IsUnique();
+            entity.Property(c => c.Name).HasMaxLength(100).IsRequired();
+            entity.Property(c => c.Code).HasMaxLength(10).IsRequired();
+            entity.Property(c => c.FlagUrl).HasMaxLength(500);
+        });
+
+        // League
+        modelBuilder.Entity<League>(entity =>
+        {
+            entity.HasIndex(l => l.ExternalId).IsUnique();
+            entity.Property(l => l.Name).HasMaxLength(200).IsRequired();
+            entity.Property(l => l.LogoUrl).HasMaxLength(500);
+
+            entity.HasOne(l => l.Country)
+                  .WithMany(c => c.Leagues)
+                  .HasForeignKey(l => l.CountryId);
+        });
+
+        // Team
+        modelBuilder.Entity<Team>(entity =>
+        {
+            entity.HasIndex(t => t.ExternalId).IsUnique();
+            entity.Property(t => t.Name).HasMaxLength(200).IsRequired();
+            entity.Property(t => t.ShortName).HasMaxLength(50);
+            entity.Property(t => t.LogoUrl).HasMaxLength(500);
+
+            entity.HasOne(t => t.Country)
+                  .WithMany(c => c.Teams)
+                  .HasForeignKey(t => t.CountryId)
+                  .IsRequired(false)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Match (từ Football API) — dùng FK thay vì strings
         modelBuilder.Entity<Match>(entity =>
         {
             entity.HasIndex(m => m.ExternalId).IsUnique();
-            entity.Property(m => m.HomeTeam).HasMaxLength(200).IsRequired();
-            entity.Property(m => m.AwayTeam).HasMaxLength(200).IsRequired();
-            entity.Property(m => m.LeagueName).HasMaxLength(200).IsRequired();
             entity.Property(m => m.Season).HasMaxLength(20).IsRequired();
             entity.Property(m => m.Round).HasMaxLength(100);
             entity.Property(m => m.VenueName).HasMaxLength(200);
@@ -109,6 +146,25 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                   .HasConversion<string>()
                   .HasMaxLength(20)
                   .HasDefaultValue(MatchStatus.Scheduled);
+
+            entity.HasOne(m => m.HomeTeam)
+                  .WithMany(t => t.HomeMatches)
+                  .HasForeignKey(m => m.HomeTeamId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(m => m.AwayTeam)
+                  .WithMany(t => t.AwayMatches)
+                  .HasForeignKey(m => m.AwayTeamId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(m => m.League)
+                  .WithMany(l => l.Matches)
+                  .HasForeignKey(m => m.LeagueId);
+
+            // Index để query form nhanh
+            entity.HasIndex(m => new { m.HomeTeamId, m.KickoffUtc });
+            entity.HasIndex(m => new { m.AwayTeamId, m.KickoffUtc });
+            entity.HasIndex(m => new { m.LeagueId, m.Season });
         });
 
         // MatchPrediction — 1-to-1 với Match
@@ -129,6 +185,17 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                   .HasForeignKey(p => p.BlogPostId)
                   .IsRequired(false)
                   .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // MatchContextData — 1-to-1 với Match, lazy loaded
+        modelBuilder.Entity<MatchContextData>(entity =>
+        {
+            entity.HasIndex(c => c.MatchId).IsUnique();
+            entity.Property(c => c.ContextJson).HasColumnType("jsonb").IsRequired();
+
+            entity.HasOne(c => c.Match)
+                  .WithOne(m => m.ContextData)
+                  .HasForeignKey<MatchContextData>(c => c.MatchId);
         });
     }
 }
