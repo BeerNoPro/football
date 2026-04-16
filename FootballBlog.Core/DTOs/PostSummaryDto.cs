@@ -9,5 +9,5 @@ public record PostSummaryDto(
     string CategoryName,
     string CategorySlug,
     string AuthorName,
-    DateTime PublishedAt
+    DateTime? PublishedAt
 );

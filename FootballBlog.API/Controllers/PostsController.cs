@@ -59,6 +59,30 @@ public class PostsController(IPostService postService, ILogger<PostsController> 
         return Ok(ApiResponse<PagedResult<PostSummaryDto>>.Ok(new PagedResult<PostSummaryDto>(items, page, pageSize, total)));
     }
 
+    [HttpGet("all")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<ApiResponse<PagedResult<PostSummaryDto>>>> GetAll(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        var items = await postService.GetAllAsync(page, pageSize);
+        var total = await postService.CountAllAsync();
+        return Ok(ApiResponse<PagedResult<PostSummaryDto>>.Ok(new PagedResult<PostSummaryDto>(items, page, pageSize, total)));
+    }
+
+    [HttpGet("{id:int}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<ApiResponse<PostDetailDto>>> GetById(int id)
+    {
+        var post = await postService.GetByIdAsync(id);
+        if (post is null)
+        {
+            logger.LogWarning("Post not found for id {PostId}", id);
+            return NotFound(ApiResponse<PostDetailDto>.Fail($"Post {id} not found"));
+        }
+        return Ok(ApiResponse<PostDetailDto>.Ok(post));
+    }
+
     [HttpPost]
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<ApiResponse<PostDetailDto>>> Create([FromBody] CreatePostDto dto)

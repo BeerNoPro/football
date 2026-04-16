@@ -6,6 +6,9 @@ public interface IPostService
 {
     Task<IEnumerable<PostSummaryDto>> GetPublishedAsync(int page, int pageSize);
     Task<PostDetailDto?> GetBySlugAsync(string slug);
+    Task<PostDetailDto?> GetByIdAsync(int id);
+    Task<IEnumerable<PostSummaryDto>> GetAllAsync(int page, int pageSize);
+    Task<int> CountAllAsync();
     Task<IEnumerable<PostSummaryDto>> GetByCategoryAsync(string categorySlug, int page, int pageSize);
     Task<IEnumerable<PostSummaryDto>> GetByTagAsync(string tagSlug, int page, int pageSize);
     Task<int> CountPublishedAsync();

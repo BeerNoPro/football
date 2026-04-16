@@ -37,7 +37,7 @@
         // Posts
         foreach (var post in posts)
             sb.AppendLine(Url($"{baseUrl}/posts/{post.Slug}", "monthly", "0.8",
-                post.PublishedAt.ToString("yyyy-MM-dd")));
+                post.PublishedAt?.ToString("yyyy-MM-dd") ?? DateTime.UtcNow.ToString("yyyy-MM-dd")));
 
         sb.AppendLine("</urlset>");
         _xml = sb.ToString();

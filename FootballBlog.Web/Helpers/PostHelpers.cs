@@ -17,9 +17,14 @@ public static class PostHelpers
             ? "linear-gradient(135deg,#1a1a2e,#16213e)"
             : thumbnail;
 
-    public static string FormatTimeAgo(DateTime dt)
+    public static string FormatTimeAgo(DateTime? dt)
     {
-        var diff = DateTime.UtcNow - dt.ToUniversalTime();
+        if (dt is null)
+        {
+            return "Chưa đăng";
+        }
+
+        var diff = DateTime.UtcNow - dt.Value.ToUniversalTime();
         if (diff.TotalMinutes < 1)
         {
             return "Vừa xong";
@@ -40,6 +45,6 @@ public static class PostHelpers
             return $"{(int)diff.TotalDays} ngày trước";
         }
 
-        return dt.ToString("dd/MM/yyyy");
+        return dt.Value.ToString("dd/MM/yyyy");
     }
 }

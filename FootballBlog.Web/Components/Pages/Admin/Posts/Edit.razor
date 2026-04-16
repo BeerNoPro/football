@@ -1,0 +1,231 @@
+@page "/admin/posts/edit/{Id:int}"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inherits AdminPageBase
+@inject IAdminApiClient AdminClient
+@inject ICategoryApiClient CategoryClient
+@inject ISnackbar Snackbar
+@inject NavigationManager Nav
+
+<PageTitle>Chỉnh sửa bài viết — Admin | FootballBlog</PageTitle>
+
+@if (_loading)
+{
+    <div style="display:flex;justify-content:center;padding:60px;">
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+    </div>
+}
+else if (_notFound)
+{
+    <MudAlert Severity="Severity.Error" Style="margin-top:24px;">
+        Không tìm thấy bài viết #@Id.
+        <MudLink Href="/admin/posts" Style="color:#c8f04d;margin-left:8px;">Quay lại danh sách</MudLink>
+    </MudAlert>
+}
+else
+{
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+        <div>
+            <MudText Typo="Typo.h5" Style="color:#efefef;font-weight:700;">Chỉnh sửa bài viết</MudText>
+            <MudText Typo="Typo.body2" Style="color:#666;">#@Id — @_originalSlug</MudText>
+        </div>
+        <div style="display:flex;gap:8px;">
+            @if (!string.IsNullOrEmpty(_originalSlug))
+            {
+                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.OpenInNew"
+                           Style="color:#555;border-color:#333;"
+                           Href="@($"/bai-viet/{_originalSlug}")" Target="_blank">
+                    Xem bài
+                </MudButton>
+            }
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.ArrowBack"
+                       Style="color:#666;border-color:#333;"
+                       Href="/admin/posts">
+                Quay lại
+            </MudButton>
+        </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start;">
+
+        @* ---- Main content ---- *@
+        <div style="display:flex;flex-direction:column;gap:16px;">
+
+            <MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;padding:24px;">
+                <MudTextField @bind-Value="_title" Label="Tiêu đề" Variant="Variant.Outlined"
+                              Margin="Margin.Dense" FullWidth="true"
+                              Style="margin-bottom:12px;" />
+                <MudTextField @bind-Value="_slug" Label="Slug" Variant="Variant.Outlined"
+                              Margin="Margin.Dense" FullWidth="true"
+                              HelperText="Thay đổi slug sẽ làm hỏng link cũ nếu đã index SEO" />
+            </MudPaper>
+
+            <MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;padding:24px;">
+                <MudText Typo="Typo.subtitle2" Style="color:#999;margin-bottom:12px;">Nội dung</MudText>
+                <QuillEditor @ref="_editor" @bind-Value="_content" MinHeight="420" />
+            </MudPaper>
+
+        </div>
+
+        @* ---- Sidebar ---- *@
+        <div style="display:flex;flex-direction:column;gap:16px;">
+
+            <MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;padding:20px;">
+                <MudText Typo="Typo.subtitle2" Style="color:#999;margin-bottom:12px;">Xuất bản</MudText>
+                @if (_isPublished)
+                {
+                    <MudChip T="string" Color="Color.Success" Size="Size.Small" Style="margin-bottom:12px;">
+                        Đã xuất bản
+                    </MudChip>
+                }
+                else
+                {
+                    <MudSwitch @bind-Value="_publishNow" Color="Color.Success"
+                               Label="Xuất bản ngay" LabelPlacement="Placement.End"
+                               Style="color:#efefef;margin-bottom:12px;" />
+                }
+                <MudButton OnClick="SaveAsync" Variant="Variant.Filled" FullWidth="true"
+                           Style="background:#c8f04d;color:#0d0d0d;font-weight:600;"
+                           Disabled="_saving">
+                    @(_saving ? "Đang lưu..." : "Lưu thay đổi")
+                </MudButton>
+            </MudPaper>
+
+            <MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;padding:20px;">
+                <MudText Typo="Typo.subtitle2" Style="color:#999;margin-bottom:12px;">Danh mục</MudText>
+                <MudSelect @bind-Value="_categoryId" Label="Chọn danh mục" Variant="Variant.Outlined"
+                           Margin="Margin.Dense" FullWidth="true">
+                    @foreach (var cat in _categories)
+                    {
+                        <MudSelectItem Value="@cat.Id">@cat.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudPaper>
+
+            <MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;padding:20px;">
+                <MudText Typo="Typo.subtitle2" Style="color:#999;margin-bottom:12px;">Ảnh đại diện</MudText>
+                <MudTextField @bind-Value="_thumbnail" Label="URL ảnh" Variant="Variant.Outlined"
+                              Margin="Margin.Dense" FullWidth="true"
+                              Placeholder="https://..." Style="margin-bottom:8px;" />
+                <InputFile id="thumbnailInputEdit" OnChange="UploadThumbnailAsync" accept="image/*"
+                           style="display:none;" />
+                <MudButton HtmlTag="label" Variant="Variant.Outlined" Size="Size.Small"
+                           Style="color:#666;border-color:#333;width:100%;"
+                           StartIcon="@Icons.Material.Filled.Upload"
+                           for="thumbnailInputEdit" Disabled="_uploadingImage">
+                    @(_uploadingImage ? "Đang tải..." : "Tải ảnh lên")
+                </MudButton>
+                @if (!string.IsNullOrWhiteSpace(_thumbnail))
+                {
+                    <img src="@_thumbnail" alt="Thumbnail preview"
+                         style="width:100%;border-radius:6px;margin-top:10px;object-fit:cover;max-height:120px;" />
+                }
+            </MudPaper>
+
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private QuillEditor? _editor;
+    private bool _loading = true;
+    private bool _notFound;
+    private bool _uploadingImage;
+    private bool _saving;
+    private bool _isPublished;
+    private bool _publishNow;
+    private string _title = string.Empty;
+    private string _slug = string.Empty;
+    private string _originalSlug = string.Empty;
+    private string _content = string.Empty;
+    private string? _thumbnail;
+    private int _categoryId;
+    private IEnumerable<CategoryDto> _categories = [];
+
+    protected override async Task OnAdminInitializedAsync()
+    {
+        var postTask = AdminClient.GetPostByIdAsync(Id);
+        var categoriesTask = CategoryClient.GetAllAsync();
+        await Task.WhenAll(postTask, categoriesTask);
+        var post = postTask.Result;
+        var categories = categoriesTask.Result;
+
+        _categories = categories ?? [];
+
+        if (post is null)
+        {
+            _notFound = true;
+            _loading = false;
+            return;
+        }
+
+        _title = post.Title;
+        _slug = post.Slug;
+        _originalSlug = post.Slug;
+        _content = post.Content;
+        _thumbnail = post.Thumbnail;
+        _isPublished = post.PublishedAt.HasValue;
+        _categoryId = _categories
+            .FirstOrDefault(c => c.Slug == post.CategorySlug)?.Id ?? 0;
+        _loading = false;
+    }
+
+    private async Task UploadThumbnailAsync(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file is null) return;
+        if (file.Size > 5 * 1024 * 1024)
+        {
+            Snackbar.Add("File quá lớn. Tối đa 5MB.", Severity.Warning);
+            return;
+        }
+        _uploadingImage = true;
+        StateHasChanged();
+        await using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+        var url = await AdminClient.UploadImageAsync(stream, file.Name, file.ContentType);
+        _uploadingImage = false;
+        if (url is not null)
+        {
+            _thumbnail = url;
+            Snackbar.Add("Tải ảnh thành công.", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("Tải ảnh thất bại.", Severity.Error);
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_title))
+        {
+            Snackbar.Add("Vui lòng nhập tiêu đề.", Severity.Warning);
+            return;
+        }
+        if (_categoryId == 0)
+        {
+            Snackbar.Add("Vui lòng chọn danh mục.", Severity.Warning);
+            return;
+        }
+
+        _saving = true;
+        var dto = new CreatePostDto(_title, _slug, _content, _thumbnail, _categoryId, CurrentUserId,
+            PublishNow: _publishNow && !_isPublished);
+        var result = await AdminClient.UpdatePostAsync(Id, dto);
+        _saving = false;
+
+        if (result is not null)
+        {
+            _originalSlug = result.Slug;
+            _isPublished = result.PublishedAt.HasValue;
+            _publishNow = false;
+            Snackbar.Add("Đã lưu thay đổi.", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("Lưu thất bại.", Severity.Error);
+        }
+    }
+}

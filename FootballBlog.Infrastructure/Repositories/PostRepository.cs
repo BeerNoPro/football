@@ -17,6 +17,27 @@ public class PostRepository : BaseRepository<Post>, IPostRepository
             .Include(p => p.PostTags).ThenInclude(pt => pt.Tag)
             .FirstOrDefaultAsync(p => p.Slug == slug && p.PublishedAt != null);
 
+    public async Task<Post?> GetDetailByIdAsync(int id) =>
+        await _dbSet
+            .AsNoTracking()
+            .Include(p => p.Category)
+            .Include(p => p.Author)
+            .Include(p => p.PostTags).ThenInclude(pt => pt.Tag)
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+    public async Task<IEnumerable<Post>> GetAllWithDetailsAsync(int page, int pageSize) =>
+        await _dbSet
+            .AsNoTracking()
+            .Include(p => p.Category)
+            .Include(p => p.Author)
+            .OrderByDescending(p => p.UpdatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+    public async Task<int> CountAllAsync() =>
+        await _dbSet.CountAsync();
+
     public async Task<IEnumerable<Post>> GetPublishedAsync(int page, int pageSize) =>
         await _dbSet
             .AsNoTracking()

@@ -36,6 +36,18 @@ public class PostService : IPostService
         return ToDetailDto(post);
     }
 
+    public async Task<PostDetailDto?> GetByIdAsync(int id)
+    {
+        _logger.LogDebug("Getting post by id {PostId}", id);
+        var post = await _uow.Posts.GetDetailByIdAsync(id);
+        if (post is null)
+        {
+            _logger.LogWarning("Post not found for id {PostId}", id);
+            return null;
+        }
+        return ToDetailDto(post);
+    }
+
     public async Task<IEnumerable<PostSummaryDto>> GetByCategoryAsync(string categorySlug, int page, int pageSize)
     {
         _logger.LogDebug("Getting posts by category {CategorySlug} page {Page}", categorySlug, page);
@@ -49,6 +61,15 @@ public class PostService : IPostService
         var posts = await _uow.Posts.GetByTagAsync(tagSlug, page, pageSize);
         return posts.Select(ToSummaryDto);
     }
+
+    public async Task<IEnumerable<PostSummaryDto>> GetAllAsync(int page, int pageSize)
+    {
+        _logger.LogDebug("Admin: getting all posts page {Page} size {PageSize}", page, pageSize);
+        var posts = await _uow.Posts.GetAllWithDetailsAsync(page, pageSize);
+        return posts.Select(ToSummaryDto);
+    }
+
+    public Task<int> CountAllAsync() => _uow.Posts.CountAllAsync();
 
     public Task<int> CountPublishedAsync() => _uow.Posts.CountPublishedAsync();
 
@@ -100,7 +121,7 @@ public class PostService : IPostService
         await _uow.Posts.UpdateAsync(post);
         await _uow.CommitAsync();
 
-        var updated = await _uow.Posts.GetBySlugAsync(dto.Slug);
+        var updated = await _uow.Posts.GetDetailByIdAsync(id);
         _logger.LogInformation("Post {PostId} updated", id);
         return updated is null ? null : ToDetailDto(updated);
     }
@@ -127,7 +148,7 @@ public class PostService : IPostService
         p.Category.Name,
         p.Category.Slug,
         p.Author.UserName ?? string.Empty,
-        p.PublishedAt!.Value
+        p.PublishedAt
     );
 
     private static PostDetailDto ToDetailDto(Post p) => new(
@@ -139,7 +160,7 @@ public class PostService : IPostService
         p.Category?.Name ?? string.Empty,
         p.Category?.Slug ?? string.Empty,
         p.Author?.UserName ?? string.Empty,
-        p.PublishedAt ?? DateTime.UtcNow,
+        p.PublishedAt,
         p.PostTags.Select(pt => pt.Tag.Name).ToList()
     );
 }

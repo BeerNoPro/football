@@ -39,7 +39,7 @@ else
                     <div class="article-meta">
                         <TagPill Slug="@_post.CategorySlug" Text="@_post.CategoryName" />
                         <span class="article-meta-time">
-                            @_post.AuthorName · @_post.PublishedAt.ToString("dd/MM/yyyy HH:mm")
+                            @_post.AuthorName · @(_post.PublishedAt?.ToString("dd/MM/yyyy HH:mm") ?? string.Empty)
                         </span>
                     </div>
 
@@ -99,7 +99,7 @@ else
     {
         var title = _post!.Title.Replace("\"", "\\\"");
         var author = _post.AuthorName.Replace("\"", "\\\"");
-        var date = _post.PublishedAt.ToString("yyyy-MM-ddTHH:mm:ssZ");
+        var date = _post.PublishedAt?.ToString("yyyy-MM-ddTHH:mm:ssZ") ?? string.Empty;
         var section = _post.CategoryName.Replace("\"", "\\\"");
         return "{\"@context\":\"https://schema.org\",\"@type\":\"NewsArticle\","
              + "\"headline\":\"" + title + "\","

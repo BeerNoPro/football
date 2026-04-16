@@ -2,9 +2,9 @@
 @attribute [Authorize]
 @rendermode InteractiveServer
 @inherits AdminPageBase
-@inject IPostApiClient PostClient
+@inject IAdminApiClient AdminClient
 @inject ISnackbar Snackbar
-@inject NavigationManager Nav
+@inject IDialogService DialogService
 
 <PageTitle>Bài viết — Admin | FootballBlog</PageTitle>
 
@@ -25,8 +25,7 @@
         <MudTextField @bind-Value="_search" Placeholder="Tìm bài viết..." Immediate="true"
                       Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
                       Variant="Variant.Outlined" Margin="Margin.Dense"
-                      Style="max-width:320px;"
-                      OnKeyUp="@(_ => _page = 1)" />
+                      Style="max-width:320px;" />
         <MudSpacer />
         <MudText Typo="Typo.caption" Style="color:#555;">
             @_totalCount bài viết
@@ -46,7 +45,7 @@
             <MudTh Style="color:#555;font-size:11px;">Tiêu đề</MudTh>
             <MudTh Style="color:#555;font-size:11px;">Danh mục</MudTh>
             <MudTh Style="color:#555;font-size:11px;">Trạng thái</MudTh>
-            <MudTh Style="color:#555;font-size:11px;">Ngày tạo</MudTh>
+            <MudTh Style="color:#555;font-size:11px;">Ngày</MudTh>
             <MudTh Style="color:#555;font-size:11px;text-align:right;">Hành động</MudTh>
         </HeaderContent>
         <RowTemplate>
@@ -60,18 +59,41 @@
                 <MudText Typo="Typo.caption" Style="color:#999;">@(context.CategoryName ?? "—")</MudText>
             </MudTd>
             <MudTd>
-                <MudChip T="string" Size="Size.Small" Style="background:rgba(74,222,128,0.12);color:#4ade80;height:20px;font-size:11px;">Đã đăng</MudChip>
+                @if (context.PublishedAt.HasValue)
+                {
+                    <MudChip T="string" Size="Size.Small"
+                             Style="background:rgba(74,222,128,0.12);color:#4ade80;height:20px;font-size:11px;">
+                        Đã đăng
+                    </MudChip>
+                }
+                else
+                {
+                    <MudChip T="string" Size="Size.Small"
+                             Style="background:rgba(255,255,255,0.06);color:#666;height:20px;font-size:11px;">
+                        Nháp
+                    </MudChip>
+                }
             </MudTd>
             <MudTd>
-                <MudText Typo="Typo.caption" Style="color:#666;">@context.PublishedAt.ToString("dd/MM/yyyy")</MudText>
+                <MudText Typo="Typo.caption" Style="color:#666;">
+                    @(context.PublishedAt.HasValue
+                        ? context.PublishedAt.Value.ToString("dd/MM/yyyy")
+                        : "—")
+                </MudText>
             </MudTd>
             <MudTd Style="text-align:right;">
                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
                                Style="color:#999;" title="Sửa"
                                Href="@($"/admin/posts/edit/{context.Id}")" />
-                <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small"
-                               Style="color:#555;" title="Xem"
-                               Href="@($"/bai-viet/{context.Slug}")" Target="_blank" />
+                @if (context.PublishedAt.HasValue)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small"
+                                   Style="color:#555;" title="Xem"
+                                   Href="@($"/bai-viet/{context.Slug}")" Target="_blank" />
+                }
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
+                               Style="color:#555;" title="Xóa"
+                               OnClick="@(() => ConfirmDelete(context))" />
             </MudTd>
         </RowTemplate>
         <NoRecordsContent>
@@ -111,7 +133,7 @@
     private async Task LoadPostsAsync()
     {
         _loading = true;
-        var result = await PostClient.GetPublishedAsync(_page, 50);
+        var result = await AdminClient.GetAllPostsAsync(_page, 50);
         if (result is not null)
         {
             _allPosts = result.Items;
@@ -119,5 +141,27 @@
             _totalPages = result.TotalPages;
         }
         _loading = false;
+    }
+
+    private async Task ConfirmDelete(PostSummaryDto post)
+    {
+        var confirmed = await DialogService.ShowMessageBox(
+            "Xác nhận xóa",
+            $"Bạn có chắc muốn xóa bài viết \"{post.Title}\"? Hành động này không thể hoàn tác.",
+            yesText: "Xóa", cancelText: "Hủy");
+
+        if (confirmed == true)
+        {
+            var ok = await AdminClient.DeletePostAsync(post.Id);
+            if (ok)
+            {
+                Snackbar.Add("Đã xóa bài viết.", Severity.Success);
+                await LoadPostsAsync();
+            }
+            else
+            {
+                Snackbar.Add("Xóa thất bại.", Severity.Error);
+            }
+        }
     }
 }

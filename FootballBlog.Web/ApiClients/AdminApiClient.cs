@@ -22,6 +22,60 @@ public class AdminApiClient(HttpClient httpClient, ILogger<AdminApiClient> logge
         }
     }
 
+    public async Task<PostDetailDto?> GetPostByIdAsync(int id)
+    {
+        try
+        {
+            var response = await httpClient.GetFromJsonAsync<ApiResponse<PostDetailDto>>($"api/posts/{id}");
+            return response?.Data;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to fetch post {Id}", id);
+            return null;
+        }
+    }
+
+    public async Task<PostDetailDto?> CreatePostAsync(CreatePostDto dto)
+    {
+        try
+        {
+            var response = await httpClient.PostAsJsonAsync("api/posts", dto);
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<PostDetailDto>>();
+            return result?.Data;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to create post {Title}", dto.Title);
+            return null;
+        }
+    }
+
+    public async Task<PostDetailDto?> UpdatePostAsync(int id, CreatePostDto dto)
+    {
+        try
+        {
+            var response = await httpClient.PutAsJsonAsync($"api/posts/{id}", dto);
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<PostDetailDto>>();
+            return result?.Data;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to update post {Id}", id);
+            return null;
+        }
+    }
+
     public async Task<bool> DeletePostAsync(int id)
     {
         try
@@ -33,6 +87,31 @@ public class AdminApiClient(HttpClient httpClient, ILogger<AdminApiClient> logge
         {
             logger.LogError(ex, "Admin: failed to delete post {Id}", id);
             return false;
+        }
+    }
+
+    public async Task<string?> UploadImageAsync(Stream stream, string fileName, string contentType)
+    {
+        try
+        {
+            using var content = new MultipartFormDataContent();
+            using var fileContent = new StreamContent(stream);
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+            content.Add(fileContent, "file", fileName);
+
+            var response = await httpClient.PostAsync("api/media/upload", content);
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<string>>();
+            return result?.Data;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to upload image {FileName}", fileName);
+            return null;
         }
     }
 

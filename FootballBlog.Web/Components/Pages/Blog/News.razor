@@ -96,5 +96,5 @@
         await LoadPosts();
     }
 
-    private static string FormatDate(DateTime dt) => dt.ToString("dd/MM/yyyy");
+    private static string FormatDate(DateTime? dt) => dt?.ToString("dd/MM/yyyy") ?? "—";
 }

@@ -82,7 +82,7 @@
                     <MudChip T="string" Size="Size.Small" Style="background:rgba(74,222,128,0.12);color:#4ade80;height:20px;font-size:11px;">Đã đăng</MudChip>
                 </MudTd>
                 <MudTd>
-                    <MudText Typo="Typo.caption" Style="color:#666;">@context.PublishedAt.ToString("dd/MM/yyyy")</MudText>
+                    <MudText Typo="Typo.caption" Style="color:#666;">@(context.PublishedAt?.ToString("dd/MM/yyyy") ?? "Nháp")</MudText>
                 </MudTd>
             </RowTemplate>
         </MudTable>

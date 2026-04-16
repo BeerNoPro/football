@@ -10,6 +10,6 @@ public record PostDetailDto(
     string CategoryName,
     string CategorySlug,
     string AuthorName,
-    DateTime PublishedAt,
+    DateTime? PublishedAt,
     IList<string> Tags
 );

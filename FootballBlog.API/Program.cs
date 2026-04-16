@@ -222,6 +222,7 @@ try
         new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
 
     app.UseHttpsRedirection();
+    app.UseStaticFiles();
     app.UseCors("BlazorWeb");
     app.UseRateLimiter();
     app.UseAuthentication();

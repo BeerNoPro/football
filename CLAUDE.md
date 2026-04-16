@@ -5,9 +5,12 @@ ASP.NET Core 8 + Blazor (SSR + InteractiveServer) | PostgreSQL | Redis + SignalR
 
 ## Architecture
 - **4 projects**: Web → API → Core ← Infrastructure
-- Web gọi API qua typed HttpClient (`IPostApiClient`, `ICategoryApiClient`)
+- Web gọi API qua typed HttpClient:
+  - Public: `IPostApiClient`, `ICategoryApiClient`, `ITagApiClient`
+  - Admin (Bearer JWT auto): `IAdminApiClient` (posts CRUD + media upload)
 - Repository chỉ modify ChangeTracker — commit duy nhất qua `IUnitOfWork.CommitAsync()`
 - DTOs trong `Core/DTOs/` — KHÔNG expose entity ra ngoài service layer
+- `PostSummaryDto.PublishedAt` là `DateTime?` (nullable — hỗ trợ draft)
 
 ## IUnitOfWork (quick ref)
 ```
@@ -48,6 +51,13 @@ Sau khi hoàn thành bất kỳ task/plan:
 2. **Plan một phần** → ghi phần còn lại vào TODO.md rồi xóa plan
 3. **Plan trùng** → giữ bản mới nhất, xóa bản cũ
 4. Khi thêm config vào `.claude/` → kiểm tra trùng với CLAUDE.md/rules/ trước
+
+## Admin Components (Phase 3 ✅)
+- `AdminPageBase` — base class, tự inject JWT, expose `CurrentUserId`
+- `QuillEditor.razor` (`Components/Admin/`) — rich text editor via Quill.js interop
+- `wwwroot/js/quill-interop.js` — JS interop: `QuillInterop.create/get/set/destroy`
+- `MediaController` — `POST /api/media/upload` → lưu local `wwwroot/uploads/` (dev)
+- Admin posts flow: `GET /api/posts/all` (kể cả draft) + `GET /api/posts/{id:int}`
 
 ## Current Phase
 Xem **TODO.md** (phase + task). Xem **Bugs.md** (architectural decisions + known issues).

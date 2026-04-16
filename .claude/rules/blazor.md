@@ -13,8 +13,9 @@ paths:
 
 ## Gọi API từ Blazor
 - Dùng typed HttpClient được inject, KHÔNG gọi DbContext trực tiếp
-- Clients đã có: `IPostApiClient`, `ICategoryApiClient`
-- Thêm client mới: interface trong Core, implementation trong Web, đăng ký `builder.Services.AddHttpClient<...>`
+- **Public pages (SSR):** `IPostApiClient`, `ICategoryApiClient`, `ITagApiClient`
+- **Admin pages:** `IAdminApiClient` — auto-inject Bearer JWT qua `JwtAuthHandler`
+- Thêm client mới: interface trong `Web/ApiClients/`, đăng ký `builder.Services.AddHttpClient<...>`
 
 ```razor
 @inject IPostApiClient PostClient

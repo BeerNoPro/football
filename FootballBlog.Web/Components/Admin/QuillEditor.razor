@@ -1,0 +1,55 @@
+@rendermode InteractiveServer
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+@* Container div — Quill sẽ được mount vào đây *@
+<div id="@_editorId" style="background:#0d0d0d;color:#efefef;min-height:@(MinHeight)px;font-size:15px;"></div>
+
+@code {
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public int MinHeight { get; set; } = 400;
+
+    private readonly string _editorId = $"quill-{Guid.NewGuid():N}";
+    private DotNetObjectReference<QuillEditor>? _dotnetRef;
+    private bool _initialized;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_initialized)
+        {
+            _initialized = true;
+            _dotnetRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("QuillInterop.create", _editorId, Value, _dotnetRef);
+        }
+    }
+
+    /// <summary>Callback từ JS khi content thay đổi.</summary>
+    [JSInvokable]
+    public async Task OnContentChanged(string html)
+    {
+        if (Value != html)
+        {
+            Value = html;
+            await ValueChanged.InvokeAsync(html);
+        }
+    }
+
+    /// <summary>Set content từ bên ngoài (ví dụ: khi load bài viết để edit).</summary>
+    public async Task SetContentAsync(string html)
+    {
+        Value = html;
+        if (_initialized)
+            await JS.InvokeVoidAsync("QuillInterop.setContent", _editorId, html);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_initialized)
+        {
+            try { await JS.InvokeVoidAsync("QuillInterop.destroy", _editorId); }
+            catch { /* ignore nếu JS đã bị unload */ }
+        }
+        _dotnetRef?.Dispose();
+    }
+}

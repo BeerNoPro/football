@@ -73,18 +73,18 @@ FootballBlog/
 - [x] Layout: PublicLayout2Col, PublicLayout3Col
 - [ ] Upload ảnh lên S3 (hoặc local khi dev)
 
-### Phase 3 — Admin Panel 🔄 (In Progress)
+### Phase 3 — Admin Panel ✅
 - [x] Replace ApplicationUser → extend IdentityUser<int> + migration
 - [x] ASP.NET Core Identity đã register (AddIdentity<ApplicationUser, IdentityRole<int>>)
 - [x] Cookie Auth cho Blazor + JWT cho API (AuthController wire, Login/Logout pages)
 - [x] Install MudBlazor 8.0.0 (chỉ load CSS/JS cho /admin routes)
 - [x] AdminLayout.razor (MudBlazor shell — dark theme)
 - [x] Admin pages: Dashboard, Posts list, Categories CRUD, Tags list
-- [ ] Posts CRUD đầy đủ (create/edit với rich text editor)
-- [ ] Rich text editor (Quill.js qua JS interop)
-- [ ] Upload ảnh → MediaController → S3/Local
+- [x] Posts CRUD đầy đủ (Create/Edit pages + IAdminApiClient mở rộng)
+- [x] Rich text editor (Quill.js qua JS interop — QuillEditor.razor + quill-interop.js)
+- [x] Upload ảnh → MediaController (local/dev) + InputFile trong Create/Edit
 
-### Phase 4 — Realtime Football 🔄 (In Progress)
+### Phase 4 — Realtime Football 🔄 (In Progress) ← NEXT
 - [x] FootballApiClient (IHttpClientFactory + Polly retry)
 - [x] Redis rate limit counter (100 req/ngày)
 - [x] Match + MatchContext + MatchContextData entities
