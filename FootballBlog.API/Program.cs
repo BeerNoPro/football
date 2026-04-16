@@ -1,3 +1,5 @@
+using System.Text;
+using System.Threading.RateLimiting;
 using FootballBlog.API.ApiClients.FootballApi;
 using FootballBlog.API.Jobs;
 using FootballBlog.Core.Interfaces;
@@ -10,9 +12,12 @@ using FootballBlog.Infrastructure.Repositories;
 using FootballBlog.Infrastructure.Services;
 using Hangfire;
 using Hangfire.PostgreSql;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Polly;
 using Polly.Extensions.Http;
@@ -82,12 +87,34 @@ try
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+    // JWT Bearer — override default scheme (AddIdentity dùng IdentityConstants.ApplicationScheme)
+    // Sau khi override, [Authorize] trên API controllers dùng JWT Bearer
+    builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        var key = builder.Configuration["Jwt:Key"]
+            ?? throw new InvalidOperationException("Jwt:Key chưa được cấu hình. Chạy: dotnet user-secrets set \"Jwt:Key\" \"<32+ ký tự>\"");
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
     // Unit of Work (bao gồm tất cả repositories)
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
     // Services
     builder.Services.AddScoped<IPostService, PostService>();
     builder.Services.AddScoped<ICategoryService, CategoryService>();
+    builder.Services.AddScoped<ILiveScoreService, LiveScoreService>();
 
     // Output Cache — cache GET blog endpoints 5 phút, invalidate khi có write
     builder.Services.AddOutputCache(options =>
@@ -128,7 +155,7 @@ try
         .UseSimpleAssemblyNameTypeSerializer()
         .UseRecommendedSerializerSettings()
         .UsePostgreSqlStorage(
-            builder.Configuration.GetConnectionString("DefaultConnection"),
+            o => o.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection")),
             new PostgreSqlStorageOptions { SchemaName = "hangfire" }));
 
     builder.Services.AddHangfireServer(opt => { opt.WorkerCount = 2; });
@@ -139,6 +166,19 @@ try
     builder.Services.AddHealthChecks()
         .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!)
         .AddRedis(builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379");
+
+    // Rate Limiting — login 5 req/phút/IP (theo security.md)
+    builder.Services.AddRateLimiter(options =>
+    {
+        options.AddFixedWindowLimiter("login", o =>
+        {
+            o.PermitLimit = 5;
+            o.Window = TimeSpan.FromMinutes(1);
+            o.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            o.QueueLimit = 0;
+        });
+        options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    });
 
     // CORS — chỉ allow Web project gọi vào API
     builder.Services.AddCors(options =>
@@ -183,6 +223,7 @@ try
 
     app.UseHttpsRedirection();
     app.UseCors("BlazorWeb");
+    app.UseRateLimiter();
     app.UseAuthentication();
     app.UseAuthorization();
     app.UseOutputCache();

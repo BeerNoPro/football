@@ -76,9 +76,11 @@ FootballBlog/
 ### Phase 3 — Admin Panel 🔄 (In Progress)
 - [x] Replace ApplicationUser → extend IdentityUser<int> + migration
 - [x] ASP.NET Core Identity đã register (AddIdentity<ApplicationUser, IdentityRole<int>>)
-- [ ] Cookie Auth cho Blazor + JWT cho API (endpoints chưa wire)
-- [ ] Install MudBlazor (chỉ cho Admin routes)
-- [ ] Admin pages: Dashboard, Posts CRUD, Categories, Tags
+- [x] Cookie Auth cho Blazor + JWT cho API (AuthController wire, Login/Logout pages)
+- [x] Install MudBlazor 8.0.0 (chỉ load CSS/JS cho /admin routes)
+- [x] AdminLayout.razor (MudBlazor shell — dark theme)
+- [x] Admin pages: Dashboard, Posts list, Categories CRUD, Tags list
+- [ ] Posts CRUD đầy đủ (create/edit với rich text editor)
 - [ ] Rich text editor (Quill.js qua JS interop)
 - [ ] Upload ảnh → MediaController → S3/Local
 
@@ -91,7 +93,7 @@ FootballBlog/
 - [x] Hangfire jobs: FetchUpcomingMatchesJob (cron 6h), LiveScorePollingJob (1min adaptive), PreMatchDataJob (H2H + Lineups)
 - [x] EF migration: RefactorMatchSchema (Country/League/Team/MatchContextData)
 - [x] MatchEvent.Type → EventType enum + migration
-- [ ] ILiveScoreService implementation (LiveScoreService) + register DI
+- [x] ILiveScoreService implementation (LiveScoreService) + register DI
 - [ ] SignalR Hub (LiveScoreHub) + Redis backplane
 - [ ] Blazor LiveScore pages + widget (InteractiveServer)
 

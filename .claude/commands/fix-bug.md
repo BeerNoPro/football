@@ -8,7 +8,7 @@ Khi được gọi (`/fix-bug <mô tả lỗi hoặc file log>`):
 
 ### 1a. Đọc error log nếu có
 - Nếu user cung cấp log/stacktrace → parse lấy: exception type, message, file:line
-- Nếu không có → đọc `logs/error/error-{hôm nay}.log` và `logs/app/app-{hôm nay}.log`
+- Nếu không có → đọc `logs/error/error-{hôm nay}.log` và `logs/app/app-{hôm nay}.log` va `logs/build/build-{hôm nay}.log`
 - Xác định: lỗi xảy ra ở layer nào (Controller / Service / Repository / Job)?
 
 ### 1b. Locate affected code

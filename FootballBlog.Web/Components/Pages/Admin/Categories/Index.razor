@@ -1,0 +1,148 @@
+@page "/admin/categories"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inherits AdminPageBase
+@inject ICategoryApiClient CategoryClient
+@inject IAdminApiClient AdminClient
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>Danh mục — Admin | FootballBlog</PageTitle>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+    <div>
+        <MudText Typo="Typo.h5" Style="color:#efefef;font-weight:700;">Danh mục</MudText>
+        <MudText Typo="Typo.body2" Style="color:#666;">Quản lý danh mục bài viết</MudText>
+    </div>
+    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add"
+               Style="background:#c8f04d;color:#0d0d0d;font-weight:600;"
+               OnClick="OpenCreateDialog">
+        Thêm danh mục
+    </MudButton>
+</div>
+
+<MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;overflow:hidden;">
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+    }
+    <MudTable Items="_categories" Dense="true" Hover="true"
+              Style="background:transparent;"
+              Loading="_loading">
+        <HeaderContent>
+            <MudTh Style="color:#555;font-size:11px;">ID</MudTh>
+            <MudTh Style="color:#555;font-size:11px;">Tên</MudTh>
+            <MudTh Style="color:#555;font-size:11px;">Slug</MudTh>
+            <MudTh Style="color:#555;font-size:11px;text-align:right;">Hành động</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd><MudText Typo="Typo.caption" Style="color:#444;">@context.Id</MudText></MudTd>
+            <MudTd><MudText Typo="Typo.body2" Style="color:#efefef;">@context.Name</MudText></MudTd>
+            <MudTd><MudText Typo="Typo.caption" Style="color:#666;">@context.Slug</MudText></MudTd>
+            <MudTd Style="text-align:right;">
+                <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small"
+                               Style="color:#555;"
+                               Href="@($"/danh-muc/{context.Slug}")" Target="_blank" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
+                               Style="color:#555;"
+                               OnClick="@(() => ConfirmDelete(context))" />
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Style="color:#555;padding:32px;">Chưa có danh mục nào.</MudText>
+        </NoRecordsContent>
+    </MudTable>
+</MudPaper>
+
+@if (_showCreateForm)
+{
+    <MudPaper Style="background:#1c1c1c;border:1px solid #2e2e2e;border-radius:10px;padding:24px;margin-top:20px;max-width:400px;">
+        <MudText Typo="Typo.subtitle1" Style="color:#efefef;margin-bottom:16px;">Thêm danh mục mới</MudText>
+        <MudTextField @bind-Value="_newName" Label="Tên danh mục" Variant="Variant.Outlined"
+                      Margin="Margin.Dense" Style="margin-bottom:12px;" AutoFocus="true" />
+        <MudTextField @bind-Value="_newSlug" Label="Slug (để trống để tự tạo)" Variant="Variant.Outlined"
+                      Margin="Margin.Dense" Style="margin-bottom:16px;" />
+        <div style="display:flex;gap:8px;">
+            <MudButton OnClick="@(() => _showCreateForm = false)" Variant="Variant.Outlined"
+                       Style="color:#666;border-color:#333;">Hủy</MudButton>
+            <MudButton OnClick="CreateCategory" Variant="Variant.Filled"
+                       Style="background:#c8f04d;color:#0d0d0d;" Disabled="_saving">
+                @(_saving ? "Đang lưu..." : "Lưu")
+            </MudButton>
+        </div>
+    </MudPaper>
+}
+
+@code {
+    private bool _loading = true;
+    private bool _showCreateForm;
+    private bool _saving;
+    private string _newName = string.Empty;
+    private string _newSlug = string.Empty;
+    private IEnumerable<CategoryDto> _categories = [];
+
+    protected override async Task OnAdminInitializedAsync()
+    {
+        await LoadCategoriesAsync();
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        _loading = true;
+        _categories = await CategoryClient.GetAllAsync() ?? [];
+        _loading = false;
+    }
+
+    private void OpenCreateDialog()
+    {
+        _newName = string.Empty;
+        _newSlug = string.Empty;
+        _showCreateForm = true;
+    }
+
+    private async Task CreateCategory()
+    {
+        if (string.IsNullOrWhiteSpace(_newName)) return;
+        _saving = true;
+
+        var slug = string.IsNullOrWhiteSpace(_newSlug)
+            ? _newName.ToLowerInvariant().Replace(" ", "-")
+            : _newSlug;
+
+        var result = await AdminClient.CreateCategoryAsync(_newName, slug);
+        _saving = false;
+        _showCreateForm = false;
+
+        if (result is not null)
+        {
+            Snackbar.Add($"Đã thêm danh mục \"{result.Name}\"", Severity.Success);
+            await LoadCategoriesAsync();
+        }
+        else
+        {
+            Snackbar.Add("Thêm danh mục thất bại.", Severity.Error);
+        }
+    }
+
+    private async Task ConfirmDelete(CategoryDto category)
+    {
+        var confirmed = await DialogService.ShowMessageBox(
+            "Xác nhận xóa",
+            $"Bạn có chắc muốn xóa danh mục \"{category.Name}\"?",
+            yesText: "Xóa", cancelText: "Hủy");
+
+        if (confirmed == true)
+        {
+            var ok = await AdminClient.DeleteCategoryAsync(category.Id);
+            if (ok)
+            {
+                Snackbar.Add("Đã xóa danh mục.", Severity.Success);
+                await LoadCategoriesAsync();
+            }
+            else
+            {
+                Snackbar.Add("Xóa thất bại.", Severity.Error);
+            }
+        }
+    }
+}

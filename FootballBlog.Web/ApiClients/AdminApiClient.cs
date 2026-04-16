@@ -1,0 +1,114 @@
+using System.Net.Http.Json;
+using FootballBlog.Core.DTOs;
+
+namespace FootballBlog.Web.ApiClients;
+
+public class AdminApiClient(HttpClient httpClient, ILogger<AdminApiClient> logger) : IAdminApiClient
+{
+    private record ApiResponse<T>(bool Success, T? Data, string? Error);
+
+    public async Task<PagedResult<PostSummaryDto>?> GetAllPostsAsync(int page = 1, int pageSize = 20)
+    {
+        try
+        {
+            var response = await httpClient.GetFromJsonAsync<ApiResponse<PagedResult<PostSummaryDto>>>(
+                $"api/posts/all?page={page}&pageSize={pageSize}");
+            return response?.Data;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to fetch all posts");
+            return null;
+        }
+    }
+
+    public async Task<bool> DeletePostAsync(int id)
+    {
+        try
+        {
+            var response = await httpClient.DeleteAsync($"api/posts/{id}");
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to delete post {Id}", id);
+            return false;
+        }
+    }
+
+    public async Task<IEnumerable<CategoryDto>?> GetCategoriesAsync()
+    {
+        try
+        {
+            var response = await httpClient.GetFromJsonAsync<ApiResponse<IEnumerable<CategoryDto>>>("api/categories");
+            return response?.Data;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to fetch categories");
+            return null;
+        }
+    }
+
+    public async Task<CategoryDto?> CreateCategoryAsync(string name, string slug)
+    {
+        try
+        {
+            var response = await httpClient.PostAsJsonAsync("api/categories", new { name, slug });
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<CategoryDto>>();
+            return result?.Data;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to create category {Name}", name);
+            return null;
+        }
+    }
+
+    public async Task<bool> DeleteCategoryAsync(int id)
+    {
+        try
+        {
+            var response = await httpClient.DeleteAsync($"api/categories/{id}");
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to delete category {Id}", id);
+            return false;
+        }
+    }
+
+    public async Task<IEnumerable<TagDto>?> GetTagsAsync()
+    {
+        try
+        {
+            var response = await httpClient.GetFromJsonAsync<ApiResponse<IEnumerable<TagDto>>>("api/tags");
+            return response?.Data;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to fetch tags");
+            return null;
+        }
+    }
+
+    public async Task<bool> DeleteTagAsync(int id)
+    {
+        try
+        {
+            var response = await httpClient.DeleteAsync($"api/tags/{id}");
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to delete tag {Id}", id);
+            return false;
+        }
+    }
+}

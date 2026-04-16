@@ -1,0 +1,135 @@
+@page "/admin"
+@page "/admin/dashboard"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inherits AdminPageBase
+@inject IPostApiClient PostClient
+@inject ICategoryApiClient CategoryClient
+@inject ITagApiClient TagClient
+@inject IAdminApiClient AdminClient
+
+<PageTitle>Dashboard — Admin | FootballBlog</PageTitle>
+
+<MudText Typo="Typo.h5" Style="color:#efefef;font-weight:700;margin-bottom:4px;">Dashboard</MudText>
+<MudText Typo="Typo.body2" Style="color:#666;margin-bottom:24px;">
+    Xin chào @_userName · @DateTime.Now.ToString("dd/MM/yyyy · HH:mm") ICT
+</MudText>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Style="margin-bottom:24px;" />
+}
+
+<!-- Stat Cards -->
+<MudGrid Spacing="3" Style="margin-bottom:32px;">
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:20px;border-radius:10px;">
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Tổng bài viết</MudText>
+            <MudText Typo="Typo.h4" Style="color:#efefef;font-weight:700;margin:8px 0 4px;">@_totalPosts</MudText>
+            <MudText Typo="Typo.caption" Style="color:#c8f04d;">📝 All posts</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:20px;border-radius:10px;">
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Đã xuất bản</MudText>
+            <MudText Typo="Typo.h4" Style="color:#efefef;font-weight:700;margin:8px 0 4px;">@_publishedPosts</MudText>
+            <MudText Typo="Typo.caption" Style="color:#4ade80;">✅ Published</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:20px;border-radius:10px;">
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Danh mục</MudText>
+            <MudText Typo="Typo.h4" Style="color:#efefef;font-weight:700;margin:8px 0 4px;">@_totalCategories</MudText>
+            <MudText Typo="Typo.caption" Style="color:#999;">📁 Categories</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:20px;border-radius:10px;">
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Tags</MudText>
+            <MudText Typo="Typo.h4" Style="color:#efefef;font-weight:700;margin:8px 0 4px;">@_totalTags</MudText>
+            <MudText Typo="Typo.caption" Style="color:#999;">🏷️ Tags</MudText>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+<!-- Recent Posts -->
+<MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;padding:0;overflow:hidden;">
+    <div style="padding:16px 20px;border-bottom:1px solid #242424;display:flex;align-items:center;justify-content:space-between;">
+        <MudText Typo="Typo.subtitle1" Style="color:#efefef;font-weight:600;">Bài viết gần đây</MudText>
+        <MudButton Href="/admin/posts" Variant="Variant.Text" Size="Size.Small" Style="color:#c8f04d;">
+            Xem tất cả →
+        </MudButton>
+    </div>
+    @if (_recentPosts?.Any() == true)
+    {
+        <MudTable Items="_recentPosts" Dense="true" Hover="true"
+                  Style="background:transparent;"
+                  RowStyle="border-bottom:1px solid #1a1a1a;">
+            <HeaderContent>
+                <MudTh Style="color:#555;font-size:11px;text-transform:uppercase;">Tiêu đề</MudTh>
+                <MudTh Style="color:#555;font-size:11px;text-transform:uppercase;">Danh mục</MudTh>
+                <MudTh Style="color:#555;font-size:11px;text-transform:uppercase;">Trạng thái</MudTh>
+                <MudTh Style="color:#555;font-size:11px;text-transform:uppercase;">Ngày tạo</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>
+                    <MudText Typo="Typo.body2" Style="color:#efefef;">@context.Title</MudText>
+                </MudTd>
+                <MudTd>
+                    <MudText Typo="Typo.caption" Style="color:#999;">@(context.CategoryName ?? "—")</MudText>
+                </MudTd>
+                <MudTd>
+                    <MudChip T="string" Size="Size.Small" Style="background:rgba(74,222,128,0.12);color:#4ade80;height:20px;font-size:11px;">Đã đăng</MudChip>
+                </MudTd>
+                <MudTd>
+                    <MudText Typo="Typo.caption" Style="color:#666;">@context.PublishedAt.ToString("dd/MM/yyyy")</MudText>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+    else if (!_loading)
+    {
+        <div style="padding:40px;text-align:center;color:#555;">Chưa có bài viết nào.</div>
+    }
+</MudPaper>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
+
+    private bool _loading = true;
+    private string _userName = "Admin";
+    private int _totalPosts;
+    private int _publishedPosts;
+    private int _totalCategories;
+    private int _totalTags;
+    private IEnumerable<PostSummaryDto>? _recentPosts;
+
+    protected override async Task OnAdminInitializedAsync()
+    {
+        if (AuthState is not null)
+        {
+            var state = await AuthState;
+            _userName = state.User.Identity?.Name ?? "Admin";
+        }
+
+        var publishedTask = PostClient.GetPublishedAsync(1, 5);
+        var allPostsTask = AdminClient.GetAllPostsAsync(1, 1);  // chỉ cần TotalCount
+        var categoriesTask = CategoryClient.GetAllAsync();
+        var tagsTask = TagClient.GetAllAsync();
+
+        await Task.WhenAll(publishedTask, allPostsTask, categoriesTask, tagsTask);
+
+        var published = await publishedTask;
+        var allPosts = await allPostsTask;
+        var categories = await categoriesTask;
+        var tags = await tagsTask;
+
+        _publishedPosts = published?.TotalCount ?? 0;
+        _totalPosts = allPosts?.TotalCount ?? _publishedPosts;
+        _recentPosts = published?.Items;
+        _totalCategories = categories?.Count() ?? 0;
+        _totalTags = tags?.Count() ?? 0;
+
+        _loading = false;
+    }
+}

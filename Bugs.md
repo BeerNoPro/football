@@ -81,11 +81,11 @@ Design tokens: `#141414` bg | `#c8f04d` accent | `#4ade80` live green | layout 3
 
 | # | Task | Priority | Phase |
 |---|------|----------|-------|
-| 1 | Wire Cookie Auth (Blazor) + JWT (API) | HIGH | Phase 3 |
-| 2 | Install MudBlazor (Admin routes only) | HIGH | Phase 3 |
-| 3 | Admin pages: Dashboard, Posts CRUD, Categories, Tags | HIGH | Phase 3 |
+| ~~1~~ | ~~Wire Cookie Auth (Blazor) + JWT (API)~~ | ~~HIGH~~ | ✅ DONE |
+| ~~2~~ | ~~Install MudBlazor (Admin routes only)~~ | ~~HIGH~~ | ✅ DONE |
+| 3 | Admin Posts create/edit (Quill.js rich text editor) | HIGH | Phase 3 |
 | ~~4~~ | ~~MatchEvent.Type → EventType enum + migration~~ | ~~LOW~~ | ✅ DONE |
-| 5 | ILiveScoreService implementation + DI register | HIGH | Phase 4 |
+| ~~5~~ | ~~ILiveScoreService implementation + DI register~~ | ~~HIGH~~ | ✅ DONE |
 | 6 | SignalR LiveScoreHub + Redis backplane | HIGH | Phase 4 |
 | 7 | Blazor LiveScore pages + widget | MEDIUM | Phase 4 |
 | 8 | IAIPredictionProvider interface + Claude impl | HIGH | Phase 5 |

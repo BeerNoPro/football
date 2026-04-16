@@ -1,0 +1,123 @@
+@page "/admin/posts"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inherits AdminPageBase
+@inject IPostApiClient PostClient
+@inject ISnackbar Snackbar
+@inject NavigationManager Nav
+
+<PageTitle>Bài viết — Admin | FootballBlog</PageTitle>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+    <div>
+        <MudText Typo="Typo.h5" Style="color:#efefef;font-weight:700;">Bài viết</MudText>
+        <MudText Typo="Typo.body2" Style="color:#666;">Quản lý tất cả bài viết</MudText>
+    </div>
+    <MudButton Href="/admin/posts/create" Variant="Variant.Filled"
+               StartIcon="@Icons.Material.Filled.Add"
+               Style="background:#c8f04d;color:#0d0d0d;font-weight:600;">
+        Tạo bài viết
+    </MudButton>
+</div>
+
+<MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;overflow:hidden;">
+    <div style="padding:12px 16px;border-bottom:1px solid #242424;display:flex;gap:12px;align-items:center;">
+        <MudTextField @bind-Value="_search" Placeholder="Tìm bài viết..." Immediate="true"
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                      Variant="Variant.Outlined" Margin="Margin.Dense"
+                      Style="max-width:320px;"
+                      OnKeyUp="@(_ => _page = 1)" />
+        <MudSpacer />
+        <MudText Typo="Typo.caption" Style="color:#555;">
+            @_totalCount bài viết
+        </MudText>
+    </div>
+
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+    }
+
+    <MudTable Items="_filteredPosts" Dense="true" Hover="true"
+              Style="background:transparent;"
+              RowStyle="border-bottom:1px solid #1a1a1a;"
+              Loading="_loading">
+        <HeaderContent>
+            <MudTh Style="color:#555;font-size:11px;">Tiêu đề</MudTh>
+            <MudTh Style="color:#555;font-size:11px;">Danh mục</MudTh>
+            <MudTh Style="color:#555;font-size:11px;">Trạng thái</MudTh>
+            <MudTh Style="color:#555;font-size:11px;">Ngày tạo</MudTh>
+            <MudTh Style="color:#555;font-size:11px;text-align:right;">Hành động</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>
+                <MudText Typo="Typo.body2" Style="color:#efefef;max-width:360px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                    @context.Title
+                </MudText>
+                <MudText Typo="Typo.caption" Style="color:#444;">@context.Slug</MudText>
+            </MudTd>
+            <MudTd>
+                <MudText Typo="Typo.caption" Style="color:#999;">@(context.CategoryName ?? "—")</MudText>
+            </MudTd>
+            <MudTd>
+                <MudChip T="string" Size="Size.Small" Style="background:rgba(74,222,128,0.12);color:#4ade80;height:20px;font-size:11px;">Đã đăng</MudChip>
+            </MudTd>
+            <MudTd>
+                <MudText Typo="Typo.caption" Style="color:#666;">@context.PublishedAt.ToString("dd/MM/yyyy")</MudText>
+            </MudTd>
+            <MudTd Style="text-align:right;">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
+                               Style="color:#999;" title="Sửa"
+                               Href="@($"/admin/posts/edit/{context.Id}")" />
+                <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small"
+                               Style="color:#555;" title="Xem"
+                               Href="@($"/bai-viet/{context.Slug}")" Target="_blank" />
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Style="color:#555;padding:32px;">Không tìm thấy bài viết nào.</MudText>
+        </NoRecordsContent>
+    </MudTable>
+
+    @if (_totalPages > 1)
+    {
+        <div style="padding:12px 16px;border-top:1px solid #242424;display:flex;justify-content:center;">
+            <MudPagination Count="_totalPages" @bind-Selected="_page"
+                           Color="Color.Primary" Size="Size.Small"
+                           BoundaryCount="1" MiddleCount="3" />
+        </div>
+    }
+</MudPaper>
+
+@code {
+    private bool _loading = true;
+    private string _search = string.Empty;
+    private int _page = 1;
+    private int _totalCount;
+    private int _totalPages;
+    private IEnumerable<PostSummaryDto> _allPosts = [];
+
+    private IEnumerable<PostSummaryDto> _filteredPosts =>
+        string.IsNullOrWhiteSpace(_search)
+            ? _allPosts
+            : _allPosts.Where(p => p.Title.Contains(_search, StringComparison.OrdinalIgnoreCase)
+                                || p.Slug.Contains(_search, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnAdminInitializedAsync()
+    {
+        await LoadPostsAsync();
+    }
+
+    private async Task LoadPostsAsync()
+    {
+        _loading = true;
+        var result = await PostClient.GetPublishedAsync(_page, 50);
+        if (result is not null)
+        {
+            _allPosts = result.Items;
+            _totalCount = result.TotalCount;
+            _totalPages = result.TotalPages;
+        }
+        _loading = false;
+    }
+}

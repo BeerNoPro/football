@@ -1,0 +1,114 @@
+@inherits LayoutComponentBase
+@rendermode InteractiveServer
+
+<MudThemeProvider Theme="_adminTheme" IsDarkMode="true" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="0" Dense="true" Style="background:#111111;border-bottom:1px solid #242424;">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit"
+                       Edge="Edge.Start" OnClick="@(() => _drawerOpen = !_drawerOpen)"
+                       Style="color:#666;" />
+        <MudText Typo="Typo.h6" Style="color:#efefef;font-weight:700;letter-spacing:1px;">
+            <span style="color:#efefef;">FOOTBALL</span><span style="color:#c8f04d;">BLOG</span>
+        </MudText>
+        <MudSpacer />
+        <MudButton Href="/" Target="_blank" Variant="Variant.Text" Size="Size.Small"
+                   Style="color:#999;font-size:12px;" StartIcon="@Icons.Material.Filled.Home">
+            Xem trang chủ
+        </MudButton>
+        <MudButton Href="/admin/posts/create" Variant="Variant.Filled" Size="Size.Small"
+                   Style="background:#c8f04d;color:#0d0d0d;font-weight:600;margin-left:8px;"
+                   StartIcon="@Icons.Material.Filled.Add">
+            Tạo bài viết
+        </MudButton>
+        <MudIconButton Icon="@Icons.Material.Filled.Logout" title="Đăng xuất"
+                       Href="/admin/logout" Style="color:#666;margin-left:4px;" />
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" Variant="DrawerVariant.Responsive" Elevation="0"
+               Style="background:#111111;border-right:1px solid #242424;">
+        <MudNavMenu>
+            <MudText Typo="Typo.overline" Style="color:#555;padding:12px 16px 4px;font-size:10px;letter-spacing:1.5px;">
+                TỔNG QUAN
+            </MudText>
+            <MudNavLink Href="/admin" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">
+                Dashboard
+            </MudNavLink>
+
+            <MudText Typo="Typo.overline" Style="color:#555;padding:12px 16px 4px;font-size:10px;letter-spacing:1.5px;">
+                NỘI DUNG
+            </MudText>
+            <MudNavLink Href="/admin/posts" Icon="@Icons.Material.Filled.Article">
+                Bài viết
+            </MudNavLink>
+            <MudNavLink Href="/admin/categories" Icon="@Icons.Material.Filled.Category">
+                Danh mục
+            </MudNavLink>
+            <MudNavLink Href="/admin/tags" Icon="@Icons.Material.Filled.Tag">
+                Tags
+            </MudNavLink>
+            <MudNavLink Href="/admin/predictions" Icon="@Icons.Material.Filled.Psychology">
+                AI Predictions
+            </MudNavLink>
+
+            <MudText Typo="Typo.overline" Style="color:#555;padding:12px 16px 4px;font-size:10px;letter-spacing:1.5px;">
+                BÓNG ĐÁ
+            </MudText>
+            <MudNavLink Href="/admin/matches" Icon="@Icons.Material.Filled.SportsSoccer">
+                Trận đấu
+            </MudNavLink>
+            <MudNavLink Href="/admin/prompts" Icon="@Icons.Material.Filled.TextSnippet">
+                Prompt Templates
+            </MudNavLink>
+
+            <MudText Typo="Typo.overline" Style="color:#555;padding:12px 16px 4px;font-size:10px;letter-spacing:1.5px;">
+                HỆ THỐNG
+            </MudText>
+            <MudNavLink Href="/hangfire" Target="_blank" Icon="@Icons.Material.Filled.Schedule">
+                Hangfire Jobs
+            </MudNavLink>
+            <MudNavLink Href="/admin/settings" Icon="@Icons.Material.Filled.Settings">
+                Cài đặt
+            </MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+
+    <MudMainContent Style="background:#141414;min-height:100vh;padding:24px;">
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+
+    private static readonly MudTheme _adminTheme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = "#c8f04d",
+            AppbarBackground = "#111111",
+            Background = "#141414",
+            Surface = "#1c1c1c",
+            DrawerBackground = "#111111",
+            DrawerText = "#efefef",
+            TextPrimary = "#efefef",
+            TextSecondary = "#999999",
+            ActionDefault = "#666666",
+        },
+        PaletteDark = new PaletteDark
+        {
+            Primary = "#c8f04d",
+            AppbarBackground = "#111111",
+            Background = "#141414",
+            Surface = "#1c1c1c",
+            DrawerBackground = "#111111",
+            DrawerText = "#efefef",
+            TextPrimary = "#efefef",
+            TextSecondary = "#999999",
+            ActionDefault = "#666666",
+        }
+    };
+}

@@ -4,13 +4,11 @@ using FootballBlog.Core.Interfaces;
 using FootballBlog.Core.Models;
 using FootballBlog.Core.Options;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace FootballBlog.API.ApiClients.FootballApi;
 
 public class FootballApiClient(
     HttpClient httpClient,
-    IOptions<FootballApiOptions> options,
     IFootballApiRateLimiter rateLimiter,
     ILogger<FootballApiClient> logger) : IFootballApiClient
 {

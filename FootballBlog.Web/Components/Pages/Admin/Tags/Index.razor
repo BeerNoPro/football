@@ -1,0 +1,82 @@
+@page "/admin/tags"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inherits AdminPageBase
+@inject ITagApiClient TagClient
+@inject IAdminApiClient AdminClient
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>Tags — Admin | FootballBlog</PageTitle>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+    <div>
+        <MudText Typo="Typo.h5" Style="color:#efefef;font-weight:700;">Tags</MudText>
+        <MudText Typo="Typo.body2" Style="color:#666;">@_tags.Count() tags — quản lý nhãn bài viết</MudText>
+    </div>
+</div>
+
+<MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;overflow:hidden;">
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+    }
+
+    <!-- Tag chips grid -->
+    <div style="padding:20px;display:flex;flex-wrap:wrap;gap:10px;">
+        @foreach (var tag in _tags)
+        {
+            <div style="display:flex;align-items:center;gap:6px;background:#242424;border:1px solid #2e2e2e;border-radius:20px;padding:6px 12px;">
+                <MudText Typo="Typo.body2" Style="color:#efefef;">@tag.Name</MudText>
+                <MudText Typo="Typo.caption" Style="color:#555;">/</MudText>
+                <MudText Typo="Typo.caption" Style="color:#555;">@tag.Slug</MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small"
+                               Style="color:#555;width:18px;height:18px;padding:0;margin-left:2px;"
+                               OnClick="@(() => ConfirmDelete(tag))" />
+            </div>
+        }
+        @if (!_loading && !_tags.Any())
+        {
+            <MudText Style="color:#555;">Chưa có tag nào.</MudText>
+        }
+    </div>
+</MudPaper>
+
+@code {
+    private bool _loading = true;
+    private IEnumerable<TagDto> _tags = [];
+
+    protected override async Task OnAdminInitializedAsync()
+    {
+        await LoadTagsAsync();
+    }
+
+    private async Task LoadTagsAsync()
+    {
+        _loading = true;
+        _tags = await TagClient.GetAllAsync() ?? [];
+        _loading = false;
+    }
+
+    private async Task ConfirmDelete(TagDto tag)
+    {
+        var confirmed = await DialogService.ShowMessageBox(
+            "Xác nhận xóa",
+            $"Bạn có chắc muốn xóa tag \"{tag.Name}\"?",
+            yesText: "Xóa", cancelText: "Hủy");
+
+        if (confirmed == true)
+        {
+            var ok = await AdminClient.DeleteTagAsync(tag.Id);
+            if (ok)
+            {
+                Snackbar.Add("Đã xóa tag.", Severity.Success);
+                await LoadTagsAsync();
+            }
+            else
+            {
+                Snackbar.Add("Xóa thất bại.", Severity.Error);
+            }
+        }
+    }
+}

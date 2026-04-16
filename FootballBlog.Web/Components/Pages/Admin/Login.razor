@@ -1,0 +1,150 @@
+@page "/admin/login"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@inject IHttpClientFactory HttpFactory
+@inject NavigationManager Nav
+@inject IConfiguration Config
+@inject ILogger<Login> Logger
+
+<PageTitle>Đăng nhập — Admin | FootballBlog</PageTitle>
+
+<div style="min-height:100vh;background:#141414;display:flex;align-items:center;justify-content:center;">
+    <div style="width:100%;max-width:380px;background:#1c1c1c;border:1px solid #242424;border-radius:12px;padding:40px 36px;">
+
+        <div style="text-align:center;margin-bottom:28px;">
+            <div style="font-size:20px;font-weight:700;letter-spacing:1px;margin-bottom:6px;">
+                <span style="color:#efefef;">FOOTBALL</span><span style="color:#c8f04d;">BLOG</span>
+            </div>
+            <div style="color:#666;font-size:12px;margin-bottom:10px;">Kết quả &amp; Nhận định AI</div>
+            <span style="background:rgba(200,240,77,0.1);color:#c8f04d;border:1px solid rgba(200,240,77,0.2);border-radius:20px;font-size:11px;padding:3px 10px;">
+                ⚙️ Admin Panel
+            </span>
+        </div>
+
+        <div style="font-size:18px;font-weight:700;color:#efefef;margin-bottom:4px;">Đăng nhập</div>
+        <div style="color:#666;font-size:13px;margin-bottom:24px;">Truy cập bảng quản trị hệ thống</div>
+
+        @if (!string.IsNullOrEmpty(_error))
+        {
+            <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 14px;color:#f87171;font-size:13px;margin-bottom:16px;display:flex;gap:8px;align-items:center;">
+                <span>✕</span> @_error
+            </div>
+        }
+
+        <form method="post" @formname="login-form">
+            <AntiforgeryToken />
+            <div style="margin-bottom:16px;">
+                <label style="display:block;color:#999;font-size:12px;margin-bottom:6px;">Email</label>
+                <input name="email" type="email" required autocomplete="email"
+                       value="@_model.Email"
+                       placeholder="admin@footballblog.vn"
+                       style="width:100%;background:#141414;border:1px solid #2e2e2e;border-radius:8px;padding:10px 12px;color:#efefef;font-size:14px;outline:none;box-sizing:border-box;" />
+            </div>
+            <div style="margin-bottom:24px;">
+                <label style="display:block;color:#999;font-size:12px;margin-bottom:6px;">Mật khẩu</label>
+                <input name="password" type="password" required autocomplete="current-password"
+                       placeholder="••••••••"
+                       style="width:100%;background:#141414;border:1px solid #2e2e2e;border-radius:8px;padding:10px 12px;color:#efefef;font-size:14px;outline:none;box-sizing:border-box;" />
+            </div>
+            <button type="submit"
+                    style="width:100%;background:#c8f04d;color:#0d0d0d;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.3px;">
+                Đăng nhập
+            </button>
+        </form>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+
+    [SupplyParameterFromForm(FormName = "login-form")]
+    private LoginModel _model { get; set; } = new();
+
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Nếu đã login → redirect ngay
+        if (HttpContext?.User.Identity?.IsAuthenticated == true)
+        {
+            HttpContext.Response.Redirect("/admin");
+            return;
+        }
+
+        // Xử lý POST
+        if (HttpContext?.Request.Method == "POST")
+            await HandleLoginAsync();
+    }
+
+    private async Task HandleLoginAsync()
+    {
+        if (HttpContext is null) return;
+
+        try
+        {
+            var apiUrl = Config["ApiBaseUrl"]
+                ?? throw new InvalidOperationException("ApiBaseUrl chưa cấu hình");
+
+            using var http = HttpFactory.CreateClient();
+            var response = await http.PostAsJsonAsync($"{apiUrl}/api/auth/login", new
+            {
+                email = _model.Email,
+                password = _model.Password
+            });
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _error = "Email hoặc mật khẩu không đúng.";
+                return;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<ApiLoginResult>();
+            if (result?.Data is null)
+            {
+                _error = "Đăng nhập thất bại. Thử lại.";
+                return;
+            }
+
+            // Tạo ClaimsPrincipal từ data trả về
+            var claims = new List<System.Security.Claims.Claim>
+            {
+                new(ClaimTypes.Email, result.Data.Email),
+                new(ClaimTypes.Name, result.Data.DisplayName),
+                new("jwt_token", result.Data.Token),
+            };
+            foreach (var role in result.Data.Roles)
+                claims.Add(new(ClaimTypes.Role, role));
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal,
+                new AuthenticationProperties { IsPersistent = true });
+
+            // Chỉ redirect nội bộ — tránh Open Redirect
+            var returnUrl = HttpContext.Request.Query["returnUrl"].ToString();
+            var safeUrl = !string.IsNullOrEmpty(returnUrl)
+                && returnUrl.StartsWith("/")
+                && !returnUrl.StartsWith("//")
+                ? returnUrl : "/admin";
+            HttpContext.Response.Redirect(safeUrl);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Login HTTP error for {Email}", _model.Email);
+            _error = "Lỗi kết nối. Vui lòng thử lại.";
+        }
+    }
+
+    private class LoginModel
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+
+    private record ApiLoginResult(bool Success, ApiLoginData? Data, string? Error);
+    private record ApiLoginData(string Token, string Email, string DisplayName, List<string> Roles);
+}

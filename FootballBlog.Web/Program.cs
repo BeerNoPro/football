@@ -1,5 +1,8 @@
 using FootballBlog.Web.ApiClients;
 using FootballBlog.Web.Components;
+using FootballBlog.Web.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using MudBlazor.Services;
 using Serilog;
 using Serilog.Events;
 
@@ -46,6 +49,29 @@ try
     builder.Services.AddHttpClient<ITagApiClient, TagApiClient>(client =>
         client.BaseAddress = new Uri(apiBaseUrl));
 
+    // Admin API client — dùng JwtAuthHandler để tự động gắn Bearer token
+    builder.Services.AddScoped<JwtTokenStore>();
+    builder.Services.AddTransient<JwtAuthHandler>();
+    builder.Services.AddHttpClient<IAdminApiClient, AdminApiClient>(client =>
+        client.BaseAddress = new Uri(apiBaseUrl))
+        .AddHttpMessageHandler<JwtAuthHandler>();
+
+    // Cookie Auth — bảo vệ admin pages trên Blazor Web
+    builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+        .AddCookie(options =>
+        {
+            options.LoginPath = "/admin/login";
+            options.LogoutPath = "/admin/logout";
+            options.ExpireTimeSpan = TimeSpan.FromDays(7);
+            options.SlidingExpiration = true;
+        });
+
+    builder.Services.AddAuthorization();
+    builder.Services.AddCascadingAuthenticationState();
+
+    // MudBlazor — chỉ dùng cho Admin pages (InteractiveServer)
+    builder.Services.AddMudServices();
+
     builder.Services.AddRazorComponents()
         .AddInteractiveServerComponents();
 
@@ -61,6 +87,8 @@ try
 
     app.UseHttpsRedirection();
     app.UseStaticFiles();
+    app.UseAuthentication();
+    app.UseAuthorization();
     app.UseAntiforgery();
 
     app.MapRazorComponents<App>()
