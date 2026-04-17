@@ -97,8 +97,12 @@ try
     })
     .AddJwtBearer(options =>
     {
-        var key = builder.Configuration["Jwt:Key"]
-            ?? throw new InvalidOperationException("Jwt:Key chưa được cấu hình. Chạy: dotnet user-secrets set \"Jwt:Key\" \"<32+ ký tự>\"");
+        var key = builder.Configuration["Jwt:Key"];
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            throw new InvalidOperationException("Jwt:Key chưa được cấu hình. Chạy: dotnet user-secrets set \"Jwt:Key\" \"<32+ ký tự>\"");
+        }
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
@@ -120,6 +124,10 @@ try
     // AI Prediction providers — Claude (primary) + Gemini (fallback)
     builder.Services.AddScoped<IAIPredictionProvider, ClaudeAIPredictionProvider>();
     builder.Services.AddScoped<IAIPredictionProvider, GeminiAIPredictionProvider>();
+
+    // API Key rotation
+    builder.Services.AddScoped<IApiKeyRotator, ApiKeyRotator>();
+    builder.Services.AddScoped<ApiKeySeeder>();
 
     // Telegram
     builder.Services.AddScoped<ITelegramService, TelegramService>();
@@ -149,9 +157,6 @@ try
     {
         client.BaseAddress = new Uri(
             builder.Configuration["FootballApi:BaseUrl"] ?? "https://v3.football.api-sports.io");
-        client.DefaultRequestHeaders.Add(
-            "x-apisports-key",
-            builder.Configuration["FootballApi:ApiKey"] ?? string.Empty);
     })
     .AddPolicyHandler(HttpPolicyExtensions
         .HandleTransientHttpError()
@@ -250,6 +255,41 @@ try
     app.MapControllers();
     app.MapHub<LiveScoreHub>("/hubs/livescore");
     app.MapHealthChecks("/health");
+
+    // Seed API keys từ appsettings vào DB (chỉ chạy nếu bảng còn trống)
+    using (var scope = app.Services.CreateScope())
+    {
+        var seeder = scope.ServiceProvider.GetRequiredService<ApiKeySeeder>();
+        await seeder.SeedAsync();
+    }
+
+    // Seed default admin user nếu chưa tồn tại
+    using (var scope = app.Services.CreateScope())
+    {
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
+        var cfg = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+
+        if (!await roleManager.RoleExistsAsync("Admin"))
+        {
+            await roleManager.CreateAsync(new IdentityRole<int>("Admin"));
+        }
+
+        var email = cfg["DefaultAdmin:Email"] ?? "admin@footballblog.dev";
+        if (await userManager.FindByEmailAsync(email) == null)
+        {
+            var admin = new ApplicationUser { Email = email, UserName = email, EmailConfirmed = true };
+            var result = await userManager.CreateAsync(admin, cfg["DefaultAdmin:Password"] ?? "Admin123");
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(admin, "Admin");
+            }
+            else
+            {
+                Log.Warning("Failed to seed admin user: {Errors}", string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
+        }
+    }
 
     Log.Information("FootballBlog API starting up");
     app.Run();

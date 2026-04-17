@@ -7,6 +7,74 @@ public class AdminApiClient(HttpClient httpClient, ILogger<AdminApiClient> logge
 {
     private record ApiResponse<T>(bool Success, T? Data, string? Error);
 
+    public async Task<IEnumerable<ApiKeyDto>?> GetApiKeysAsync()
+    {
+        try
+        {
+            var response = await httpClient.GetFromJsonAsync<ApiResponse<IEnumerable<ApiKeyDto>>>("api/admin/api-keys");
+            return response?.Data;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to fetch API keys");
+            return null;
+        }
+    }
+
+    public async Task<ApiKeyDto?> CreateApiKeyAsync(CreateApiKeyDto dto)
+    {
+        try
+        {
+            var response = await httpClient.PostAsJsonAsync("api/admin/api-keys", dto);
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<ApiKeyDto>>();
+            return result?.Data;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to create API key for {Provider}", dto.Provider);
+            return null;
+        }
+    }
+
+    public async Task<ApiKeyDto?> ToggleApiKeyAsync(int id)
+    {
+        try
+        {
+            var response = await httpClient.PatchAsync($"api/admin/api-keys/{id}/toggle", null);
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<ApiKeyDto>>();
+            return result?.Data;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to toggle API key {Id}", id);
+            return null;
+        }
+    }
+
+    public async Task<bool> DeleteApiKeyAsync(int id)
+    {
+        try
+        {
+            var response = await httpClient.DeleteAsync($"api/admin/api-keys/{id}");
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to delete API key {Id}", id);
+            return false;
+        }
+    }
+
     public async Task<PagedResult<PostSummaryDto>?> GetAllPostsAsync(int page = 1, int pageSize = 20)
     {
         try

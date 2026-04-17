@@ -1,0 +1,213 @@
+@page "/admin/api-keys"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inherits AdminPageBase
+@inject IAdminApiClient AdminClient
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>API Keys — Admin | FootballBlog</PageTitle>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+    <div>
+        <MudText Typo="Typo.h5" Style="color:#efefef;font-weight:700;">API Keys</MudText>
+        <MudText Typo="Typo.body2" Style="color:#666;">Quản lý API keys — FootballApi / Claude / Gemini</MudText>
+    </div>
+    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add"
+               Style="background:#c8f04d;color:#0d0d0d;font-weight:600;"
+               OnClick="@(() => _showAddForm = true)">
+        Thêm key
+    </MudButton>
+</div>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    @foreach (var provider in _providers)
+    {
+        var providerKeys = _keys.Where(k => k.Provider == provider).ToList();
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;overflow:hidden;margin-bottom:16px;">
+            <div style="background:#0d0d0d;padding:12px 16px;display:flex;align-items:center;gap:8px;">
+                <MudText Typo="Typo.subtitle2" Style="color:#efefef;font-weight:700;">@provider</MudText>
+                <MudChip T="string" Size="Size.Small" Style="background:#1c1c1c;color:#666;">
+                    @providerKeys.Count key(s)
+                </MudChip>
+            </div>
+            <MudTable Items="providerKeys" Dense="true" Hover="true"
+                      Style="background:transparent;" Elevation="0">
+                <HeaderContent>
+                    <MudTh Style="color:#555;font-size:11px;">Key</MudTh>
+                    <MudTh Style="color:#555;font-size:11px;">Priority</MudTh>
+                    <MudTh Style="color:#555;font-size:11px;">Daily limit</MudTh>
+                    <MudTh Style="color:#555;font-size:11px;">Note</MudTh>
+                    <MudTh Style="color:#555;font-size:11px;">Trạng thái</MudTh>
+                    <MudTh Style="color:#555;font-size:11px;text-align:right;">Hành động</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>
+                        <MudText Typo="Typo.caption" Style="color:#efefef;font-family:monospace;">@context.KeyMasked</MudText>
+                    </MudTd>
+                    <MudTd><MudText Typo="Typo.caption" Style="color:#999;">@context.Priority</MudText></MudTd>
+                    <MudTd>
+                        <MudText Typo="Typo.caption" Style="color:#999;">
+                            @(context.DailyLimit == 0 ? "Không giới hạn" : context.DailyLimit.ToString())
+                        </MudText>
+                    </MudTd>
+                    <MudTd><MudText Typo="Typo.caption" Style="color:#666;">@context.Note</MudText></MudTd>
+                    <MudTd>
+                        @if (context.IsActive)
+                        {
+                            <MudChip T="string" Size="Size.Small" Style="background:rgba(74,222,128,0.12);color:#4ade80;">Active</MudChip>
+                        }
+                        else
+                        {
+                            <MudChip T="string" Size="Size.Small" Style="background:#1c1c1c;color:#555;">Disabled</MudChip>
+                        }
+                    </MudTd>
+                    <MudTd Style="text-align:right;">
+                        <MudIconButton Icon="@(context.IsActive ? Icons.Material.Filled.ToggleOn : Icons.Material.Filled.ToggleOff)"
+                                       Size="Size.Small"
+                                       Style="@(context.IsActive ? "color:#4ade80;" : "color:#555;")"
+                                       OnClick="@(() => ToggleKey(context))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
+                                       Style="color:#555;"
+                                       OnClick="@(() => ConfirmDelete(context))" />
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Style="color:#555;padding:24px;">Chưa có key nào cho provider này.</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </MudPaper>
+    }
+}
+
+@if (_showAddForm)
+{
+    <MudPaper Style="background:#1c1c1c;border:1px solid #2e2e2e;border-radius:10px;padding:24px;margin-top:8px;max-width:480px;">
+        <MudText Typo="Typo.subtitle1" Style="color:#efefef;margin-bottom:16px;">Thêm API Key mới</MudText>
+
+        <MudSelect @bind-Value="_newProvider" Label="Provider" Variant="Variant.Outlined"
+                   Margin="Margin.Dense" Style="margin-bottom:12px;">
+            <MudSelectItem Value="@("FootballApi")">FootballApi</MudSelectItem>
+            <MudSelectItem Value="@("Claude")">Claude</MudSelectItem>
+            <MudSelectItem Value="@("Gemini")">Gemini</MudSelectItem>
+        </MudSelect>
+
+        <MudTextField @bind-Value="_newKeyValue" Label="Key Value" Variant="Variant.Outlined"
+                      Margin="Margin.Dense" Style="margin-bottom:12px;"
+                      InputType="InputType.Password" AutoFocus="true" />
+
+        <div style="display:flex;gap:12px;margin-bottom:12px;">
+            <MudNumericField @bind-Value="_newPriority" Label="Priority" Variant="Variant.Outlined"
+                             Margin="Margin.Dense" Min="1" Style="flex:1;" />
+            <MudNumericField @bind-Value="_newDailyLimit" Label="Daily Limit (0=∞)" Variant="Variant.Outlined"
+                             Margin="Margin.Dense" Min="0" Style="flex:1;" />
+        </div>
+
+        <MudTextField @bind-Value="_newNote" Label="Note (account email…)" Variant="Variant.Outlined"
+                      Margin="Margin.Dense" Style="margin-bottom:16px;" />
+
+        <div style="display:flex;gap:8px;">
+            <MudButton OnClick="@(() => _showAddForm = false)" Variant="Variant.Outlined"
+                       Style="color:#666;border-color:#333;">Hủy</MudButton>
+            <MudButton OnClick="AddKey" Variant="Variant.Filled"
+                       Style="background:#c8f04d;color:#0d0d0d;" Disabled="_saving">
+                @(_saving ? "Đang lưu..." : "Lưu")
+            </MudButton>
+        </div>
+    </MudPaper>
+}
+
+@code {
+    private bool _loading = true;
+    private bool _showAddForm;
+    private bool _saving;
+
+    private List<ApiKeyDto> _keys = [];
+    private readonly string[] _providers = ["FootballApi", "Claude", "Gemini"];
+
+    private string _newProvider = "FootballApi";
+    private string _newKeyValue = string.Empty;
+    private int _newPriority = 1;
+    private int _newDailyLimit;
+    private string _newNote = string.Empty;
+
+    protected override async Task OnAdminInitializedAsync()
+    {
+        await LoadKeysAsync();
+    }
+
+    private async Task LoadKeysAsync()
+    {
+        _loading = true;
+        _keys = (await AdminClient.GetApiKeysAsync())?.ToList() ?? [];
+        _loading = false;
+    }
+
+    private async Task AddKey()
+    {
+        if (string.IsNullOrWhiteSpace(_newKeyValue)) return;
+        _saving = true;
+
+        var result = await AdminClient.CreateApiKeyAsync(new CreateApiKeyDto(
+            _newProvider, _newKeyValue, _newPriority, _newDailyLimit,
+            string.IsNullOrWhiteSpace(_newNote) ? null : _newNote));
+
+        _saving = false;
+
+        if (result is not null)
+        {
+            Snackbar.Add($"Đã thêm key cho {result.Provider}", Severity.Success);
+            _showAddForm = false;
+            _newKeyValue = string.Empty;
+            _newNote = string.Empty;
+            _newPriority = 1;
+            _newDailyLimit = 0;
+            await LoadKeysAsync();
+        }
+        else
+        {
+            Snackbar.Add("Thêm key thất bại.", Severity.Error);
+        }
+    }
+
+    private async Task ToggleKey(ApiKeyDto key)
+    {
+        var result = await AdminClient.ToggleApiKeyAsync(key.Id);
+        if (result is not null)
+        {
+            Snackbar.Add($"Key {result.KeyMasked} — {(result.IsActive ? "đã bật" : "đã tắt")}", Severity.Info);
+            await LoadKeysAsync();
+        }
+        else
+        {
+            Snackbar.Add("Toggle thất bại.", Severity.Error);
+        }
+    }
+
+    private async Task ConfirmDelete(ApiKeyDto key)
+    {
+        var confirmed = await DialogService.ShowMessageBox(
+            "Xác nhận xóa",
+            $"Xóa key {key.KeyMasked} ({key.Provider})?",
+            yesText: "Xóa", cancelText: "Hủy");
+
+        if (confirmed == true)
+        {
+            var ok = await AdminClient.DeleteApiKeyAsync(key.Id);
+            if (ok)
+            {
+                Snackbar.Add("Đã xóa key.", Severity.Success);
+                await LoadKeysAsync();
+            }
+            else
+            {
+                Snackbar.Add("Xóa thất bại.", Severity.Error);
+            }
+        }
+    }
+}

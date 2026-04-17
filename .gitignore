@@ -12,6 +12,8 @@ obj/
 
 ## Logs (Serilog output)
 logs/
+*.log
+demo.md
 
 ## Secrets & Config local
 appsettings.Development.json

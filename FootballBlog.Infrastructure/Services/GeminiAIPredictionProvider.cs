@@ -1,17 +1,18 @@
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using FootballBlog.Core.Interfaces;
 using FootballBlog.Core.Interfaces.Services;
 using FootballBlog.Core.Models;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace FootballBlog.Infrastructure.Services;
 
 public class GeminiAIPredictionProvider(
     IHttpClientFactory httpClientFactory,
-    IConfiguration configuration,
+    IApiKeyRotator keyRotator,
     ILogger<GeminiAIPredictionProvider> logger) : IAIPredictionProvider
 {
     public string ProviderName => "Gemini";
@@ -19,8 +20,8 @@ public class GeminiAIPredictionProvider(
 
     public async Task<AIPredictionResult> PredictAsync(Match match, MatchContext context, CancellationToken ct = default)
     {
-        var apiKey = configuration["Gemini:ApiKey"]
-            ?? throw new InvalidOperationException("Gemini:ApiKey chưa được cấu hình");
+        var apiKey = await keyRotator.GetAvailableKeyAsync("Gemini")
+            ?? throw new InvalidOperationException("Không có Gemini API key khả dụng");
 
         var url = $"https://generativelanguage.googleapis.com/v1beta/models/{ModelName}:generateContent?key={apiKey}";
         var prompt = BuildPrompt(match, context);
@@ -35,6 +36,12 @@ public class GeminiAIPredictionProvider(
         logger.LogDebug("Calling Gemini API for match {MatchId}", match.Id);
 
         var response = await client.PostAsJsonAsync(url, requestBody, ct);
+
+        if (response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.Forbidden)
+        {
+            await keyRotator.MarkExhaustedAsync("Gemini", apiKey);
+        }
+
         response.EnsureSuccessStatusCode();
 
         var raw = await response.Content.ReadFromJsonAsync<GeminiResponse>(cancellationToken: ct)

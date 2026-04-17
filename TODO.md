@@ -117,18 +117,18 @@ FootballBlog/
 - [x] Edit Telegram message khi kết quả thực tế về
 - [ ] Admin page: xem prediction history, manual retrigger
 
-### Phase 6.5 — API Key Management ⬜ ([plan](.claude/plans/phase-6.5-api-key-management.md))
-- [ ] Entity `ApiKeyConfig` (Provider, KeyValue, Priority, IsActive, DailyLimit, UsedToday, LastResetAt)
-- [ ] EF migration: AddApiKeyConfig
-- [ ] `IApiKeyRotator<TProvider>` — thử key theo Priority, skip key IsActive=false hoặc UsedToday≥DailyLimit
-- [ ] Redis cache key list (TTL 5 phút) — tránh query DB mỗi request
-- [ ] Migrate config: FootballApi/Claude/Gemini từ appsettings → DB (giữ appsettings làm seed lần đầu)
-- [ ] Admin page: `/admin/api-keys` — CRUD (thêm/xóa/enable/disable key, xem usage hôm nay)
-- [ ] Auto-reset `UsedToday = 0` lúc 00:00 UTC (Hangfire cron job)
-- [ ] Cập nhật `FootballApiClient`, `ClaudeAIPredictionProvider`, `GeminiAIPredictionProvider` dùng `IApiKeyRotator`
+### Phase 6.5 — API Key Management ✅
+- [x] Entity `ApiKeyConfig` (Provider, KeyValue, Priority, IsActive, DailyLimit, Note, CreatedAt)
+- [x] EF migration: `AddApiKeyConfig`
+- [x] `IApiKeyRotator` — query DB theo Priority, skip key bị block (Redis flag) hoặc vượt DailyLimit
+- [x] Redis cache key list (TTL 5 phút) + blocked flag (TTL đến midnight UTC khi nhận 429/403)
+- [x] `ApiKeySeeder` — seed từ appsettings/user-secrets vào DB lần đầu startup (guard: chỉ chạy nếu bảng trống)
+- [x] Admin page: `/admin/api-keys` — list theo provider, toggle IsActive, thêm/xóa key
+- [x] Cập nhật `FootballApiClient`, `ClaudeAIPredictionProvider`, `GeminiAIPredictionProvider` dùng `IApiKeyRotator`
+- [x] Xóa `ApiKey` khỏi `appsettings.json` và `FootballApiOptions`
 
-> **Không lưu DB:** `ConnectionStrings`, `Jwt:Key`, `Redis` — đây là infra config, không phải business config.
-> **Khi implement:** review toàn bộ `appsettings.json` + `appsettings.Development.example.json` để phân loại lại — key nào migrate sang DB, key nào giữ nguyên config. Cập nhật `appsettings.Development.example.json` sau khi xong.
+> **Để re-seed:** xóa tất cả rows trong bảng `ApiKeyConfigs` → restart API → seeder tự chạy lại.
+> **Không lưu DB:** `ConnectionStrings`, `Jwt:Key`, `Redis` — infra config, giữ nguyên trong appsettings/user-secrets.
 
 ### Phase 7 — Deploy & DevOps ⬜
 - [ ] Dockerfile (multi-stage, Web + API)
@@ -153,9 +153,9 @@ FootballBlog/
 | `ConnectionStrings` | `Redis` | Redis URL (mặc định `localhost:6379`) | ✅ |
 | `Jwt` | `Key` | JWT signing key — **tối thiểu 32 ký tự** | ✅ |
 | `WebBaseUrl` | — | URL Blazor Web (CORS whitelist) | ✅ |
-| `FootballApi` | `ApiKey` | API key từ api-sports.io | ✅ |
-| `Claude` | `ApiKey` | Anthropic API key — console.anthropic.com | Phase 5 |
-| `Gemini` | `ApiKey` | Google AI Studio API key — aistudio.google.com | Phase 5 |
+| `FootballApi` | `ApiKey` | API key từ api-sports.io — **chỉ dùng để seed lần đầu, sau đó xóa** | Phase 6.5 seed |
+| `Claude` | `ApiKey` | Anthropic API key — **chỉ dùng để seed lần đầu, sau đó xóa** | Phase 6.5 seed |
+| `Gemini` | `ApiKey` | Google AI Studio API key — **chỉ dùng để seed lần đầu, sau đó xóa** | Phase 6.5 seed |
 | `Telegram` | `BotToken` | Token từ @BotFather | Phase 6 |
 | `Telegram` | `ChannelId` | Channel ID âm (ví dụ `-1001234567890`) | Phase 6 |
 | `Prediction` | `BlogCategoryId` | ID category "Nhận định" trong DB | Phase 5 |
@@ -170,24 +170,10 @@ FootballBlog/
 ### Cách lấy các key
 
 - **Jwt:Key** — tự tạo: `openssl rand -base64 32`
+-> dotnet user-secrets set "Jwt:Key" "footballblog-jwt-secret-key-dev-2026!!" --project FootballBlog.API
 - **Claude:ApiKey** — [console.anthropic.com](https://console.anthropic.com) → API Keys
 - **Gemini:ApiKey** — [aistudio.google.com](https://aistudio.google.com) → Get API Key
-
-#### FootballApi:ApiKey — api-sports.io (free 100 req/ngày)
-
-1. Vào [api-sports.io](https://api-sports.io) → **Sign Up** (hoặc Login nếu đã có)
-2. Xác nhận email → vào Dashboard
-3. Chọn product **API-Football** → click **Subscribe** → chọn plan **Free**
-4. Vào **Dashboard → API Key** → copy key (dạng `abc123def456...`)
-5. Set vào project:
-   ```bash
-   # Chạy từ thư mục gốc football/
-   dotnet user-secrets set "FootballApi:ApiKey" "KEY_CUA_BAN" --project FootballBlog.API
-   ```
-6. Kiểm tra quota: Dashboard → Usage (free = 100 req/ngày, reset 00:00 UTC)
-
-> **Lưu ý:** Header gửi là `x-apisports-key` (không phải `X-RapidAPI-Key`). Code đã đúng.
-
+b
 #### Telegram Bot + Channel
 
 **Bước 1 — Tạo bot:**

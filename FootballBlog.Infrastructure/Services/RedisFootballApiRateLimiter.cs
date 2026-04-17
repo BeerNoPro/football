@@ -14,7 +14,7 @@ public class RedisFootballApiRateLimiter(
     private readonly IDatabase _db = redis.GetDatabase();
     private readonly int _dailyLimit = options.Value.DailyRequestLimit;
 
-    private static string TodayKey => $"football_api:requests:{DateTime.UtcNow:yyyy-MM-dd}";
+    private static string TodayKey => $"apikey:usage:FootballApi:global:{DateTime.UtcNow:yyyy-MM-dd}";
 
     public async Task<bool> TryConsumeAsync()
     {

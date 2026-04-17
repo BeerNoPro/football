@@ -20,6 +20,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<League> Leagues => Set<League>();
     public DbSet<Team> Teams => Set<Team>();
     public DbSet<MatchContextData> MatchContexts => Set<MatchContextData>();
+    public DbSet<ApiKeyConfig> ApiKeyConfigs => Set<ApiKeyConfig>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

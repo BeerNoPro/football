@@ -7,21 +7,37 @@
 
 ## Mục lục
 
-1. [Kiến trúc tổng quan](#1-kiến-trúc-tổng-quan)
-2. [Request Flow — Blog SSR (Public)](#2-request-flow--blog-ssr-public)
-3. [Auth Flow — Admin (Cookie + JWT)](#3-auth-flow--admin-cookie--jwt)
-4. [Admin CRUD — Bài viết & Media](#4-admin-crud--bài-viết--media)
-5. [Typed HTTP Clients (Web Layer)](#5-typed-http-clients-web-layer)
-6. [Live Score — Football API + SignalR](#6-live-score--football-api--signalr)
-7. [AI Prediction Pipeline](#7-ai-prediction-pipeline)
-8. [Telegram Notification Flow](#8-telegram-notification-flow)
-9. [Data Model Relationships](#9-data-model-relationships)
-10. [Blazor Render Mode Rules](#10-blazor-render-mode-rules)
-11. [Caching Strategy](#11-caching-strategy)
-12. [Hangfire Background Jobs](#12-hangfire-background-jobs)
-13. [External Services & Config](#13-external-services--config)
-14. [DI Container & Service Lifetimes](#14-di-container--service-lifetimes)
-15. [Logging Architecture](#15-logging-architecture)
+- [Cách Hệ Thống Hoạt Động — Football Blog](#cách-hệ-thống-hoạt-động--football-blog)
+  - [Mục lục](#mục-lục)
+  - [1. Kiến trúc tổng quan](#1-kiến-trúc-tổng-quan)
+  - [2. Request Flow — Blog SSR (Public)](#2-request-flow--blog-ssr-public)
+    - [2a. Trang chi tiết bài viết](#2a-trang-chi-tiết-bài-viết)
+    - [2b. Các public endpoints khác](#2b-các-public-endpoints-khác)
+  - [3. Auth Flow — Admin (Cookie + JWT)](#3-auth-flow--admin-cookie--jwt)
+  - [4. Admin CRUD — Bài viết \& Media](#4-admin-crud--bài-viết--media)
+    - [4a. Tạo / Cập nhật bài viết](#4a-tạo--cập-nhật-bài-viết)
+    - [4b. Admin API endpoints (đầy đủ)](#4b-admin-api-endpoints-đầy-đủ)
+  - [5. Typed HTTP Clients (Web Layer)](#5-typed-http-clients-web-layer)
+  - [6. Live Score — Football API + SignalR](#6-live-score--football-api--signalr)
+    - [6a. FetchUpcomingMatchesJob — Đồng bộ lịch đấu](#6a-fetchupcomingmatchesjob--đồng-bộ-lịch-đấu)
+    - [6b. PreMatchDataJob — Dữ liệu trước trận](#6b-prematchdatajob--dữ-liệu-trước-trận)
+    - [6c. LiveScorePollingJob — Poll real-time + SignalR broadcast](#6c-livescorepollingjob--poll-real-time--signalr-broadcast)
+    - [6d. LiveScoreHub — SignalR Server](#6d-livescorehub--signalr-server)
+    - [6e. LiveScoreWidget.razor — Blazor Client](#6e-livescorewidgetrazor--blazor-client)
+  - [7. AI Prediction Pipeline](#7-ai-prediction-pipeline)
+  - [8. Telegram Notification Flow](#8-telegram-notification-flow)
+  - [9. Data Model Relationships](#9-data-model-relationships)
+  - [10. Blazor Render Mode Rules](#10-blazor-render-mode-rules)
+  - [11. Caching Strategy](#11-caching-strategy)
+  - [12. Hangfire Background Jobs](#12-hangfire-background-jobs)
+  - [13. External Services \& Config](#13-external-services--config)
+  - [14. DI Container \& Service Lifetimes](#14-di-container--service-lifetimes)
+  - [15. Logging Architecture](#15-logging-architecture)
+  - [16. Database Migration](#16-database-migration)
+    - [Nguyên tắc](#nguyên-tắc)
+    - [Cách 1 — Thủ công (CLI) ← Khuyến nghị cho Production](#cách-1--thủ-công-cli--khuyến-nghị-cho-production)
+    - [Cách 2 — Tự động khi startup (Auto-Migrate) ← Dev/Staging](#cách-2--tự-động-khi-startup-auto-migrate--devstaging)
+    - [Migration hiện có](#migration-hiện-có)
 
 ---
 
@@ -759,6 +775,77 @@ LogError(ex, ..)    // Exception — luôn truyền exception object
 _logger.LogInformation("Post created {PostId} slug={Slug}", post.Id, post.Slug);  // ✅
 _logger.LogInformation("Post created " + post.Id);  // ❌ string concat
 ```
+
+---
+
+## 16. Database Migration
+
+### Nguyên tắc
+- EF Core dùng bảng `__EFMigrationsHistory` để theo dõi migration nào đã apply
+- Migration chỉ thay đổi **schema** (DDL) — KHÔNG can thiệp data
+- Data seeding (`ApiKeySeeder`) là bước riêng, chạy sau migration trong `Program.cs`
+- Lệnh `dotnet ef database update` **idempotent** — bỏ qua migration đã apply, chỉ chạy pending
+
+### Cách 1 — Thủ công (CLI) ← Khuyến nghị cho Production
+
+Chạy từ root folder của solution:
+
+```bash
+# Apply tất cả pending migrations
+dotnet ef database update --project FootballBlog.Infrastructure --startup-project FootballBlog.API
+
+# Kiểm tra migration nào đã/chưa apply
+dotnet ef migrations list --project FootballBlog.Infrastructure --startup-project FootballBlog.API
+
+# Tạo migration mới (sau khi thay đổi model)
+dotnet ef migrations add <TênMigration> --project FootballBlog.Infrastructure --startup-project FootballBlog.API
+```
+
+**Ưu điểm:** Kiểm soát hoàn toàn — không bao giờ tự apply migration bất ngờ lên Production.
+
+**Khi dùng:** CI/CD pipeline, deploy lên Production, hoặc sau khi tạo migration mới trong dev.
+
+---
+
+### Cách 2 — Tự động khi startup (Auto-Migrate) ← Dev/Staging
+
+Thêm vào `Program.cs` **trước** khi gọi `ApiKeySeeder`:
+
+```csharp
+// Áp dụng pending migrations khi khởi động
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await db.Database.MigrateAsync();
+}
+
+// Seed API keys (chỉ chạy nếu bảng còn trống)
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<ApiKeySeeder>();
+    await seeder.SeedAsync();
+}
+```
+
+**Ưu điểm:** Dev không cần nhớ chạy lệnh sau mỗi lần pull code có migration mới.
+
+**Khi dùng:** Dev local và Staging — schema thay đổi thường xuyên, không sợ mất data.
+
+> ⚠️ **KHÔNG dùng Cách 2 trên Production** — nếu migration lỗi, app sẽ crash khi deploy thay vì bắt lỗi từ CI/CD pipeline trước.
+
+---
+
+### Migration hiện có
+
+| # | Migration | Ngày | Nội dung |
+|---|-----------|------|---------|
+| 1 | `InitialCreate` | 2026-04-01 | Schema ban đầu: Posts, Categories, Tags, Users |
+| 2 | `AddMatchAndPrediction` | 2026-04-03 | Match, League, Team, Country, MatchPrediction, LiveMatch, MatchContextData |
+| 3 | `IdentityMigration` | 2026-04-03 | ASP.NET Core Identity tables |
+| 4 | `FixLiveMatchSchema` | 2026-04-05 | Sửa schema LiveMatch |
+| 5 | `RefactorMatchSchema` | 2026-04-15 | Refactor bảng Match |
+| 6 | `AddEventTypeEnum` | 2026-04-15 | MatchEvent.Type → enum |
+| 7 | `AddApiKeyConfig` | 2026-04-17 | Bảng `ApiKeyConfigs` cho quản lý API key |
 
 ---
 

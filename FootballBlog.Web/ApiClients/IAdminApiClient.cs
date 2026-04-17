@@ -4,6 +4,12 @@ namespace FootballBlog.Web.ApiClients;
 
 public interface IAdminApiClient
 {
+    // API Keys
+    Task<IEnumerable<ApiKeyDto>?> GetApiKeysAsync();
+    Task<ApiKeyDto?> CreateApiKeyAsync(CreateApiKeyDto dto);
+    Task<ApiKeyDto?> ToggleApiKeyAsync(int id);
+    Task<bool> DeleteApiKeyAsync(int id);
+
     // Posts
     Task<PagedResult<PostSummaryDto>?> GetAllPostsAsync(int page = 1, int pageSize = 20);
     Task<PostDetailDto?> GetPostByIdAsync(int id);

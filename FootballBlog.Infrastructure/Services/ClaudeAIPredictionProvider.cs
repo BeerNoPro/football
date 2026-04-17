@@ -1,17 +1,18 @@
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using FootballBlog.Core.Interfaces;
 using FootballBlog.Core.Interfaces.Services;
 using FootballBlog.Core.Models;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace FootballBlog.Infrastructure.Services;
 
 public class ClaudeAIPredictionProvider(
     IHttpClientFactory httpClientFactory,
-    IConfiguration configuration,
+    IApiKeyRotator keyRotator,
     ILogger<ClaudeAIPredictionProvider> logger) : IAIPredictionProvider
 {
     private const string ApiUrl = "https://api.anthropic.com/v1/messages";
@@ -20,8 +21,8 @@ public class ClaudeAIPredictionProvider(
 
     public async Task<AIPredictionResult> PredictAsync(Match match, MatchContext context, CancellationToken ct = default)
     {
-        var apiKey = configuration["Claude:ApiKey"]
-            ?? throw new InvalidOperationException("Claude:ApiKey chưa được cấu hình");
+        var apiKey = await keyRotator.GetAvailableKeyAsync("Claude")
+            ?? throw new InvalidOperationException("Không có Claude API key khả dụng");
 
         var prompt = BuildPrompt(match, context);
 
@@ -39,6 +40,12 @@ public class ClaudeAIPredictionProvider(
         logger.LogDebug("Calling Claude API for match {MatchId}", match.Id);
 
         var response = await client.PostAsJsonAsync(ApiUrl, requestBody, ct);
+
+        if (response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.Unauthorized)
+        {
+            await keyRotator.MarkExhaustedAsync("Claude", apiKey);
+        }
+
         response.EnsureSuccessStatusCode();
 
         var raw = await response.Content.ReadFromJsonAsync<ClaudeResponse>(cancellationToken: ct)

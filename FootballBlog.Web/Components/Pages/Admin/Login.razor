@@ -81,6 +81,10 @@
     {
         if (HttpContext is null) return;
 
+        _model ??= new();
+        _model.Email = HttpContext.Request.Form["email"].ToString();
+        _model.Password = HttpContext.Request.Form["password"].ToString();
+
         try
         {
             var apiUrl = Config["ApiBaseUrl"]

@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.Json;
 using FootballBlog.Core.DTOs;
 using FootballBlog.Core.Interfaces;
@@ -10,6 +11,7 @@ namespace FootballBlog.API.ApiClients.FootballApi;
 public class FootballApiClient(
     HttpClient httpClient,
     IFootballApiRateLimiter rateLimiter,
+    IApiKeyRotator keyRotator,
     ILogger<FootballApiClient> logger) : IFootballApiClient
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -32,8 +34,24 @@ public class FootballApiClient(
                 ? DateTime.UtcNow.Year.ToString()
                 : (DateTime.UtcNow.Year - 1).ToString();
 
-            var envelope = await httpClient.GetFromJsonAsync<FootballApiEnvelope<FixtureResponse>>(
-                $"fixtures?league={leagueId}&season={season}&next={next}", JsonOptions);
+            string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+            var request = new HttpRequestMessage(HttpMethod.Get,
+                $"fixtures?league={leagueId}&season={season}&next={next}");
+            if (key is not null)
+            {
+                request.Headers.Add("x-apisports-key", key);
+            }
+
+            var response = await httpClient.SendAsync(request);
+
+            if (response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.Forbidden && key is not null)
+            {
+                await keyRotator.MarkExhaustedAsync("FootballApi", key);
+            }
+
+            response.EnsureSuccessStatusCode();
+
+            var envelope = await response.Content.ReadFromJsonAsync<FootballApiEnvelope<FixtureResponse>>(JsonOptions);
 
             if (envelope?.Response is null)
             {
@@ -63,8 +81,23 @@ public class FootballApiClient(
         {
             logger.LogDebug("Fetching all live fixtures");
 
-            var envelope = await httpClient.GetFromJsonAsync<FootballApiEnvelope<FixtureResponse>>(
-                "fixtures?live=all", JsonOptions);
+            string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+            var request = new HttpRequestMessage(HttpMethod.Get, "fixtures?live=all");
+            if (key is not null)
+            {
+                request.Headers.Add("x-apisports-key", key);
+            }
+
+            var response = await httpClient.SendAsync(request);
+
+            if (response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.Forbidden && key is not null)
+            {
+                await keyRotator.MarkExhaustedAsync("FootballApi", key);
+            }
+
+            response.EnsureSuccessStatusCode();
+
+            var envelope = await response.Content.ReadFromJsonAsync<FootballApiEnvelope<FixtureResponse>>(JsonOptions);
 
             if (envelope?.Response is null)
             {
@@ -93,8 +126,24 @@ public class FootballApiClient(
         {
             logger.LogDebug("Fetching H2H for {Home} vs {Away}", homeTeamExternalId, awayTeamExternalId);
 
-            var envelope = await httpClient.GetFromJsonAsync<FootballApiEnvelope<FixtureResponse>>(
-                $"fixtures/headtohead?h2h={homeTeamExternalId}-{awayTeamExternalId}&last={last}", JsonOptions);
+            string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+            var request = new HttpRequestMessage(HttpMethod.Get,
+                $"fixtures/headtohead?h2h={homeTeamExternalId}-{awayTeamExternalId}&last={last}");
+            if (key is not null)
+            {
+                request.Headers.Add("x-apisports-key", key);
+            }
+
+            var response = await httpClient.SendAsync(request);
+
+            if (response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.Forbidden && key is not null)
+            {
+                await keyRotator.MarkExhaustedAsync("FootballApi", key);
+            }
+
+            response.EnsureSuccessStatusCode();
+
+            var envelope = await response.Content.ReadFromJsonAsync<FootballApiEnvelope<FixtureResponse>>(JsonOptions);
 
             if (envelope?.Response is null)
             {
@@ -123,7 +172,20 @@ public class FootballApiClient(
         {
             logger.LogDebug("Fetching lineups for fixture {FixtureId}", fixtureId);
 
-            HttpResponseMessage response = await httpClient.GetAsync($"fixtures/lineups?fixture={fixtureId}");
+            string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"fixtures/lineups?fixture={fixtureId}");
+            if (key is not null)
+            {
+                request.Headers.Add("x-apisports-key", key);
+            }
+
+            var response = await httpClient.SendAsync(request);
+
+            if (response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.Forbidden && key is not null)
+            {
+                await keyRotator.MarkExhaustedAsync("FootballApi", key);
+            }
+
             response.EnsureSuccessStatusCode();
 
             string json = await response.Content.ReadAsStringAsync();
