@@ -1,6 +1,7 @@
 using System.Text;
 using System.Threading.RateLimiting;
 using FootballBlog.API.ApiClients.FootballApi;
+using FootballBlog.API.Hubs;
 using FootballBlog.API.Jobs;
 using FootballBlog.Core.Interfaces;
 using FootballBlog.Core.Interfaces.Services;
@@ -116,6 +117,13 @@ try
     builder.Services.AddScoped<ICategoryService, CategoryService>();
     builder.Services.AddScoped<ILiveScoreService, LiveScoreService>();
 
+    // AI Prediction providers — Claude (primary) + Gemini (fallback)
+    builder.Services.AddScoped<IAIPredictionProvider, ClaudeAIPredictionProvider>();
+    builder.Services.AddScoped<IAIPredictionProvider, GeminiAIPredictionProvider>();
+
+    // Telegram
+    builder.Services.AddScoped<ITelegramService, TelegramService>();
+
     // Output Cache — cache GET blog endpoints 5 phút, invalidate khi có write
     builder.Services.AddOutputCache(options =>
     {
@@ -149,7 +157,12 @@ try
         .HandleTransientHttpError()
         .WaitAndRetryAsync(3, attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt))));
 
-    // 5. Hangfire — PostgreSQL storage
+    // 5. SignalR + Redis backplane
+    builder.Services.AddSignalR()
+        .AddStackExchangeRedis(
+            builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379");
+
+    // 6. Hangfire — PostgreSQL storage
     builder.Services.AddHangfire(cfg => cfg
         .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
         .UseSimpleAssemblyNameTypeSerializer()
@@ -221,6 +234,12 @@ try
         Cron.Minutely(),
         new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
 
+    RecurringJob.AddOrUpdate<GeneratePredictionJob>(
+        "generate-predictions",
+        j => j.ExecuteAsync(),
+        Cron.Hourly(),
+        new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+
     app.UseHttpsRedirection();
     app.UseStaticFiles();
     app.UseCors("BlazorWeb");
@@ -229,6 +248,7 @@ try
     app.UseAuthorization();
     app.UseOutputCache();
     app.MapControllers();
+    app.MapHub<LiveScoreHub>("/hubs/livescore");
     app.MapHealthChecks("/health");
 
     Log.Information("FootballBlog API starting up");

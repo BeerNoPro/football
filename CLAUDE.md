@@ -52,12 +52,32 @@ Sau khi hoàn thành bất kỳ task/plan:
 3. **Plan trùng** → giữ bản mới nhất, xóa bản cũ
 4. Khi thêm config vào `.claude/` → kiểm tra trùng với CLAUDE.md/rules/ trước
 
-## Admin Components (Phase 3 ✅)
+## Key Components (Phases 3–6)
+
+### Admin UI (Phase 3 ✅)
 - `AdminPageBase` — base class, tự inject JWT, expose `CurrentUserId`
 - `QuillEditor.razor` (`Components/Admin/`) — rich text editor via Quill.js interop
 - `wwwroot/js/quill-interop.js` — JS interop: `QuillInterop.create/get/set/destroy`
 - `MediaController` — `POST /api/media/upload` → lưu local `wwwroot/uploads/` (dev)
 - Admin posts flow: `GET /api/posts/all` (kể cả draft) + `GET /api/posts/{id:int}`
 
+### Realtime (Phase 4 ✅)
+- `LiveScoreHub` (`API/Hubs/`) — SignalR strongly-typed hub với Redis backplane
+- `LiveScoreWidget.razor` + `LiveScore/Index.razor` — `@rendermode InteractiveServer`
+- `LiveScoreController` — `GET /api/livescore`, `GET /api/livescore/{id}`
+- `ILiveScoreApiClient` + `LiveScoreApiClient` (Web) — typed HttpClient
+
+### AI Prediction (Phase 5 ✅)
+- `IAIPredictionProvider` interface — Claude (primary) + Gemini (fallback)
+- `ClaudeAIPredictionProvider` / `GeminiAIPredictionProvider` (`Infrastructure/Services/`)
+- `GeneratePredictionJob` — Hangfire, trigger 24h trước kickoff
+- `PublishPredictionJob` — tạo blog post từ prediction, dùng `SlugService.Generate()`
+
+### Telegram (Phase 6 ✅ core)
+- `ITelegramService` — `SendPredictionAsync`, `EditResultAsync`
+- `TelegramService` (Infrastructure) — Telegram.Bot v22, `ParseMode.MarkdownV2` + `EscapeMd()`
+- `TelegramNotificationJob` — Hangfire, gửi prediction + edit khi có kết quả
+
 ## Current Phase
-Xem **TODO.md** (phase + task). Xem **Bugs.md** (architectural decisions + known issues).
+**Phase 4 ✅ | Phase 5 ✅ | Phase 6 ✅ (core) | Phase 7 ⬜ Deploy**
+Xem **TODO.md** (chi tiết tasks). Xem **Bugs.md** (architectural decisions + known issues).

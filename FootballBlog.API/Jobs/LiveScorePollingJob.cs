@@ -1,5 +1,9 @@
+using FootballBlog.API.Hubs;
+using FootballBlog.Core.DTOs;
 using FootballBlog.Core.Interfaces;
 using FootballBlog.Core.Models;
+using Hangfire;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace FootballBlog.API.Jobs;
@@ -7,6 +11,7 @@ namespace FootballBlog.API.Jobs;
 public class LiveScorePollingJob(
     IFootballApiClient apiClient,
     IUnitOfWork uow,
+    IHubContext<LiveScoreHub, ILiveScoreClient> hubContext,
     ILogger<LiveScorePollingJob> logger)
 {
     public async Task ExecuteAsync()
@@ -75,11 +80,34 @@ public class LiveScorePollingJob(
                 {
                     parentMatch.Status = MatchStatus.Finished;
                     await uow.Matches.UpdateAsync(parentMatch);
+
+                    // Trigger cập nhật kết quả lên Telegram
+                    BackgroundJob.Enqueue<TelegramNotificationJob>(j => j.SendResultAsync(parentMatch.Id));
                 }
             }
         }
 
         await uow.CommitAsync();
+
+        // Broadcast mỗi live match đã update tới subscribers
+        foreach (LiveMatch fixture in liveFromApiList.Where(m => m.MatchId.HasValue))
+        {
+            LiveMatchDto dto = new(
+                fixture.Id,
+                fixture.ExternalId,
+                fixture.HomeTeam,
+                fixture.AwayTeam,
+                fixture.HomeScore,
+                fixture.AwayScore,
+                fixture.Status.ToString(),
+                fixture.Minute,
+                fixture.StartedAt,
+                fixture.Events.Select(e => new MatchEventDto(e.Id, e.Minute, e.Type.ToString(), e.Description)).ToList());
+
+            await hubContext.Clients
+                .Group($"match-{fixture.MatchId}")
+                .MatchUpdated(dto);
+        }
 
         logger.LogInformation(
             "LiveScorePollingJob finished. Inserted={Inserted}, Updated={Updated}",

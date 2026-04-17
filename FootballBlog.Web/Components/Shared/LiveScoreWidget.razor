@@ -1,0 +1,88 @@
+@rendermode InteractiveServer
+@using FootballBlog.Core.DTOs
+@using Microsoft.AspNetCore.SignalR.Client
+@inject ILiveScoreApiClient LiveScoreClient
+@inject IConfiguration Configuration
+@implements IAsyncDisposable
+
+@if (_match is null)
+{
+    <div class="match-row loading">
+        <span class="muted">Đang tải...</span>
+    </div>
+}
+else
+{
+    <div class="match-row @(_isLive ? "match-live" : "")">
+        <div class="match-time">
+            @if (_isLive && _match.Minute.HasValue)
+            {
+                <span class="status-badge live">@_match.Minute'</span>
+            }
+            else
+            {
+                <span class="match-time-text">@_match.StartedAt.ToLocalTime().ToString("HH:mm")</span>
+            }
+        </div>
+        <div class="match-teams">
+            <span class="team home">@_match.HomeTeam</span>
+            <span class="score">@_match.HomeScore — @_match.AwayScore</span>
+            <span class="team away">@_match.AwayTeam</span>
+        </div>
+        <div class="match-status">
+            <span class="status-badge @GetStatusClass()">@_match.Status</span>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public int MatchId { get; set; }
+
+    private LiveMatchDto? _match;
+    private HubConnection? _hubConnection;
+    private bool _isLive => _match?.Status == "Live";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _match = await LiveScoreClient.GetMatchByIdAsync(MatchId);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        var hubUrl = (Configuration["ApiBaseUrl"] ?? "https://localhost:7007").TrimEnd('/') + "/hubs/livescore";
+
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(hubUrl)
+            .WithAutomaticReconnect()
+            .Build();
+
+        _hubConnection.On<LiveMatchDto>("MatchUpdated", dto =>
+        {
+            if (dto.Id != MatchId) return;
+            _match = dto;
+            InvokeAsync(StateHasChanged);
+        });
+
+        await _hubConnection.StartAsync();
+        await _hubConnection.SendAsync("JoinMatch", MatchId.ToString());
+    }
+
+    private string GetStatusClass() => _match?.Status switch
+    {
+        "Live" => "live",
+        "Finished" => "finished",
+        _ => "scheduled"
+    };
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection is not null)
+        {
+            if (_hubConnection.State == HubConnectionState.Connected)
+                await _hubConnection.SendAsync("LeaveMatch", MatchId.ToString());
+            await _hubConnection.DisposeAsync();
+        }
+    }
+}

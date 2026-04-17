@@ -49,6 +49,9 @@ try
     builder.Services.AddHttpClient<ITagApiClient, TagApiClient>(client =>
         client.BaseAddress = new Uri(apiBaseUrl));
 
+    builder.Services.AddHttpClient<ILiveScoreApiClient, LiveScoreApiClient>(client =>
+        client.BaseAddress = new Uri(apiBaseUrl));
+
     // Admin API client — dùng JwtAuthHandler để tự động gắn Bearer token
     builder.Services.AddScoped<JwtTokenStore>();
     builder.Services.AddTransient<JwtAuthHandler>();

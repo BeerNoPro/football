@@ -1,0 +1,48 @@
+@page "/livescore"
+@rendermode InteractiveServer
+@using FootballBlog.Core.DTOs
+@inject ILiveScoreApiClient LiveScoreClient
+
+<PageTitle>Live Score — FootballBlog</PageTitle>
+
+<div class="livescore-page">
+    <div class="page-header">
+        <h1 class="page-title">
+            <span class="live-dot"></span>
+            Trận đấu trực tiếp
+        </h1>
+    </div>
+
+    @if (_loading)
+    {
+        <div class="loading-state">
+            <span class="muted">Đang tải danh sách trận...</span>
+        </div>
+    }
+    else if (_matches is null || !_matches.Any())
+    {
+        <div class="empty-state">
+            <p class="muted">Hiện không có trận đấu nào đang diễn ra.</p>
+        </div>
+    }
+    else
+    {
+        <div class="match-list">
+            @foreach (var match in _matches)
+            {
+                <LiveScoreWidget MatchId="@match.Id" />
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private IEnumerable<LiveMatchDto>? _matches;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _matches = await LiveScoreClient.GetLiveMatchesAsync();
+        _loading = false;
+    }
+}

@@ -94,27 +94,41 @@ FootballBlog/
 - [x] EF migration: RefactorMatchSchema (Country/League/Team/MatchContextData)
 - [x] MatchEvent.Type → EventType enum + migration
 - [x] ILiveScoreService implementation (LiveScoreService) + register DI
-- [ ] SignalR Hub (LiveScoreHub) + Redis backplane
-- [ ] Blazor LiveScore pages + widget (InteractiveServer)
+- [x] SignalR Hub (LiveScoreHub) + Redis backplane
+- [x] Blazor LiveScore pages + widget (InteractiveServer)
 
 ### Phase 5 — AI Match Prediction ⬜
 - [x] Domain: MatchContext (H2H, TeamForm, Lineup, Referee, Fatigue POCOs)
 - [x] MatchContextData entity (JSONB blob, 1-to-1 với Match)
 - [x] IMatchContextRepository + implementation
 - [x] FixtureRawDto (raw API response mapping)
-- [ ] IAIPredictionProvider interface + Claude implementation
+- [x] IAIPredictionProvider interface + Claude implementation
 - [ ] Prompt template lưu DB để A/B test
-- [ ] Hangfire GeneratePredictionJob (trigger 24h trước kickoff)
-- [ ] PublishPredictionJob → tạo blog post từ prediction
-- [ ] Gemini implementation (fallback provider)
+- [x] Hangfire GeneratePredictionJob (trigger 24h trước kickoff)
+- [x] PublishPredictionJob → tạo blog post từ prediction
+- [x] Gemini implementation (fallback provider)
 
-### Phase 6 — Telegram + Auto-publish ⬜
-- [ ] Install Telegram.Bot NuGet
-- [ ] ITelegramService: SendPredictionAsync, EditMessageAsync
+### Phase 6 — Telegram + Auto-publish ✅ (core done)
+- [x] Install Telegram.Bot NuGet
+- [x] ITelegramService: SendPredictionAsync, EditMessageAsync
+- [x] TelegramNotificationJob (Hangfire) — gửi prediction + edit kết quả
 - [ ] TelegramNotificationChannel implement INotificationChannel
 - [ ] Bot command: /lichdat (query lịch đấu upcoming)
-- [ ] Edit Telegram message khi kết quả thực tế về
+- [x] Edit Telegram message khi kết quả thực tế về
 - [ ] Admin page: xem prediction history, manual retrigger
+
+### Phase 6.5 — API Key Management ⬜ ([plan](.claude/plans/phase-6.5-api-key-management.md))
+- [ ] Entity `ApiKeyConfig` (Provider, KeyValue, Priority, IsActive, DailyLimit, UsedToday, LastResetAt)
+- [ ] EF migration: AddApiKeyConfig
+- [ ] `IApiKeyRotator<TProvider>` — thử key theo Priority, skip key IsActive=false hoặc UsedToday≥DailyLimit
+- [ ] Redis cache key list (TTL 5 phút) — tránh query DB mỗi request
+- [ ] Migrate config: FootballApi/Claude/Gemini từ appsettings → DB (giữ appsettings làm seed lần đầu)
+- [ ] Admin page: `/admin/api-keys` — CRUD (thêm/xóa/enable/disable key, xem usage hôm nay)
+- [ ] Auto-reset `UsedToday = 0` lúc 00:00 UTC (Hangfire cron job)
+- [ ] Cập nhật `FootballApiClient`, `ClaudeAIPredictionProvider`, `GeminiAIPredictionProvider` dùng `IApiKeyRotator`
+
+> **Không lưu DB:** `ConnectionStrings`, `Jwt:Key`, `Redis` — đây là infra config, không phải business config.
+> **Khi implement:** review toàn bộ `appsettings.json` + `appsettings.Development.example.json` để phân loại lại — key nào migrate sang DB, key nào giữ nguyên config. Cập nhật `appsettings.Development.example.json` sau khi xong.
 
 ### Phase 7 — Deploy & DevOps ⬜
 - [ ] Dockerfile (multi-stage, Web + API)
@@ -123,6 +137,85 @@ FootballBlog/
 - [ ] AWS EC2 + RDS + S3 + CloudFront
 - [ ] CloudWatch logging
 - [ ] Monitoring: alert khi Football API gần hết quota
+
+---
+
+## Config Setup
+
+> **Quy tắc:** Secrets KHÔNG bao giờ commit. Điền vào `appsettings.Development.json` (gitignored).
+> Template: xem `appsettings.Development.example.json`.
+
+### FootballBlog.API — `appsettings.Development.json`
+
+| Section | Key | Mô tả | Bắt buộc |
+|---------|-----|--------|-----------|
+| `ConnectionStrings` | `DefaultConnection` | PostgreSQL connection string | ✅ |
+| `ConnectionStrings` | `Redis` | Redis URL (mặc định `localhost:6379`) | ✅ |
+| `Jwt` | `Key` | JWT signing key — **tối thiểu 32 ký tự** | ✅ |
+| `WebBaseUrl` | — | URL Blazor Web (CORS whitelist) | ✅ |
+| `FootballApi` | `ApiKey` | API key từ api-sports.io | ✅ |
+| `Claude` | `ApiKey` | Anthropic API key — console.anthropic.com | Phase 5 |
+| `Gemini` | `ApiKey` | Google AI Studio API key — aistudio.google.com | Phase 5 |
+| `Telegram` | `BotToken` | Token từ @BotFather | Phase 6 |
+| `Telegram` | `ChannelId` | Channel ID âm (ví dụ `-1001234567890`) | Phase 6 |
+| `Prediction` | `BlogCategoryId` | ID category "Nhận định" trong DB | Phase 5 |
+| `Prediction` | `SystemAuthorId` | ID user admin/system để tạo bài viết | Phase 5 |
+
+### FootballBlog.Web — `appsettings.Development.json`
+
+| Key | Mô tả | Bắt buộc |
+|-----|--------|-----------|
+| `ApiBaseUrl` | URL API (ví dụ `https://localhost:7007`) | ✅ |
+
+### Cách lấy các key
+
+- **Jwt:Key** — tự tạo: `openssl rand -base64 32`
+- **Claude:ApiKey** — [console.anthropic.com](https://console.anthropic.com) → API Keys
+- **Gemini:ApiKey** — [aistudio.google.com](https://aistudio.google.com) → Get API Key
+
+#### FootballApi:ApiKey — api-sports.io (free 100 req/ngày)
+
+1. Vào [api-sports.io](https://api-sports.io) → **Sign Up** (hoặc Login nếu đã có)
+2. Xác nhận email → vào Dashboard
+3. Chọn product **API-Football** → click **Subscribe** → chọn plan **Free**
+4. Vào **Dashboard → API Key** → copy key (dạng `abc123def456...`)
+5. Set vào project:
+   ```bash
+   # Chạy từ thư mục gốc football/
+   dotnet user-secrets set "FootballApi:ApiKey" "KEY_CUA_BAN" --project FootballBlog.API
+   ```
+6. Kiểm tra quota: Dashboard → Usage (free = 100 req/ngày, reset 00:00 UTC)
+
+> **Lưu ý:** Header gửi là `x-apisports-key` (không phải `X-RapidAPI-Key`). Code đã đúng.
+
+#### Telegram Bot + Channel
+
+**Bước 1 — Tạo bot:**
+1. Mở Telegram → tìm **@BotFather** → `/start`
+2. Gõ `/newbot` → nhập tên bot (ví dụ: `Football Prediction Bot`)
+3. Nhập username bot (phải kết thúc bằng `bot`, ví dụ: `myfootball_prediction_bot`)
+4. BotFather trả về token dạng `7123456789:AAHxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` → copy lại
+
+**Bước 2 — Tạo channel và lấy ChannelId:**
+1. Telegram → **New Channel** → đặt tên (ví dụ: `Football Predictions`)
+2. Chọn **Private** channel
+3. Vào channel → **Add Members** → tìm và thêm bot vừa tạo vào channel → set quyền **Admin** (để bot post được)
+4. Lấy Channel ID:
+   - Thêm bot [@userinfobot](https://t.me/userinfobot) vào channel (tạm thời)
+   - Nó sẽ tự reply ID âm dạng `-1001234567890` → copy lại
+   - Có thể remove @userinfobot sau khi lấy được ID
+
+**Bước 3 — Set secrets:**
+```bash
+dotnet user-secrets set "Telegram:BotToken" "7123456789:AAHxxx..." --project FootballBlog.API
+dotnet user-secrets set "Telegram:ChannelId" "-1001234567890" --project FootballBlog.API
+```
+
+**Kiểm tra bot hoạt động:**
+```bash
+curl "https://api.telegram.org/bot<TOKEN>/getMe"
+# Kỳ vọng: {"ok":true,"result":{"username":"myfootball_prediction_bot",...}}
+```
 
 ---
 
