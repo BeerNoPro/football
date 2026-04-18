@@ -226,24 +226,47 @@ try
         app.UseHangfireDashboard("/hangfire");
     }
 
-    // Recurring jobs
-    RecurringJob.AddOrUpdate<FetchUpcomingMatchesJob>(
-        "fetch-upcoming-matches",
-        j => j.ExecuteAsync(),
-        "0 */6 * * *",
-        new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+    // Recurring jobs — toggle từng job qua appsettings "Jobs" section
+    IConfigurationSection jobs = app.Configuration.GetSection("Jobs");
 
-    RecurringJob.AddOrUpdate<LiveScorePollingJob>(
-        "live-score-polling",
-        j => j.ExecuteAsync(),
-        Cron.Minutely(),
-        new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+    if (jobs.GetValue<bool>("FetchUpcomingMatches"))
+    {
+        RecurringJob.AddOrUpdate<FetchUpcomingMatchesJob>(
+            "fetch-upcoming-matches",
+            j => j.ExecuteAsync(),
+            "0 */6 * * *",
+            new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+    }
+    else
+    {
+        RecurringJob.RemoveIfExists("fetch-upcoming-matches");
+    }
 
-    RecurringJob.AddOrUpdate<GeneratePredictionJob>(
-        "generate-predictions",
-        j => j.ExecuteAsync(),
-        Cron.Hourly(),
-        new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+    if (jobs.GetValue<bool>("LiveScorePolling"))
+    {
+        RecurringJob.AddOrUpdate<LiveScorePollingJob>(
+            "live-score-polling",
+            j => j.ExecuteAsync(),
+            Cron.Minutely(),
+            new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+    }
+    else
+    {
+        RecurringJob.RemoveIfExists("live-score-polling");
+    }
+
+    if (jobs.GetValue<bool>("GeneratePrediction"))
+    {
+        RecurringJob.AddOrUpdate<GeneratePredictionJob>(
+            "generate-predictions",
+            j => j.ExecuteAsync(),
+            Cron.Hourly(),
+            new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+    }
+    else
+    {
+        RecurringJob.RemoveIfExists("generate-predictions");
+    }
 
     app.UseHttpsRedirection();
     app.UseStaticFiles();

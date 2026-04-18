@@ -1,0 +1,177 @@
+@page "/admin/jobs"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inherits AdminPageBase
+@inject IAdminApiClient AdminClient
+@inject ISnackbar Snackbar
+@implements IAsyncDisposable
+
+<PageTitle>Job Monitor — Admin | FootballBlog</PageTitle>
+
+<!-- Header -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+    <div>
+        <MudText Typo="Typo.h5" Style="color:#efefef;font-weight:700;margin-bottom:4px;">Job Monitor</MudText>
+        <MudText Typo="Typo.body2" Style="color:#666;">
+            Hangfire jobs · API quota · Cập nhật: @_lastRefresh.ToString("HH:mm:ss")
+        </MudText>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+        <MudButton OnClick="RefreshAsync" Variant="Variant.Outlined" Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.Refresh"
+                   Style="color:#999;border-color:#333;" Disabled="_refreshing">
+            Làm mới
+        </MudButton>
+        <MudButton Href="/hangfire" Target="_blank" Variant="Variant.Outlined" Size="Size.Small"
+                   EndIcon="@Icons.Material.Filled.OpenInNew"
+                   Style="color:#c8f04d;border-color:#c8f04d;">
+            Hangfire Dashboard
+        </MudButton>
+    </div>
+</div>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Style="margin-bottom:20px;" />
+}
+
+<!-- Stats -->
+<MudGrid Spacing="3" Style="margin-bottom:24px;">
+    <MudItem xs="6" sm="3">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:20px;border-radius:10px;">
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Tổng trận</MudText>
+            <MudText Typo="Typo.h4" Style="color:#c8f04d;font-weight:700;margin:8px 0 4px;">@(_matchStats?.Total ?? 0)</MudText>
+            <MudText Typo="Typo.caption" Style="color:#555;">@(_matchStats?.PendingPrediction ?? 0) chờ nhận định</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="6" sm="3">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:20px;border-radius:10px;">
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Live</MudText>
+            <MudText Typo="Typo.h4" Style="color:#4ade80;font-weight:700;margin:8px 0 4px;">@(_matchStats?.Live ?? 0)</MudText>
+            <MudText Typo="Typo.caption" Style="color:#555;">trận đang diễn ra</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="6" sm="3">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:20px;border-radius:10px;">
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Predictions</MudText>
+            <MudText Typo="Typo.h4" Style="color:#efefef;font-weight:700;margin:8px 0 4px;">@(_predStats?.Total ?? 0)</MudText>
+            <MudText Typo="Typo.caption" Style="color:#555;">@(_predStats?.Published ?? 0) đã publish</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="6" sm="3">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:20px;border-radius:10px;">
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Accuracy</MudText>
+            <MudText Typo="Typo.h4" Style="color:#efefef;font-weight:700;margin:8px 0 4px;">@(_predStats?.AccuracyPercent ?? 0)%</MudText>
+            <MudText Typo="Typo.caption" Style="color:#555;">@(_predStats?.TodayCount ?? 0) dự đoán hôm nay</MudText>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+<!-- Manual triggers -->
+<MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;padding:16px 20px;margin-bottom:20px;">
+    <MudText Typo="Typo.caption"
+             Style="color:#999;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:14px;display:block;">
+        Trigger thủ công
+    </MudText>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <MudButton OnClick="TriggerFetchMatchesAsync" Variant="Variant.Filled" Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.Sync"
+                   Style="background:#c8f04d;color:#0d0d0d;font-weight:600;" Disabled="_triggering">
+            Fetch Matches
+        </MudButton>
+        <MudButton OnClick="TriggerPredictAllAsync" Variant="Variant.Outlined" Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.Psychology"
+                   Style="color:#999;border-color:#333;" Disabled="_triggering">
+            Run Predictions
+        </MudButton>
+    </div>
+    @if (_lastTriggerMsg != null)
+    {
+        <MudText Typo="Typo.caption" Style="color:#666;margin-top:10px;display:block;">
+            @_lastTriggerMsg
+        </MudText>
+    }
+</MudPaper>
+
+<!-- Hangfire redirect -->
+<MudPaper Style="background:#0d0d0d;border:1px solid #2e2e2e;border-radius:10px;padding:32px 24px;text-align:center;">
+    <MudIcon Icon="@Icons.Material.Filled.Schedule" Style="color:#444;font-size:36px;margin-bottom:12px;display:block;" />
+    <MudText Typo="Typo.subtitle1" Style="color:#888;margin-bottom:6px;">Lịch sử jobs & Active queue</MudText>
+    <MudText Typo="Typo.body2" Style="color:#555;margin-bottom:20px;">
+        Xem chi tiết job history, enqueued, processing, retry, failed tại Hangfire Dashboard
+    </MudText>
+    <MudButton Href="/hangfire" Target="_blank" Variant="Variant.Filled"
+               EndIcon="@Icons.Material.Filled.OpenInNew"
+               Style="background:#c8f04d;color:#0d0d0d;font-weight:600;">
+        Mở Hangfire Dashboard
+    </MudButton>
+</MudPaper>
+
+@code {
+    private MatchStatsDto? _matchStats;
+    private PredictionStatsDto? _predStats;
+    private bool _loading = true;
+    private bool _refreshing;
+    private bool _triggering;
+    private string? _lastTriggerMsg;
+    private DateTime _lastRefresh = DateTime.Now;
+    private System.Threading.Timer? _timer;
+
+    protected override async Task OnAdminInitializedAsync()
+    {
+        await LoadDataAsync();
+        _timer = new System.Threading.Timer(async _ => await InvokeAsync(async () =>
+        {
+            await LoadDataAsync();
+            StateHasChanged();
+        }), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+    }
+
+    private async Task LoadDataAsync()
+    {
+        _loading = true;
+        var matchTask = AdminClient.GetMatchStatsAsync();
+        var predTask = AdminClient.GetPredictionStatsAsync();
+        await Task.WhenAll(matchTask, predTask);
+        _matchStats = matchTask.Result;
+        _predStats = predTask.Result;
+        _lastRefresh = DateTime.Now;
+        _loading = false;
+    }
+
+    private async Task RefreshAsync()
+    {
+        _refreshing = true;
+        await LoadDataAsync();
+        _refreshing = false;
+    }
+
+    private async Task TriggerFetchMatchesAsync()
+    {
+        _triggering = true;
+        _lastTriggerMsg = null;
+        bool ok = await AdminClient.TriggerFetchMatchesAsync();
+        _lastTriggerMsg = ok
+            ? "FetchUpcomingMatchesJob đã được đưa vào queue — theo dõi tại Hangfire Dashboard."
+            : "Không thể trigger job. Kiểm tra logs.";
+        Snackbar.Add(ok ? "Job đã enqueue!" : "Trigger thất bại", ok ? Severity.Success : Severity.Error);
+        _triggering = false;
+    }
+
+    private async Task TriggerPredictAllAsync()
+    {
+        _triggering = true;
+        _lastTriggerMsg = null;
+        bool ok = await AdminClient.TriggerPredictAllAsync();
+        _lastTriggerMsg = ok
+            ? "GeneratePredictionJob đã được đưa vào queue — theo dõi tại Hangfire Dashboard."
+            : "Không thể trigger job. Kiểm tra logs.";
+        Snackbar.Add(ok ? "Job đã enqueue!" : "Trigger thất bại", ok ? Severity.Success : Severity.Error);
+        _triggering = false;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_timer != null) await _timer.DisposeAsync();
+    }
+}

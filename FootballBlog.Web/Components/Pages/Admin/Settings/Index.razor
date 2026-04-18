@@ -1,0 +1,195 @@
+@page "/admin/settings"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inherits AdminPageBase
+@inject IConfiguration Config
+
+<PageTitle>Cài đặt — Admin | FootballBlog</PageTitle>
+
+<div style="margin-bottom:24px;">
+    <MudText Typo="Typo.h5" Style="color:#efefef;font-weight:700;margin-bottom:4px;">Cài đặt hệ thống</MudText>
+    <MudText Typo="Typo.body2" Style="color:#666;">Xem cấu hình hệ thống hiện tại</MudText>
+</div>
+
+<MudTabs Elevation="0" Rounded="false" ApplyEffectsToContainer="true"
+         Style="background:transparent;"
+         PanelClass="pt-4"
+         ActivePanelIndex="_tab" ActivePanelIndexChanged="@(i => _tab = i)">
+
+    <!-- Tab 1: Chung -->
+    <MudTabPanel Text="Chung" Icon="@Icons.Material.Filled.Tune">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;padding:24px;">
+            <MudText Typo="Typo.subtitle2" Style="color:#c8f04d;margin-bottom:20px;text-transform:uppercase;letter-spacing:1px;font-size:11px;">Thông tin website</MudText>
+
+            <MudGrid Spacing="3">
+                <MudItem xs="12" sm="6">
+                    @ReadonlyField("API Base URL", Config["ApiBaseUrl"] ?? "(chưa cấu hình)")
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    @ReadonlyField("Môi trường", Config["ASPNETCORE_ENVIRONMENT"] ?? "Production")
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    @ReadonlyField("Prediction: Blog Category ID", Config["Prediction:BlogCategoryId"] ?? "(chưa cấu hình)")
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    @ReadonlyField("Prediction: System Author ID", Config["Prediction:SystemAuthorId"] ?? "(chưa cấu hình)")
+                </MudItem>
+            </MudGrid>
+
+            <MudDivider Style="border-color:#242424;margin:24px 0;" />
+            <MudText Typo="Typo.subtitle2" Style="color:#c8f04d;margin-bottom:16px;text-transform:uppercase;letter-spacing:1px;font-size:11px;">Quản lý nhanh</MudText>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                <MudButton Href="/admin/api-keys" Variant="Variant.Outlined"
+                           StartIcon="@Icons.Material.Filled.Key"
+                           Style="border-color:#333;color:#999;">
+                    Quản lý API Keys
+                </MudButton>
+                <MudButton Href="/admin/prompts" Variant="Variant.Outlined"
+                           StartIcon="@Icons.Material.Filled.TextSnippet"
+                           Style="border-color:#333;color:#999;">
+                    Prompt Templates
+                </MudButton>
+                <MudButton Href="/hangfire" Target="_blank" Variant="Variant.Outlined"
+                           StartIcon="@Icons.Material.Filled.Schedule"
+                           Style="border-color:#333;color:#999;">
+                    Hangfire Dashboard
+                </MudButton>
+            </div>
+        </MudPaper>
+    </MudTabPanel>
+
+    <!-- Tab 2: AI Config -->
+    <MudTabPanel Text="AI Config" Icon="@Icons.Material.Filled.Psychology">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;padding:24px;">
+            <MudText Typo="Typo.subtitle2" Style="color:#c8f04d;margin-bottom:20px;text-transform:uppercase;letter-spacing:1px;font-size:11px;">Claude</MudText>
+            <MudGrid Spacing="3" Style="margin-bottom:24px;">
+                <MudItem xs="12" sm="6">
+                    @ReadonlyField("Model", "claude-opus-4-6")
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    @ReadonlyField("Max Tokens", "1024")
+                </MudItem>
+                <MudItem xs="12">
+                    @ReadonlyField("API Key", "Được quản lý qua API Keys → Provider: Claude")
+                </MudItem>
+            </MudGrid>
+
+            <MudDivider Style="border-color:#242424;margin:8px 0 24px;" />
+            <MudText Typo="Typo.subtitle2" Style="color:#c8f04d;margin-bottom:20px;text-transform:uppercase;letter-spacing:1px;font-size:11px;">Gemini (Fallback)</MudText>
+            <MudGrid Spacing="3">
+                <MudItem xs="12" sm="6">
+                    @ReadonlyField("Model", "gemini-1.5-flash")
+                </MudItem>
+                <MudItem xs="12">
+                    @ReadonlyField("API Key", "Được quản lý qua API Keys → Provider: Gemini")
+                </MudItem>
+            </MudGrid>
+
+            <MudDivider Style="border-color:#242424;margin:24px 0;" />
+            <MudAlert Severity="Severity.Info" Style="background:#0d1a2d;border:1px solid #1e3a5f;color:#7eb8f7;">
+                API keys được quản lý qua trang <strong>API Keys</strong> với tính năng rotation tự động, daily limit, và fallback provider.
+            </MudAlert>
+        </MudPaper>
+    </MudTabPanel>
+
+    <!-- Tab 3: Football API -->
+    <MudTabPanel Text="Football API" Icon="@Icons.Material.Filled.SportsSoccer">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;padding:24px;">
+            <MudText Typo="Typo.subtitle2" Style="color:#c8f04d;margin-bottom:20px;text-transform:uppercase;letter-spacing:1px;font-size:11px;">API-Football (api-sports.io)</MudText>
+            <MudGrid Spacing="3">
+                <MudItem xs="12" sm="6">
+                    @ReadonlyField("Daily Limit", "100 requests/ngày")
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    @ReadonlyField("Rate Limiter", "Redis-backed counter, reset lúc 00:00 UTC")
+                </MudItem>
+                <MudItem xs="12">
+                    @ReadonlyField("API Key", "Được quản lý qua API Keys → Provider: FootballApi")
+                </MudItem>
+            </MudGrid>
+
+            <MudDivider Style="border-color:#242424;margin:24px 0;" />
+            <MudText Typo="Typo.subtitle2" Style="color:#c8f04d;margin-bottom:16px;text-transform:uppercase;letter-spacing:1px;font-size:11px;">Hangfire Jobs</MudText>
+            <MudGrid Spacing="2">
+                <MudItem xs="12" sm="6">
+                    @JobInfoCard("FetchUpcomingMatchesJob", "Cron: mỗi 6 giờ", "Fetch lịch thi đấu sắp tới")
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    @JobInfoCard("LiveScorePollingJob", "Cron: mỗi 1 phút (adaptive)", "Cập nhật tỉ số live")
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    @JobInfoCard("PreMatchDataJob", "Cron: trigger trước 24h", "Fetch H2H + Lineup + Context")
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    @JobInfoCard("GeneratePredictionJob", "Cron: trigger trước 24h", "Gọi AI tạo dự đoán")
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudTabPanel>
+
+    <!-- Tab 4: Telegram -->
+    <MudTabPanel Text="Telegram" Icon="@Icons.Material.Filled.Send">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;padding:24px;">
+            <MudText Typo="Typo.subtitle2" Style="color:#c8f04d;margin-bottom:20px;text-transform:uppercase;letter-spacing:1px;font-size:11px;">Bot Configuration</MudText>
+            <MudGrid Spacing="3">
+                <MudItem xs="12" sm="6">
+                    @ReadonlyField("Bot Token", HasTelegramConfig ? "✓ Đã cấu hình (user-secrets)" : "✗ Chưa cấu hình")
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    @ReadonlyField("Channel ID", Config["Telegram:ChannelId"] ?? "(chưa cấu hình)")
+                </MudItem>
+            </MudGrid>
+
+            <MudDivider Style="border-color:#242424;margin:24px 0;" />
+            <MudText Typo="Typo.subtitle2" Style="color:#c8f04d;margin-bottom:16px;text-transform:uppercase;letter-spacing:1px;font-size:11px;">Các lệnh bot</MudText>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                @foreach (var cmd in _botCommands)
+                {
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;background:#0d0d0d;border-radius:6px;">
+                        <code style="color:#c8f04d;font-size:12px;min-width:140px;">@cmd.Key</code>
+                        <MudText Style="color:#666;font-size:12px;">@cmd.Value</MudText>
+                    </div>
+                }
+            </div>
+
+            <MudDivider Style="border-color:#242424;margin:24px 0;" />
+            <MudAlert Severity="Severity.Info" Style="background:#0d1a2d;border:1px solid #1e3a5f;color:#7eb8f7;">
+                Secrets được lưu qua <code>dotnet user-secrets</code> (local) hoặc AWS Parameter Store (production). Không được commit vào git.
+            </MudAlert>
+        </MudPaper>
+    </MudTabPanel>
+
+</MudTabs>
+
+@code {
+    private int _tab;
+
+    private bool HasTelegramConfig =>
+        !string.IsNullOrEmpty(Config["Telegram:BotToken"]);
+
+    private static readonly Dictionary<string, string> _botCommands = new()
+    {
+        ["/lichdat"] = "Xem lịch thi đấu sắp tới",
+        ["/dudoan [đội nhà] vs [đội khách]"] = "Xem dự đoán AI cho trận đấu",
+        ["/ketqua"] = "Xem kết quả trận đấu mới nhất"
+    };
+
+    private RenderFragment ReadonlyField(string label, string value) => __builder =>
+    {
+        <div>
+            <MudText Style="color:#555;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">@label</MudText>
+            <div style="background:#0d0d0d;border:1px solid #242424;border-radius:6px;padding:10px 14px;">
+                <MudText Style="color:#999;font-size:13px;">@value</MudText>
+            </div>
+        </div>
+    };
+
+    private RenderFragment JobInfoCard(string name, string cron, string description) => __builder =>
+    {
+        <div style="background:#0d0d0d;border:1px solid #242424;border-radius:8px;padding:14px 16px;">
+            <MudText Style="color:#efefef;font-size:12px;font-weight:600;margin-bottom:4px;font-family:monospace;">@name</MudText>
+            <MudText Style="color:#c8f04d;font-size:11px;margin-bottom:4px;">@cron</MudText>
+            <MudText Style="color:#555;font-size:11px;">@description</MudText>
+        </div>
+    };
+}

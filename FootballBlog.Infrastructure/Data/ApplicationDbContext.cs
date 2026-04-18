@@ -21,6 +21,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Team> Teams => Set<Team>();
     public DbSet<MatchContextData> MatchContexts => Set<MatchContextData>();
     public DbSet<ApiKeyConfig> ApiKeyConfigs => Set<ApiKeyConfig>();
+    public DbSet<PromptTemplate> PromptTemplates => Set<PromptTemplate>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

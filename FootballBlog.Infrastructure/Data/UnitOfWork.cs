@@ -18,6 +18,7 @@ public class UnitOfWork : IUnitOfWork
     public ILeagueRepository Leagues { get; }
     public ITeamRepository Teams { get; }
     public IMatchContextRepository MatchContexts { get; }
+    public IPromptTemplateRepository PromptTemplates { get; }
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -32,6 +33,7 @@ public class UnitOfWork : IUnitOfWork
         Leagues = new LeagueRepository(context);
         Teams = new TeamRepository(context);
         MatchContexts = new MatchContextRepository(context);
+        PromptTemplates = new PromptTemplateRepository(context);
     }
 
     public Task<int> CommitAsync() => _context.SaveChangesAsync();

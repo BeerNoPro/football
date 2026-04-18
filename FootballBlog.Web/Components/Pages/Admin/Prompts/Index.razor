@@ -1,0 +1,269 @@
+@page "/admin/prompts"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inherits AdminPageBase
+@inject IAdminApiClient AdminClient
+
+<PageTitle>Prompt Templates — Admin | FootballBlog</PageTitle>
+
+<!-- Header -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+    <div>
+        <MudText Typo="Typo.h5" Style="color:#efefef;font-weight:700;margin-bottom:4px;">Prompt Templates</MudText>
+        <MudText Typo="Typo.body2" Style="color:#666;">Quản lý prompt AI cho dự đoán trận đấu</MudText>
+    </div>
+    <MudButton Variant="Variant.Filled" Size="Size.Small"
+               StartIcon="@Icons.Material.Filled.Add"
+               Style="background:#c8f04d;color:#0d0d0d;font-weight:600;"
+               OnClick="CreateNew">
+        Tạo mới
+    </MudButton>
+</div>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Style="margin-bottom:24px;" />
+}
+
+<!-- Split panel -->
+<div style="display:grid;grid-template-columns:320px 1fr;gap:16px;align-items:start;">
+
+    <!-- Left: template list -->
+    <div>
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;overflow:hidden;">
+            <div style="padding:12px 16px;border-bottom:1px solid #242424;">
+                <MudTextField @bind-Value="_search" Placeholder="Tìm template..."
+                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                              Variant="Variant.Outlined" Margin="Margin.Dense"
+                              Style="background:#0d0d0d;border-radius:6px;" />
+            </div>
+
+            @if (_templates != null)
+            {
+                @foreach (var t in FilteredTemplates)
+                {
+                    <div style="padding:14px 16px;border-bottom:1px solid #1a1a1a;cursor:pointer;@(t.Id == _selected?.Id ? "background:#1e1e1e;border-left:2px solid #c8f04d;" : "border-left:2px solid transparent;")"
+                         @onclick="() => SelectTemplate(t)">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                            <MudText Style="color:#efefef;font-size:13px;font-weight:500;">@t.Name</MudText>
+                            <div style="display:flex;gap:4px;">
+                                <span style="@(t.IsActive ? "background:rgba(74,222,128,0.12);color:#4ade80;" : "background:#1e1e1e;color:#555;") font-size:10px;padding:2px 6px;border-radius:3px;">
+                                    @(t.IsActive ? "Active" : "Draft")
+                                </span>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="background:#1e1e1e;color:#666;font-size:10px;padding:2px 6px;border-radius:3px;font-family:monospace;">@t.Provider</span>
+                            <MudText Style="color:#444;font-size:11px;">@t.UpdatedAt.ToLocalTime().ToString("dd/MM/yyyy")</MudText>
+                        </div>
+                    </div>
+                }
+
+                @if (!FilteredTemplates.Any() && !_loading)
+                {
+                    <div style="padding:32px 16px;text-align:center;">
+                        <MudText Style="color:#444;font-size:12px;">Chưa có template nào</MudText>
+                    </div>
+                }
+            }
+        </MudPaper>
+    </div>
+
+    <!-- Right: editor -->
+    <MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;overflow:hidden;">
+        @if (_editing != null)
+        {
+            <div style="padding:16px 20px;border-bottom:1px solid #242424;display:flex;align-items:center;justify-content:space-between;">
+                <MudText Style="color:#efefef;font-size:14px;font-weight:600;">
+                    @(_isNew ? "Tạo template mới" : "Chỉnh sửa template")
+                </MudText>
+                @if (!_isNew && _selected != null)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
+                                   Style="color:#f44;" OnClick="DeleteSelected" />
+                }
+            </div>
+
+            <div style="padding:20px;">
+                <!-- Name -->
+                <MudTextField @bind-Value="_editing.Name" Label="Tên template" Variant="Variant.Outlined"
+                              Margin="Margin.Dense" Style="margin-bottom:16px;" FullWidth="true" />
+
+                <!-- Provider + Status row -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                    <MudSelect @bind-Value="_editing.Provider" Label="Provider" Variant="Variant.Outlined"
+                               Margin="Margin.Dense" T="string">
+                        <MudSelectItem Value="@("Claude")">Claude</MudSelectItem>
+                        <MudSelectItem Value="@("Gemini")">Gemini</MudSelectItem>
+                    </MudSelect>
+                    <MudSelect @bind-Value="_editing.IsActive" Label="Trạng thái" Variant="Variant.Outlined"
+                               Margin="Margin.Dense" T="bool">
+                        <MudSelectItem Value="true">Active</MudSelectItem>
+                        <MudSelectItem Value="false">Draft</MudSelectItem>
+                    </MudSelect>
+                </div>
+
+                <!-- Variable chips -->
+                <div style="margin-bottom:12px;">
+                    <MudText Style="color:#555;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Variables</MudText>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                        @foreach (var v in _variables)
+                        {
+                            <MudChip T="string" Size="Size.Small" Style="background:#1e1e1e;color:#c8f04d;cursor:pointer;font-family:monospace;font-size:11px;"
+                                     OnClick="() => InsertVariable(v)">
+                                @v
+                            </MudChip>
+                        }
+                    </div>
+                </div>
+
+                <!-- Content textarea -->
+                <MudTextField @bind-Value="_editing.Content" Label="Nội dung prompt"
+                              Variant="Variant.Outlined" Lines="14" FullWidth="true"
+                              Style="font-family:monospace;font-size:12px;margin-bottom:4px;" />
+                <MudText Style="color:#444;font-size:11px;text-align:right;margin-bottom:20px;">
+                    @(_editing.Content?.Length ?? 0) ký tự
+                </MudText>
+
+                <!-- Actions -->
+                <div style="display:flex;gap:8px;justify-content:flex-end;">
+                    <MudButton Variant="Variant.Text" Style="color:#666;" OnClick="CancelEdit">Huỷ</MudButton>
+                    <MudButton Variant="Variant.Outlined" Style="border-color:#333;color:#999;"
+                               Disabled="_saving" OnClick="() => Save(false)">
+                        Lưu Draft
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled"
+                               Style="background:#c8f04d;color:#0d0d0d;font-weight:600;"
+                               Disabled="_saving" OnClick="() => Save(true)">
+                        @(_saving ? "Đang lưu..." : "Lưu & Kích hoạt")
+                    </MudButton>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div style="padding:80px 20px;text-align:center;">
+                <MudText Style="color:#444;font-size:13px;">Chọn template để chỉnh sửa hoặc tạo mới</MudText>
+            </div>
+        }
+    </MudPaper>
+</div>
+
+@code {
+    private List<PromptTemplateDto>? _templates;
+    private PromptTemplateDto? _selected;
+    private EditModel? _editing;
+    private bool _loading;
+    private bool _saving;
+    private bool _isNew;
+    private string? _search;
+
+    [Inject] private ISnackbar Snackbar { get; set; } = default!;
+
+    private static readonly string[] _variables =
+    [
+        "{{match_info}}", "{{home_team}}", "{{away_team}}",
+        "{{home_stats}}", "{{away_stats}}", "{{h2h_history}}",
+        "{{kickoff_time}}", "{{league_name}}"
+    ];
+
+    private IEnumerable<PromptTemplateDto> FilteredTemplates =>
+        _templates?.Where(t => string.IsNullOrEmpty(_search)
+            || t.Name.Contains(_search, StringComparison.OrdinalIgnoreCase)) ?? [];
+
+    protected override async Task OnAdminInitializedAsync()
+    {
+        await LoadTemplates();
+    }
+
+    private async Task LoadTemplates()
+    {
+        _loading = true;
+        StateHasChanged();
+        var items = await AdminClient.GetPromptTemplatesAsync();
+        _templates = items?.ToList() ?? [];
+        _loading = false;
+    }
+
+    private void SelectTemplate(PromptTemplateDto t)
+    {
+        _selected = t;
+        _isNew = false;
+        _editing = new EditModel
+        {
+            Name = t.Name,
+            Provider = t.Provider,
+            Content = t.Content,
+            IsActive = t.IsActive
+        };
+    }
+
+    private void CreateNew()
+    {
+        _selected = null;
+        _isNew = true;
+        _editing = new EditModel { Provider = "Claude", IsActive = false };
+    }
+
+    private void CancelEdit()
+    {
+        _editing = null;
+        _selected = null;
+        _isNew = false;
+    }
+
+    private void InsertVariable(string variable)
+    {
+        if (_editing == null) return;
+        _editing.Content = (_editing.Content ?? "") + variable;
+    }
+
+    private async Task Save(bool activate)
+    {
+        if (_editing == null) return;
+        _saving = true;
+        var dto = new CreatePromptTemplateDto(_editing.Name, _editing.Provider, _editing.Content ?? "", activate);
+
+        PromptTemplateDto? result;
+        if (_isNew)
+            result = await AdminClient.CreatePromptTemplateAsync(dto);
+        else
+            result = await AdminClient.UpdatePromptTemplateAsync(_selected!.Id, dto);
+
+        if (result != null)
+        {
+            Snackbar.Add("Đã lưu template", Severity.Success);
+            await LoadTemplates();
+            SelectTemplate(result);
+        }
+        else
+        {
+            Snackbar.Add("Lỗi khi lưu template", Severity.Error);
+        }
+        _saving = false;
+    }
+
+    private async Task DeleteSelected()
+    {
+        if (_selected == null) return;
+        var ok = await AdminClient.DeletePromptTemplateAsync(_selected.Id);
+        if (ok)
+        {
+            Snackbar.Add("Đã xóa template", Severity.Success);
+            CancelEdit();
+            await LoadTemplates();
+        }
+        else
+        {
+            Snackbar.Add("Lỗi khi xóa template", Severity.Error);
+        }
+    }
+
+    private class EditModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Provider { get; set; } = "Claude";
+        public string? Content { get; set; }
+        public bool IsActive { get; set; }
+    }
+}

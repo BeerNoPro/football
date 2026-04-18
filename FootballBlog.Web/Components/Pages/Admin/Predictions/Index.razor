@@ -1,0 +1,216 @@
+@page "/admin/predictions"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inherits AdminPageBase
+@inject IAdminApiClient AdminClient
+
+<PageTitle>AI Predictions — Admin | FootballBlog</PageTitle>
+
+<!-- Header -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+    <div>
+        <MudText Typo="Typo.h5" Style="color:#efefef;font-weight:700;margin-bottom:4px;">AI Predictions</MudText>
+        <MudText Typo="Typo.body2" Style="color:#666;">Quản lý dự đoán AI cho các trận đấu</MudText>
+    </div>
+    <MudButton Href="/admin/matches" Variant="Variant.Filled" Size="Size.Small"
+               StartIcon="@Icons.Material.Filled.Psychology"
+               Style="background:#c8f04d;color:#0d0d0d;font-weight:600;">
+        Generate Predictions
+    </MudButton>
+</div>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Style="margin-bottom:24px;" />
+}
+
+<!-- Stats cards -->
+<MudGrid Spacing="3" Style="margin-bottom:24px;">
+    <MudItem xs="6" sm="3">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:16px 20px;border-radius:10px;">
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Tổng dự đoán</MudText>
+            <MudText Typo="Typo.h5" Style="color:#efefef;font-weight:700;margin-top:6px;">@(_stats?.Total ?? 0)</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="6" sm="3">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:16px 20px;border-radius:10px;">
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Đã xuất bản</MudText>
+            <MudText Typo="Typo.h5" Style="color:#4ade80;font-weight:700;margin-top:6px;">@(_stats?.Published ?? 0)</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="6" sm="3">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:16px 20px;border-radius:10px;">
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Hôm nay</MudText>
+            <MudText Typo="Typo.h5" Style="color:#c8f04d;font-weight:700;margin-top:6px;">@(_stats?.TodayCount ?? 0)</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="6" sm="3">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:16px 20px;border-radius:10px;">
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Độ chính xác</MudText>
+            <MudText Typo="Typo.h5" Style="color:#c8f04d;font-weight:700;margin-top:6px;">@(_stats?.AccuracyPercent ?? 0)%</MudText>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+<!-- Filter bar -->
+<MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;padding:16px 20px;margin-bottom:16px;">
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <MudSelect @bind-Value="_publishedFilter" Placeholder="Trạng thái" Variant="Variant.Outlined"
+                   Margin="Margin.Dense" Style="background:#0d0d0d;border-radius:6px;min-width:180px;"
+                   T="string" Clearable="true" Dense="true">
+            <MudSelectItem Value="@("published")">Đã xuất bản</MudSelectItem>
+            <MudSelectItem Value="@("pending")">Chưa xuất bản</MudSelectItem>
+        </MudSelect>
+        <MudButton Variant="Variant.Filled" Size="Size.Medium"
+                   Style="background:#242424;color:#efefef;" OnClick="ApplyFilters">
+            Lọc
+        </MudButton>
+    </div>
+</MudPaper>
+
+<!-- Table -->
+<MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;overflow:hidden;">
+    <div style="padding:12px 20px;border-bottom:1px solid #242424;">
+        <MudText Typo="Typo.body2" Style="color:#666;">@(_result?.TotalCount ?? 0) dự đoán</MudText>
+    </div>
+
+    @if (_result?.Items.Any() == true)
+    {
+        <MudTable Items="_result.Items" Dense="true" Hover="true"
+                  Style="background:transparent;"
+                  RowStyle="border-bottom:1px solid #1e1e1e;">
+            <HeaderContent>
+                <MudTh Style="@_th">Trận đấu</MudTh>
+                <MudTh Style="@_th">Giải</MudTh>
+                <MudTh Style="@_th">Dự đoán tỉ số</MudTh>
+                <MudTh Style="@_th">Confidence</MudTh>
+                <MudTh Style="@_th">Model</MudTh>
+                <MudTh Style="@_th">Trạng thái</MudTh>
+                <MudTh Style="@_th">Bài viết</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd Style="padding:12px 16px;">
+                    <MudText Style="color:#efefef;font-size:13px;font-weight:500;">
+                        @context.HomeTeam vs @context.AwayTeam
+                    </MudText>
+                    <MudText Style="color:#555;font-size:11px;">
+                        @context.KickoffUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                    </MudText>
+                </MudTd>
+                <MudTd Style="padding:12px 16px;">
+                    <MudText Style="color:#666;font-size:12px;">@context.LeagueName</MudText>
+                </MudTd>
+                <MudTd Style="padding:12px 16px;">
+                    @if (context.PredictedHomeScore.HasValue && context.PredictedAwayScore.HasValue)
+                    {
+                        <MudText Style="color:#c8f04d;font-size:14px;font-weight:700;font-family:monospace;">
+                            @context.PredictedHomeScore – @context.PredictedAwayScore
+                        </MudText>
+                        <MudText Style="color:#555;font-size:11px;">@context.PredictedOutcome</MudText>
+                    }
+                    else
+                    {
+                        <MudText Style="color:#555;font-size:12px;">@context.PredictedOutcome</MudText>
+                    }
+                </MudTd>
+                <MudTd Style="padding:12px 16px;">
+                    @{
+                        var confColor = context.ConfidenceScore >= 70 ? "#4ade80"
+                                      : context.ConfidenceScore >= 50 ? "#c8f04d" : "#f97316";
+                        var confStyle = $"color:{confColor};font-size:13px;font-weight:600;";
+                    }
+                    <MudText Style="@confStyle">
+                        @context.ConfidenceScore%
+                    </MudText>
+                </MudTd>
+                <MudTd Style="padding:12px 16px;">
+                    <span style="background:#1e1e1e;color:#999;font-size:11px;padding:3px 8px;border-radius:4px;font-family:monospace;">
+                        @context.AIProvider
+                    </span>
+                </MudTd>
+                <MudTd Style="padding:12px 16px;">
+                    @if (context.IsPublished)
+                    {
+                        <span style="background:rgba(74,222,128,0.12);color:#4ade80;font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;">
+                            Đã xuất bản
+                        </span>
+                    }
+                    else
+                    {
+                        <span style="background:rgba(249,115,22,0.12);color:#f97316;font-size:11px;padding:3px 8px;border-radius:4px;">
+                            Chờ xuất bản
+                        </span>
+                    }
+                </MudTd>
+                <MudTd Style="padding:12px 16px;">
+                    @if (context.BlogPostId.HasValue)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.OpenInNew"
+                                       Size="Size.Small" Style="color:#666;"
+                                       Href="@($"/admin/posts/edit/{context.BlogPostId}")" />
+                    }
+                    else
+                    {
+                        <MudText Style="color:#444;font-size:11px;">–</MudText>
+                    }
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+
+        @if (_result.TotalPages > 1)
+        {
+            <div style="padding:16px 20px;border-top:1px solid #242424;display:flex;align-items:center;justify-content:space-between;">
+                <MudText Style="color:#666;font-size:12px;">Trang @_page / @_result.TotalPages</MudText>
+                <MudPagination Count="_result.TotalPages" Selected="_page"
+                               SelectedChanged="OnPageChanged" Color="Color.Primary" Size="Size.Small" />
+            </div>
+        }
+    }
+    else if (!_loading)
+    {
+        <div style="padding:60px 20px;text-align:center;">
+            <MudText Style="color:#555;font-size:13px;">Chưa có dự đoán nào được tạo.</MudText>
+        </div>
+    }
+</MudPaper>
+
+@code {
+    private const string _th = "color:#555;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:10px 16px;border-bottom:1px solid #242424;";
+
+    private PagedResult<MatchPredictionDto>? _result;
+    private PredictionStatsDto? _stats;
+    private bool _loading;
+    private int _page = 1;
+    private string? _publishedFilter;
+
+    protected override async Task OnAdminInitializedAsync()
+    {
+        await LoadAll();
+    }
+
+    private async Task LoadAll()
+    {
+        _loading = true;
+        StateHasChanged();
+        var statsTask = AdminClient.GetPredictionStatsAsync();
+        var listTask = AdminClient.GetPredictionsAsync(
+            _page, 20,
+            _publishedFilter == "published" ? true : _publishedFilter == "pending" ? (bool?)false : null);
+        await Task.WhenAll(statsTask, listTask);
+        _stats = statsTask.Result;
+        _result = listTask.Result;
+        _loading = false;
+    }
+
+    private async Task ApplyFilters()
+    {
+        _page = 1;
+        await LoadAll();
+    }
+
+    private async Task OnPageChanged(int page)
+    {
+        _page = page;
+        await LoadAll();
+    }
+}

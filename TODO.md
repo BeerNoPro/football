@@ -215,6 +215,82 @@ curl "https://api.telegram.org/bot<TOKEN>/getMe"
 **Design system hiện có:** xem `.claude/rules/ui-design.md`
 **File prototype chính:** `wwwroot/prototype/home.html`
 
+### CSS Cleanup: Dùng MudBlazor Theme (không hardcode)
+
+**Approach: kết hợp cả 2**
+- MudBlazor props (`Color=`, `Typo=`, `Variant=`) cho **màu chữ và nút**
+- CSS class (`.admin-card`, `.admin-header`) trong `app.css` cho **layout pattern** (border, border-radius, background card)
+- Inline `Style=` chỉ giữ lại cho **spacing động** (padding/margin/gap cụ thể)
+
+**Mapping màu theme → MudBlazor enum:**
+| Hex hiện tại | Thay bằng |
+|---|---|
+| `color:#c8f04d` | `Color="Color.Primary"` |
+| `color:#efefef` | `Color="Color.Default"` (default text) |
+| `color:#666` | `Color="Color.Dark"` hoặc `Typo.caption` |
+| `background:#1c1c1c` | → dùng `MudPaper` với `Elevation="0"` (theme tự đặt surface) |
+| `background:#c8f04d;color:#0d0d0d` | `Color="Color.Primary" Variant="Variant.Filled"` |
+
+**Trường hợp vẫn cần inline Style=:**
+- Layout spacing: `Style="padding:24px;margin-bottom:16px"`
+- Border custom: `Style="border:1px solid #242424;border-radius:10px"` — extract sang CSS isolation hoặc CSS var
+
+**File sẽ thay đổi:**
+- `Pages/Admin/Dashboard.razor`
+- `Pages/Admin/Posts/Index.razor`
+- `Pages/Admin/Posts/Create.razor`
+- `Pages/Admin/Posts/Edit.razor`
+- `Pages/Admin/Categories/Index.razor`
+- `Pages/Admin/Tags/Index.razor`
+- `Pages/Admin/Matches/Index.razor`
+- `Pages/Admin/Predictions/Index.razor`
+- `Pages/Admin/Prompts/Index.razor`
+- `Pages/Admin/Settings/Index.razor`
+- `Pages/Admin/ApiKeys/Index.razor`
+- `Components/Layout/AdminLayout.razor` (thêm CSS vars cho border/radius nếu cần)
+
+---
+
+### Extract Shared Admin Components
+
+**Tạo trong `FootballBlog.Web/Components/Admin/`:**
+
+**Thứ tự: làm AdminPageHeader trước → confirm visual → mới tiếp.**
+
+#### 3a. `AdminPageHeader.razor`
+```razor
+@* Parameters: Title, Description, Buttons (RenderFragment) *@
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+    <div>
+        <MudText Typo="Typo.h5" Color="Color.Default" Style="font-weight:700;margin-bottom:4px;">@Title</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Dark">@Description</MudText>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+        @Buttons
+    </div>
+</div>
+```
+→ Dùng tại: Dashboard, Posts, Categories, Tags, ApiKeys, Matches, Predictions, Prompts, Settings
+
+#### 3b. `AdminStatCard.razor`
+```razor
+@* Parameters: Label, Value (string), Icon (optional) *@
+<MudItem xs="6" sm="3">
+    <MudPaper Class="admin-stat-card">
+        <MudText Typo="Typo.caption" Color="Color.Dark" Style="text-transform:uppercase;letter-spacing:1px;">@Label</MudText>
+        <MudText Typo="Typo.h5" Color="Color.Default" Style="font-weight:700;margin-top:6px;">@Value</MudText>
+    </MudPaper>
+</MudItem>
+```
+→ Dùng tại: Matches/Index, Predictions/Index
+
+#### 3c. CSS Isolation cho border/card pattern
+Tạo `Components/Admin/Admin.razor.css` (hoặc global trong `app.css`):
+```css
+.admin-card { background: var(--mud-palette-surface); border: 1px solid #242424; border-radius: 10px; }
+.admin-stat-card { background: var(--mud-palette-surface); border: 1px solid #242424; border-radius: 10px; padding: 16px 20px; }
+```
+
 ---
 
 ## Notes

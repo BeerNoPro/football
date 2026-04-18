@@ -2,7 +2,7 @@
 # Chạy từ terminal hiện tại trong Windows Terminal:
 #   .\dev-start.ps1           — khởi động bình thường
 #   .\dev-start.ps1 -logs     — xóa toàn bộ folder logs/ trước khi chạy
-# Script dùng `wt split-pane` để chia panes ngay trong cửa sổ đang chạy.
+# Script dùng `wt new-tab` để tạo tabs mới trong cửa sổ đang chạy.
 
 param(
     [switch]$logs
@@ -34,11 +34,6 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-# 2-4. Split panes trong cùng cửa sổ Windows Terminal hiện tại
-# --window 0  = cửa sổ WT đang focus
-# split-pane  = chia pane (tương đương Ctrl+D)
-# -d          = working directory
-
 # npm install neu chua co node_modules
 if (-not (Test-Path "$root\FootballBlog.Web\node_modules")) {
     Write-Host "[npm] Installing dependencies..." -ForegroundColor Cyan
@@ -48,7 +43,7 @@ if (-not (Test-Path "$root\FootballBlog.Web\node_modules")) {
 }
 
 Write-Host "[2/4] Tailwind CSS watcher (new tab)..." -ForegroundColor Cyan
-wt --window 0 new-tab --title "Tailwind" -d "$root\FootballBlog.Web" -- powershell -NoExit -Command "npm run watch:css"
+wt --window 0 split-pane --title "Tailwind" -d "$root\FootballBlog.Web" -- powershell -NoExit -Command "npm run watch:css"
 
 Write-Host "[3/4] FootballBlog.API (new tab)..." -ForegroundColor Cyan
 wt --window 0 new-tab --title "API" -d "$root" -- powershell -NoExit -Command "dotnet run --project FootballBlog.API --launch-profile https"
