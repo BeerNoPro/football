@@ -76,7 +76,7 @@
             <div class="lg @(league.IsExpanded ? "" : "collapsed")">
                 <div class="lg-header" @onclick="() => league.IsExpanded = !league.IsExpanded">
                     <div class="lg-icon">@league.Flag</div>
-                    <span class="lg-name lg-name-link">@league.Name</span>
+                    <a class="lg-name lg-name-link" href="/league/@league.Slug" @onclick:stopPropagation>@league.Name</a>
                     <span class="lg-round">Vòng @league.Round</span>
                     <span class="lg-chevron">▾</span>
                 </div>
@@ -85,13 +85,13 @@
                     <div class="lg-matches">
                         @foreach (var m in league.Matches)
                         {
-                            <div class="match-row">
+                            <div class="match-row" style="cursor:pointer;" @onclick='() => Nav.NavigateTo($"/match/{m.Id}")'>
                                 <div class="mr-time @(m.IsLive ? "is-live" : "")">
                                     @if (m.IsLive) { <span>@m.Minute'</span> }
                                     else { <span>@m.Time</span> }
                                 </div>
                                 <div class="mr-home @(m.IsLive && m.HomeScore > m.AwayScore ? "live-team" : "")">
-                                    <span class="tn">@m.Home</span>
+                                    <a class="tn" href="/team/@m.HomeSlug" @onclick:stopPropagation>@m.Home</a>
                                     <div class="tl">@m.HomeEmoji</div>
                                 </div>
                                 <div class="score-c @(m.IsLive ? "is-live-score" : m.IsFinished ? "has-score" : "no-score")">
@@ -100,7 +100,7 @@
                                 </div>
                                 <div class="mr-away @(m.IsLive && m.AwayScore > m.HomeScore ? "live-team" : "")">
                                     <div class="tl">@m.AwayEmoji</div>
-                                    <span class="tn">@m.Away</span>
+                                    <a class="tn" href="/team/@m.AwaySlug" @onclick:stopPropagation>@m.Away</a>
                                 </div>
                                 <div class="mr-status">
                                     @if (m.IsLive)
@@ -174,22 +174,22 @@
     [
         new MockLeague
         {
-            Name = "V.League 1 — 2025", Flag = "🇻🇳", Round = 18, IsExpanded = true,
+            Name = "V.League 1 — 2025", Flag = "🇻🇳", Round = 18, Slug = "vleague-1", IsExpanded = true,
             Matches =
             [
-                new MockMatch { Home = "Hà Nội FC", Away = "HAGL", Time = "18:00", HomeEmoji = "🔵", AwayEmoji = "🟡", IsLive = true, Minute = 67, HomeScore = 2, AwayScore = 1 },
-                new MockMatch { Home = "SHB Đà Nẵng", Away = "Becamex Bình Dương", Time = "18:00", HomeEmoji = "🔴", AwayEmoji = "🟢", IsLive = true, Minute = 55, HomeScore = 0, AwayScore = 0 },
-                new MockMatch { Home = "Viettel FC", Away = "Hải Phòng FC", Time = "20:00", HomeEmoji = "🔴", AwayEmoji = "⚫", IsFinished = false },
+                new MockMatch { Id = 101, Home = "Hà Nội FC", Away = "HAGL", HomeSlug = "ha-noi-fc", AwaySlug = "hagl", Time = "18:00", HomeEmoji = "🔵", AwayEmoji = "🟡", IsLive = true, Minute = 67, HomeScore = 2, AwayScore = 1 },
+                new MockMatch { Id = 102, Home = "SHB Đà Nẵng", Away = "Becamex Bình Dương", HomeSlug = "shb-da-nang", AwaySlug = "becamex-binh-duong", Time = "18:00", HomeEmoji = "🔴", AwayEmoji = "🟢", IsLive = true, Minute = 55, HomeScore = 0, AwayScore = 0 },
+                new MockMatch { Id = 103, Home = "Viettel FC", Away = "Hải Phòng FC", HomeSlug = "viettel-fc", AwaySlug = "hai-phong-fc", Time = "20:00", HomeEmoji = "🔴", AwayEmoji = "⚫", IsFinished = false },
             ]
         },
         new MockLeague
         {
-            Name = "Premier League", Flag = "🏴󠁧󠁢󠁥󠁮󠁧󠁿", Round = 36, IsExpanded = true,
+            Name = "Premier League", Flag = "🏴󠁧󠁢󠁥󠁮󠁧󠁿", Round = 36, Slug = "premier-league", IsExpanded = true,
             Matches =
             [
-                new MockMatch { Home = "Arsenal", Away = "Chelsea", Time = "21:00", HomeEmoji = "🔴", AwayEmoji = "🔵", IsFinished = true, HomeScore = 2, AwayScore = 2 },
-                new MockMatch { Home = "Man City", Away = "Liverpool", Time = "23:30", HomeEmoji = "🔵", AwayEmoji = "🔴", IsFinished = false },
-                new MockMatch { Home = "Tottenham", Away = "Man United", Time = "02:00", HomeEmoji = "⚪", AwayEmoji = "🔴", IsFinished = false },
+                new MockMatch { Id = 201, Home = "Arsenal", Away = "Chelsea", HomeSlug = "arsenal", AwaySlug = "chelsea", Time = "21:00", HomeEmoji = "🔴", AwayEmoji = "🔵", IsFinished = true, HomeScore = 2, AwayScore = 2 },
+                new MockMatch { Id = 202, Home = "Man City", Away = "Liverpool", HomeSlug = "manchester-city", AwaySlug = "liverpool", Time = "23:30", HomeEmoji = "🔵", AwayEmoji = "🔴", IsFinished = false },
+                new MockMatch { Id = 203, Home = "Tottenham", Away = "Man United", HomeSlug = "tottenham", AwaySlug = "manchester-united", Time = "02:00", HomeEmoji = "⚪", AwayEmoji = "🔴", IsFinished = false },
             ]
         }
     ];
@@ -241,6 +241,7 @@
     {
         public string Name { get; set; } = "";
         public string Flag { get; set; } = "";
+        public string Slug { get; set; } = "";
         public int Round { get; set; }
         public bool IsExpanded { get; set; } = true;
         public List<MockMatch> Matches { get; set; } = [];
@@ -248,8 +249,11 @@
 
     private class MockMatch
     {
+        public int Id { get; set; }
         public string Home { get; set; } = "";
         public string Away { get; set; } = "";
+        public string HomeSlug { get; set; } = "";
+        public string AwaySlug { get; set; } = "";
         public string HomeEmoji { get; set; } = "⚽";
         public string AwayEmoji { get; set; } = "⚽";
         public string Time { get; set; } = "";

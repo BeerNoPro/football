@@ -1,0 +1,242 @@
+@page "/league/{Slug}"
+@layout PublicLayout3Col
+@rendermode InteractiveServer
+@using FootballBlog.Core.DTOs
+
+<SeoHead Title="@($"{_leagueName} — FootballBlog")"
+         Description="@($"Lịch thi đấu, bảng xếp hạng và thống kê {_leagueName} mùa 2024/25")" />
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+    <a href="/">Trang chủ</a>
+    <span>›</span>
+    <span>@_leagueName</span>
+</div>
+
+<!-- League header -->
+<div class="league-header">
+    <div class="league-header-top">
+        <div class="league-logo-lg">🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
+        <div class="league-info">
+            <div class="league-name-lg">@_leagueName</div>
+            <div class="league-season">England · Mùa giải 2024/25 · Vòng 32/38</div>
+        </div>
+    </div>
+    <div class="league-stats-row">
+        <div class="league-stat-item">
+            <div class="league-stat-val">38</div>
+            <div class="league-stat-lbl">Vòng đấu</div>
+        </div>
+        <div class="league-stat-item">
+            <div class="league-stat-val">20</div>
+            <div class="league-stat-lbl">Đội bóng</div>
+        </div>
+        <div class="league-stat-item">
+            <div class="league-stat-val" style="color:var(--accent)">304</div>
+            <div class="league-stat-lbl">Bàn thắng</div>
+        </div>
+        <div class="league-stat-item">
+            <div class="league-stat-val" style="color:var(--live)">1</div>
+            <div class="league-stat-lbl">Trận Live</div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<div class="league-tabs tabs">
+    <button class="tab-btn @(_tab == "fixtures" ? "active" : "")" @onclick='() => _tab = "fixtures"'>Lịch đấu</button>
+    <button class="tab-btn @(_tab == "results" ? "active" : "")" @onclick='() => _tab = "results"'>Kết quả</button>
+    <button class="tab-btn @(_tab == "table" ? "active" : "")" @onclick='() => _tab = "table"'>Bảng xếp hạng</button>
+    <button class="tab-btn @(_tab == "scorers" ? "active" : "")" @onclick='() => _tab = "scorers"'>Vua phá lưới</button>
+</div>
+
+<div class="league-scroll">
+
+    @if (_tab == "fixtures")
+    {
+        <div class="league-panel active">
+            <div class="date-group-header">Hôm nay · 07/04/2025</div>
+            <a class="match-row" href="/match/1">
+                <div class="mr-time is-live">78'</div>
+                <div class="mr-home live-team"><span class="tn">Manchester City</span><div class="tl">🔵</div></div>
+                <div class="score-c is-live-score">1 – 0</div>
+                <div class="mr-away live-team"><div class="tl">🔴</div><span class="tn">Arsenal</span></div>
+                <div class="mr-status"><span class="badge-live"><span class="live-dot" style="width:5px;height:5px;"></span>LIVE</span></div>
+            </a>
+            <a class="match-row" href="/match/2">
+                <div class="mr-time">22:15</div>
+                <div class="mr-home"><span class="tn">Tottenham</span><div class="tl">⚪</div></div>
+                <div class="score-c no-score">–</div>
+                <div class="mr-away"><div class="tl">🔴</div><span class="tn">Man United</span></div>
+                <div class="mr-status"><span class="badge-sch">22:15</span></div>
+            </a>
+            <a class="match-row" href="/match/3">
+                <div class="mr-time">22:15</div>
+                <div class="mr-home"><span class="tn">Newcastle Utd</span><div class="tl">⚫</div></div>
+                <div class="score-c no-score">–</div>
+                <div class="mr-away"><div class="tl">🔵</div><span class="tn">Everton</span></div>
+                <div class="mr-status"><span class="badge-sch">22:15</span></div>
+            </a>
+            <div class="date-group-header">08/04/2025 · T2</div>
+            <a class="match-row" href="/match/4">
+                <div class="mr-time">21:00</div>
+                <div class="mr-home"><span class="tn">Brentford</span><div class="tl">🟠</div></div>
+                <div class="score-c no-score">–</div>
+                <div class="mr-away"><div class="tl">🔵</div><span class="tn">Chelsea</span></div>
+                <div class="mr-status"><span class="badge-sch">21:00</span></div>
+            </a>
+        </div>
+    }
+    else if (_tab == "results")
+    {
+        <div class="league-panel active">
+            <div class="date-group-header">05/04/2025 · T7</div>
+            <a class="match-row" href="/match/10">
+                <div class="mr-time">22:00</div>
+                <div class="mr-home"><span class="tn">Chelsea</span><div class="tl">🔵</div></div>
+                <div class="score-c has-score">2 – 1</div>
+                <div class="mr-away"><div class="tl">🔴</div><span class="tn">Liverpool</span></div>
+                <div class="mr-status"><span class="badge-ft">KT</span></div>
+            </a>
+            <a class="match-row" href="/match/11">
+                <div class="mr-time">22:00</div>
+                <div class="mr-home"><span class="tn">Aston Villa</span><div class="tl">🟣</div></div>
+                <div class="score-c has-score">0 – 0</div>
+                <div class="mr-away"><div class="tl">🔵</div><span class="tn">Man City</span></div>
+                <div class="mr-status"><span class="badge-ft">KT</span></div>
+            </a>
+        </div>
+    }
+    else if (_tab == "table")
+    {
+        <div class="league-panel active">
+            <div class="standings-wrap">
+                <table class="standings-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Đội bóng</th>
+                            <th>P</th>
+                            <th>W</th>
+                            <th>D</th>
+                            <th>L</th>
+                            <th>GF</th>
+                            <th>GA</th>
+                            <th>GD</th>
+                            <th>Pts</th>
+                            <th>Form</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="rank cl-zone">1</td>
+                            <td><a class="team-cell" href="/team/manchester-city"><div class="team-cell-logo">🔵</div> Manchester City</a></td>
+                            <td>31</td><td>22</td><td>5</td><td>4</td><td>71</td><td>29</td><td>+42</td>
+                            <td class="standings-pts" style="color:var(--accent)">71</td>
+                            <td><div class="standings-form"><span class="form-dot form-w">T</span><span class="form-dot form-w">T</span><span class="form-dot form-d">H</span><span class="form-dot form-w">T</span><span class="form-dot form-w">T</span></div></td>
+                        </tr>
+                        <tr>
+                            <td class="rank cl-zone">2</td>
+                            <td><a class="team-cell" href="/team/arsenal"><div class="team-cell-logo">🔴</div> Arsenal</a></td>
+                            <td>31</td><td>20</td><td>7</td><td>4</td><td>65</td><td>28</td><td>+37</td>
+                            <td class="standings-pts">67</td>
+                            <td><div class="standings-form"><span class="form-dot form-w">T</span><span class="form-dot form-d">H</span><span class="form-dot form-w">T</span><span class="form-dot form-d">H</span><span class="form-dot form-w">T</span></div></td>
+                        </tr>
+                        <tr>
+                            <td class="rank cl-zone">3</td>
+                            <td><a class="team-cell" href="/team/liverpool"><div class="team-cell-logo">🔴</div> Liverpool</a></td>
+                            <td>31</td><td>19</td><td>8</td><td>4</td><td>62</td><td>30</td><td>+32</td>
+                            <td class="standings-pts">65</td>
+                            <td><div class="standings-form"><span class="form-dot form-l">T</span><span class="form-dot form-w">T</span><span class="form-dot form-w">T</span><span class="form-dot form-d">H</span><span class="form-dot form-l">T</span></div></td>
+                        </tr>
+                        <tr>
+                            <td class="rank cl-zone">4</td>
+                            <td><a class="team-cell" href="/team/chelsea"><div class="team-cell-logo">🔵</div> Chelsea</a></td>
+                            <td>31</td><td>17</td><td>6</td><td>8</td><td>54</td><td>38</td><td>+16</td>
+                            <td class="standings-pts">57</td>
+                            <td><div class="standings-form"><span class="form-dot form-w">T</span><span class="form-dot form-l">T</span><span class="form-dot form-w">T</span><span class="form-dot form-w">T</span><span class="form-dot form-d">H</span></div></td>
+                        </tr>
+                        <tr>
+                            <td class="rank rel-zone">19</td>
+                            <td><div class="team-cell"><div class="team-cell-logo">🟡</div> Leicester</div></td>
+                            <td>31</td><td>5</td><td>5</td><td>21</td><td>24</td><td>68</td><td>-44</td>
+                            <td class="standings-pts" style="color:#f87171">20</td>
+                            <td><div class="standings-form"><span class="form-dot form-l">T</span><span class="form-dot form-l">T</span><span class="form-dot form-d">H</span><span class="form-dot form-l">T</span><span class="form-dot form-l">T</span></div></td>
+                        </tr>
+                        <tr>
+                            <td class="rank rel-zone">20</td>
+                            <td><div class="team-cell"><div class="team-cell-logo">⚫</div> Southampton</div></td>
+                            <td>31</td><td>3</td><td>6</td><td>22</td><td>21</td><td>72</td><td>-51</td>
+                            <td class="standings-pts" style="color:#f87171">15</td>
+                            <td><div class="standings-form"><span class="form-dot form-l">T</span><span class="form-dot form-l">T</span><span class="form-dot form-l">T</span><span class="form-dot form-l">T</span><span class="form-dot form-d">H</span></div></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="padding:10px 16px;font-size:10px;color:var(--muted);border-top:1px solid var(--border);">
+                    <span style="color:var(--accent)">■</span> Champions League &nbsp;
+                    <span style="color:#60a5fa">■</span> Europa League &nbsp;
+                    <span style="color:#f87171">■</span> Xuống hạng
+                </div>
+            </div>
+        </div>
+    }
+    else if (_tab == "scorers")
+    {
+        <div class="league-panel active">
+            <div class="scorers-wrap">
+                <div style="display:grid;grid-template-columns:24px 1fr 50px 50px;padding:9px 16px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;background:var(--bg-dark);border-bottom:1px solid var(--border);">
+                    <div>#</div><div>Cầu thủ</div><div style="text-align:right">Bàn</div><div style="text-align:right">KT</div>
+                </div>
+                <div class="scorer-row">
+                    <div class="scorer-rank" style="color:var(--accent)">1</div>
+                    <div class="scorer-player">
+                        <div class="scorer-name"><a href="/player/erling-haaland">Erling Haaland</a></div>
+                        <div class="scorer-club"><a href="/team/manchester-city">🔵 Man City</a></div>
+                    </div>
+                    <div class="scorer-goals">26</div>
+                    <div class="scorer-assists">6</div>
+                </div>
+                <div class="scorer-row">
+                    <div class="scorer-rank">2</div>
+                    <div class="scorer-player">
+                        <div class="scorer-name"><a href="/player/mohamed-salah">Mohamed Salah</a></div>
+                        <div class="scorer-club"><a href="/team/liverpool">🔴 Liverpool</a></div>
+                    </div>
+                    <div class="scorer-goals">24</div>
+                    <div class="scorer-assists">14</div>
+                </div>
+                <div class="scorer-row">
+                    <div class="scorer-rank">3</div>
+                    <div class="scorer-player">
+                        <div class="scorer-name"><a href="/player/cole-palmer">Cole Palmer</a></div>
+                        <div class="scorer-club"><a href="/team/chelsea">🔵 Chelsea</a></div>
+                    </div>
+                    <div class="scorer-goals">21</div>
+                    <div class="scorer-assists">10</div>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
+
+@code {
+    [Parameter] public string? Slug { get; set; }
+
+    private string _tab = "fixtures";
+    private string _leagueName = "Premier League";
+
+    protected override void OnParametersSet()
+    {
+        _leagueName = Slug switch
+        {
+            "premier-league" => "Premier League",
+            "champions-league" => "Champions League",
+            "vleague-1" => "V.League 1",
+            "la-liga" => "La Liga",
+            "bundesliga" => "Bundesliga",
+            "serie-a" => "Serie A",
+            _ => Slug?.Replace("-", " ").ToUpperInvariant() ?? "Giải đấu"
+        };
+    }
+}

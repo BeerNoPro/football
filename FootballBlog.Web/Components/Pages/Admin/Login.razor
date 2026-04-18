@@ -73,6 +73,12 @@
             return;
         }
 
+        // Check query string "expired=true" — session hết hạn (từ ApiUnauthorizedHandler redirect)
+        if (HttpContext?.Request.Query["expired"].ToString() == "true")
+        {
+            _error = "⏱️ Phiên làm việc hết hạn. Vui lòng login lại.";
+        }
+
         // Xử lý POST
         if (HttpContext?.Request.Method == "POST")
             await HandleLoginAsync();
@@ -116,7 +122,6 @@
             {
                 new(ClaimTypes.Email, result.Data.Email),
                 new(ClaimTypes.Name, result.Data.DisplayName),
-                new("jwt_token", result.Data.Token),
             };
             foreach (var role in result.Data.Roles)
                 claims.Add(new(ClaimTypes.Role, role));
@@ -128,6 +133,18 @@
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal,
                 new AuthenticationProperties { IsPersistent = true });
+
+            // Lưu JWT token vào secure HTTP-only cookie riêng (KHÔNG encrypt — API sẽ đọc)
+            HttpContext.Response.Cookies.Append(
+                "jwt_token",
+                result.Data.Token,
+                new Microsoft.AspNetCore.Http.CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Strict,
+                    Expires = DateTimeOffset.UtcNow.AddDays(7)
+                });
 
             // Chỉ redirect nội bộ — tránh Open Redirect
             var returnUrl = HttpContext.Request.Query["returnUrl"].ToString();

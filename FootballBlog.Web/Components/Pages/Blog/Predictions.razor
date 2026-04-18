@@ -1,0 +1,330 @@
+@page "/predictions"
+@layout PublicLayout3Col
+@rendermode InteractiveServer
+@using FootballBlog.Core.DTOs
+
+<SeoHead Title="Dự đoán AI — FootballBlog"
+         Description="Dự đoán tỷ số và phân tích trận đấu tự động bởi Claude AI. Cập nhật 24h trước mỗi trận." />
+
+<!-- Page header -->
+<div class="pred-page-header">
+    <div class="pred-page-title">
+        <div class="ai-badge" style="font-size:10px;padding:4px 10px;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 0 2h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1 0-2h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z" />
+            </svg>
+            Claude AI
+        </div>
+        <h1>Dự đoán Trận đấu</h1>
+    </div>
+    <div class="pred-page-sub">Phân tích tự động bởi Claude AI · Cập nhật 24h trước mỗi trận · Tháng 4/2026</div>
+</div>
+
+<!-- Accuracy banner -->
+<div class="accuracy-banner">
+    <div class="acc-stat">
+        <div class="acc-val">68%</div>
+        <div class="acc-label">Chính xác</div>
+    </div>
+    <div class="acc-divider"></div>
+    <div class="acc-stat">
+        <div class="acc-val">42</div>
+        <div class="acc-label">Dự đoán</div>
+    </div>
+    <div class="acc-divider"></div>
+    <div class="acc-stat">
+        <div class="acc-val">73%</div>
+        <div class="acc-label">Kết quả đúng</div>
+    </div>
+    <div class="acc-divider"></div>
+    <div class="acc-stat">
+        <div class="acc-val">51%</div>
+        <div class="acc-label">Tỉ số đúng</div>
+    </div>
+    <div class="acc-divider"></div>
+    <div class="acc-desc">
+        <div class="acc-desc-title">Tháng 4/2026 — 28 ngày</div>
+        <div class="acc-desc-sub">Claude Opus 4.6 · 42 trận đã phân tích</div>
+    </div>
+</div>
+
+<!-- Filter bar -->
+<div class="pred-filter-bar">
+    <button class="filter-chip @(_activeFilter == "all" ? "active" : "")" @onclick='() => _activeFilter = "all"'>Tất cả</button>
+    <button class="filter-chip @(_activeFilter == "epl" ? "active" : "")" @onclick='() => _activeFilter = "epl"'>Premier League</button>
+    <button class="filter-chip @(_activeFilter == "ucl" ? "active" : "")" @onclick='() => _activeFilter = "ucl"'>Champions League</button>
+    <button class="filter-chip @(_activeFilter == "vl1" ? "active" : "")" @onclick='() => _activeFilter = "vl1"'>V.League 1</button>
+    <div class="filter-sep"></div>
+    <span class="conf-label">Độ tin cậy:</span>
+    <button class="filter-chip">≥ 75%</button>
+    <button class="filter-chip">≥ 50%</button>
+</div>
+
+<!-- Content -->
+<div class="matches-list">
+
+    <!-- FEATURED PREDICTION -->
+    <div class="featured-pred">
+        <div class="featured-pred-header">
+            <div>
+                <div class="fp-league">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League — GW 33</div>
+                <div class="fp-time">Thứ Ba, 15/04/2026 · 02:00 ICT</div>
+            </div>
+            <div class="fp-match">
+                <div class="fp-team">
+                    <div class="fp-team-icon">🔵</div>
+                    <div class="fp-team-name">Man City</div>
+                </div>
+                <div class="fp-vs">VS</div>
+                <div class="fp-team">
+                    <div class="fp-team-icon">🔴</div>
+                    <div class="fp-team-name">Arsenal</div>
+                </div>
+            </div>
+            <div class="ai-badge">⭐ Nổi bật</div>
+        </div>
+        <div class="featured-pred-body">
+            <div class="fp-pred-row">
+                <div class="fp-score-pred">
+                    <div class="fp-score-val">2 – 1</div>
+                </div>
+                <div class="fp-outcome-badge home-win">Man City thắng</div>
+                <div style="flex:1;"></div>
+                <div style="text-align:right;">
+                    <div style="font-size:9px;color:var(--muted);margin-bottom:3px;">PHÂN TÍCH BỞI</div>
+                    <div class="ai-badge">Claude Opus 4.6</div>
+                </div>
+            </div>
+            <div class="fp-conf-wrap">
+                <div class="fp-conf-label">
+                    <span>Độ tin cậy</span>
+                    <span>82%</span>
+                </div>
+                <div class="conf-bar">
+                    <div class="conf-bar-fill" style="width:82%"></div>
+                </div>
+            </div>
+            <div class="fp-mini-stats" style="margin-top:10px;">
+                <div class="mini-stat yes"><strong>Có</strong> Over 2.5 Goals</div>
+                <div class="mini-stat yes"><strong>Có</strong> Cả 2 đội ghi bàn</div>
+                <div class="mini-stat"><strong>3–4</strong> Thẻ vàng</div>
+                <div class="mini-stat"><strong>9+</strong> Góc</div>
+            </div>
+            <div class="fp-analysis">
+                Man City đang trong chuỗi 5 trận thắng liên tiếp tại Etihad với phong độ tấn công vượt trội —
+                trung bình 2.6 bàn/trận. Arsenal thiếu Saka và Havertz do chấn thương khiến hàng công suy yếu
+                đáng kể. Dữ liệu H2H 5 trận gần nhất cho thấy Man City thắng 4/5, cả 4 trận đều có Over 2.5.
+            </div>
+            <a class="fp-read-more" href="/posts/man-city-vs-arsenal-nhan-dinh-ai">Xem phân tích đầy đủ →</a>
+        </div>
+    </div>
+
+    <!-- PREMIER LEAGUE -->
+    <div class="pred-section @(IsSectionCollapsed("pred-epl") ? "collapsed" : "")" id="pred-epl">
+        <div class="pred-section-header" @onclick='() => ToggleSection("pred-epl")'>
+            <div class="lg-icon">🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
+            <a class="lg-name lg-name-link" href="/league/premier-league" @onclick:stopPropagation>England — Premier League</a>
+            <span class="lg-round">GW 33</span>
+            <span class="lg-chevron">▾</span>
+            <span class="pred-count">3 dự đoán</span>
+        </div>
+        @if (!IsSectionCollapsed("pred-epl"))
+        {
+        <div class="lg-matches">
+            <div class="pred-card">
+                <div class="pred-card-top">
+                    <div class="pred-card-time">02:00</div>
+                    <div class="pred-card-teams"><span>Man City</span><span class="vs">vs</span><span>Arsenal</span></div>
+                    <div class="pred-card-score">2 – 1</div>
+                    <div class="pred-outcome-sm hw">MCY thắng</div>
+                </div>
+                <div class="pred-card-bottom">
+                    <div class="pred-conf-mini">
+                        <div class="conf-bar-sm"><div class="conf-bar-sm-fill" style="width:82%"></div></div>
+                        <span class="conf-pct">82%</span>
+                    </div>
+                    <div class="mini-stats-row">
+                        <div class="stat-tag yes">Over 2.5</div>
+                        <div class="stat-tag yes">BTTS</div>
+                        <div class="stat-tag">3–4 thẻ</div>
+                    </div>
+                    <a class="pred-link" href="/posts/man-city-vs-arsenal-nhan-dinh-ai">Phân tích →</a>
+                </div>
+            </div>
+            <div class="pred-card">
+                <div class="pred-card-top">
+                    <div class="pred-card-time">22:00</div>
+                    <div class="pred-card-teams"><span>Chelsea</span><span class="vs">vs</span><span>Liverpool</span></div>
+                    <div class="pred-card-score">1 – 2</div>
+                    <div class="pred-outcome-sm aw">LIV thắng</div>
+                </div>
+                <div class="pred-card-bottom">
+                    <div class="pred-conf-mini">
+                        <div class="conf-bar-sm"><div class="conf-bar-sm-fill medium" style="width:61%"></div></div>
+                        <span class="conf-pct medium">61%</span>
+                    </div>
+                    <div class="mini-stats-row">
+                        <div class="stat-tag yes">Over 2.5</div>
+                        <div class="stat-tag no">Không BTTS</div>
+                        <div class="stat-tag">5+ góc</div>
+                    </div>
+                    <a class="pred-link" href="/posts/chelsea-vs-liverpool-nhan-dinh-ai">Phân tích →</a>
+                </div>
+            </div>
+            <div class="pred-card">
+                <div class="pred-card-top">
+                    <div class="pred-card-time">22:00</div>
+                    <div class="pred-card-teams"><span>Tottenham</span><span class="vs">vs</span><span>Man United</span></div>
+                    <div class="pred-card-score">1 – 1</div>
+                    <div class="pred-outcome-sm draw">Hòa</div>
+                </div>
+                <div class="pred-card-bottom">
+                    <div class="pred-conf-mini">
+                        <div class="conf-bar-sm"><div class="conf-bar-sm-fill low" style="width:48%"></div></div>
+                        <span class="conf-pct low">48%</span>
+                    </div>
+                    <div class="mini-stats-row">
+                        <div class="stat-tag">Under 2.5</div>
+                        <div class="stat-tag yes">BTTS</div>
+                        <div class="stat-tag">2–3 thẻ</div>
+                    </div>
+                    <a class="pred-link" href="/posts/tottenham-vs-man-united-nhan-dinh-ai">Phân tích →</a>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+
+    <!-- CHAMPIONS LEAGUE -->
+    <div class="pred-section @(IsSectionCollapsed("pred-ucl") ? "collapsed" : "")" id="pred-ucl">
+        <div class="pred-section-header" @onclick='() => ToggleSection("pred-ucl")'>
+            <div class="lg-icon">🏆</div>
+            <a class="lg-name lg-name-link" href="/league/champions-league" @onclick:stopPropagation>UEFA — Champions League</a>
+            <span class="lg-round">Bán kết</span>
+            <span class="lg-chevron">▾</span>
+            <span class="pred-count">2 dự đoán</span>
+        </div>
+        @if (!IsSectionCollapsed("pred-ucl"))
+        {
+        <div class="lg-matches">
+            <div class="pred-card">
+                <div class="pred-card-top">
+                    <div class="pred-card-time">02:00</div>
+                    <div class="pred-card-teams"><span>Real Madrid</span><span class="vs">vs</span><span>Bayern Munich</span></div>
+                    <div class="pred-card-score">2 – 0</div>
+                    <div class="pred-outcome-sm hw">Real thắng</div>
+                </div>
+                <div class="pred-card-bottom">
+                    <div class="pred-conf-mini">
+                        <div class="conf-bar-sm"><div class="conf-bar-sm-fill" style="width:78%"></div></div>
+                        <span class="conf-pct">78%</span>
+                    </div>
+                    <div class="mini-stats-row">
+                        <div class="stat-tag yes">Over 2.5</div>
+                        <div class="stat-tag no">Không BTTS</div>
+                        <div class="stat-tag">4–5 góc</div>
+                    </div>
+                    <a class="pred-link" href="/posts/real-madrid-vs-bayern-nhan-dinh-ai">Phân tích →</a>
+                </div>
+            </div>
+            <div class="pred-card">
+                <div class="pred-card-top">
+                    <div class="pred-card-time">02:00</div>
+                    <div class="pred-card-teams"><span>PSG</span><span class="vs">vs</span><span>Inter Milan</span></div>
+                    <div class="pred-card-score">1 – 1</div>
+                    <div class="pred-outcome-sm draw">Hòa</div>
+                </div>
+                <div class="pred-card-bottom">
+                    <div class="pred-conf-mini">
+                        <div class="conf-bar-sm"><div class="conf-bar-sm-fill medium" style="width:55%"></div></div>
+                        <span class="conf-pct medium">55%</span>
+                    </div>
+                    <div class="mini-stats-row">
+                        <div class="stat-tag">Under 2.5</div>
+                        <div class="stat-tag yes">BTTS</div>
+                        <div class="stat-tag">3–4 thẻ</div>
+                    </div>
+                    <a class="pred-link" href="/posts/psg-vs-inter-nhan-dinh-ai">Phân tích →</a>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+
+    <!-- V.LEAGUE -->
+    <div class="pred-section @(IsSectionCollapsed("pred-vl1") ? "collapsed" : "")" id="pred-vl1">
+        <div class="pred-section-header" @onclick='() => ToggleSection("pred-vl1")'>
+            <div class="lg-icon">🇻🇳</div>
+            <a class="lg-name lg-name-link" href="/league/vleague-1" @onclick:stopPropagation>Vietnam — V.League 1</a>
+            <span class="lg-round">Vòng 16</span>
+            <span class="lg-chevron">▾</span>
+            <span class="pred-count">2 dự đoán</span>
+        </div>
+        @if (!IsSectionCollapsed("pred-vl1"))
+        {
+        <div class="lg-matches">
+            <div class="pred-card">
+                <div class="pred-card-top">
+                    <div class="pred-card-time">18:00</div>
+                    <div class="pred-card-teams"><span>Hà Nội FC</span><span class="vs">vs</span><span>TPHCM FC</span></div>
+                    <div class="pred-card-score">2 – 0</div>
+                    <div class="pred-outcome-sm hw">Hà Nội thắng</div>
+                </div>
+                <div class="pred-card-bottom">
+                    <div class="pred-conf-mini">
+                        <div class="conf-bar-sm"><div class="conf-bar-sm-fill" style="width:76%"></div></div>
+                        <span class="conf-pct">76%</span>
+                    </div>
+                    <div class="mini-stats-row">
+                        <div class="stat-tag no">Under 2.5</div>
+                        <div class="stat-tag no">Không BTTS</div>
+                        <div class="stat-tag">2–3 thẻ</div>
+                    </div>
+                    <a class="pred-link" href="/posts/ha-noi-fc-vs-tphcm-fc-nhan-dinh-ai">Phân tích →</a>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+
+    <!-- Accuracy footer -->
+    <div class="accuracy-footer">
+        <div class="accuracy-footer-title">Thống kê độ chính xác — Tháng 4/2026</div>
+        <div class="acc-month-row">
+            <div class="acc-month-stat">
+                <div class="acc-month-val" style="color:#4ade80;">68%</div>
+                <div class="acc-month-sub">Kết quả W/D/L</div>
+            </div>
+            <div class="acc-month-stat">
+                <div class="acc-month-val">51%</div>
+                <div class="acc-month-sub">Tỉ số đúng</div>
+            </div>
+            <div class="acc-month-stat">
+                <div class="acc-month-val" style="color:#4ade80;">72%</div>
+                <div class="acc-month-sub">Over/Under</div>
+            </div>
+            <div class="acc-month-stat">
+                <div class="acc-month-val" style="color:#f59e0b;">65%</div>
+                <div class="acc-month-sub">BTTS</div>
+            </div>
+            <div class="acc-month-stat">
+                <div class="acc-month-val">42</div>
+                <div class="acc-month-sub">Tổng dự đoán</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@code {
+    private string _activeFilter = "all";
+    private readonly HashSet<string> _collapsedSections = [];
+
+    private void ToggleSection(string id)
+    {
+        if (!_collapsedSections.Add(id))
+            _collapsedSections.Remove(id);
+    }
+
+    private bool IsSectionCollapsed(string id) => _collapsedSections.Contains(id);
+}

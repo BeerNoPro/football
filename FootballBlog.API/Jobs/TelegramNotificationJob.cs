@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using FootballBlog.Core.Interfaces;
 using FootballBlog.Core.Interfaces.Services;
 using FootballBlog.Core.Models;
@@ -13,7 +14,8 @@ public class TelegramNotificationJob(
     /// <summary>Gửi prediction mới lên Telegram (gọi sau PublishPredictionJob).</summary>
     public async Task SendPredictionAsync(int predictionId)
     {
-        logger.LogInformation("TelegramNotificationJob.SendPrediction started for {PredictionId}", predictionId);
+        var sw = Stopwatch.StartNew();
+        logger.LogInformation("TelegramNotificationJob.SendPrediction started for prediction {PredictionId}", predictionId);
 
         var prediction = await uow.MatchPredictions.GetByIdAsync(predictionId);
         if (prediction is null)
@@ -24,14 +26,16 @@ public class TelegramNotificationJob(
 
         if (prediction.TelegramMessageId.HasValue)
         {
-            logger.LogDebug("Prediction {PredictionId} already sent to Telegram", predictionId);
+            sw.Stop();
+            logger.LogDebug("Prediction {PredictionId} already sent to Telegram, skipping (Duration={DurationMs}ms)",
+                predictionId, sw.ElapsedMilliseconds);
             return;
         }
 
         var match = await uow.Matches.GetWithPredictionAsync(prediction.MatchId);
         if (match is null)
         {
-            logger.LogWarning("Match {MatchId} not found", prediction.MatchId);
+            logger.LogWarning("Match {MatchId} not found for prediction {PredictionId}", prediction.MatchId, predictionId);
             return;
         }
 
@@ -41,14 +45,24 @@ public class TelegramNotificationJob(
             prediction.TelegramMessageId = messageId;
             await uow.MatchPredictions.UpdateAsync(prediction);
             await uow.CommitAsync();
-        }
 
-        logger.LogInformation("TelegramNotificationJob.SendPrediction finished for {PredictionId}", predictionId);
+            sw.Stop();
+            logger.LogInformation(
+                "TelegramNotificationJob.SendPrediction finished for prediction {PredictionId}. MessageId={MessageId}, Duration={DurationMs}ms",
+                predictionId, messageId, sw.ElapsedMilliseconds);
+        }
+        else
+        {
+            sw.Stop();
+            logger.LogWarning("TelegramNotificationJob.SendPrediction failed to send prediction {PredictionId}. Duration={DurationMs}ms",
+                predictionId, sw.ElapsedMilliseconds);
+        }
     }
 
     /// <summary>Edit Telegram message sau khi trận kết thúc với kết quả thực tế.</summary>
     public async Task SendResultAsync(int matchId)
     {
+        var sw = Stopwatch.StartNew();
         logger.LogInformation("TelegramNotificationJob.SendResult started for match {MatchId}", matchId);
 
         var match = await uow.Matches.GetWithPredictionAsync(matchId);
@@ -60,7 +74,9 @@ public class TelegramNotificationJob(
 
         if (!match.Prediction.TelegramMessageId.HasValue)
         {
-            logger.LogDebug("No Telegram message to edit for match {MatchId}", matchId);
+            sw.Stop();
+            logger.LogDebug("No Telegram message to edit for match {MatchId}. Duration={DurationMs}ms",
+                matchId, sw.ElapsedMilliseconds);
             return;
         }
 
@@ -72,6 +88,9 @@ public class TelegramNotificationJob(
 
         await telegramService.EditResultAsync(match.Prediction.TelegramMessageId.Value, match, match.Prediction);
 
-        logger.LogInformation("TelegramNotificationJob.SendResult finished for match {MatchId}", matchId);
+        sw.Stop();
+        logger.LogInformation(
+            "TelegramNotificationJob.SendResult finished for match {MatchId}. Result={Result}, Duration={DurationMs}ms",
+            matchId, $"{match.HomeScore}-{match.AwayScore}", sw.ElapsedMilliseconds);
     }
 }

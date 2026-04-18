@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using FootballBlog.Core.Interfaces;
 using FootballBlog.Core.Interfaces.Services;
@@ -14,16 +15,19 @@ public class GeneratePredictionJob(
 {
     public async Task ExecuteAsync()
     {
-        logger.LogInformation("GeneratePredictionJob started");
+        var sw = Stopwatch.StartNew();
+        logger.LogInformation("GeneratePredictionJob started at {StartTime}", DateTime.UtcNow);
 
         var matches = await uow.Matches.GetWithoutPredictionAsync();
         var candidates = matches
             .Where(m => m.ContextData is not null && m.KickoffUtc > DateTime.UtcNow)
             .ToList();
 
+        logger.LogDebug("Found {CandidateCount} matches ready for prediction", candidates.Count);
+
         if (candidates.Count == 0)
         {
-            logger.LogDebug("No matches ready for prediction");
+            logger.LogInformation("GeneratePredictionJob finished. No candidates. Duration={DurationMs}ms", sw.ElapsedMilliseconds);
             return;
         }
 
@@ -31,6 +35,7 @@ public class GeneratePredictionJob(
         var fallback = providers.FirstOrDefault(p => p.ProviderName == "Gemini");
 
         int generated = 0;
+        int failed = 0;
 
         foreach (Match match in candidates)
         {
@@ -43,6 +48,7 @@ public class GeneratePredictionJob(
             catch (Exception ex)
             {
                 logger.LogWarning(ex, "Không thể deserialize ContextJson cho match {MatchId}", match.Id);
+                failed++;
                 continue;
             }
 
@@ -111,6 +117,9 @@ public class GeneratePredictionJob(
                 match.Id, usedProvider, result.PredictedOutcome, result.ConfidenceScore);
         }
 
-        logger.LogInformation("GeneratePredictionJob finished. Generated={Generated}", generated);
+        sw.Stop();
+        logger.LogInformation(
+            "GeneratePredictionJob finished. Generated={Generated}, Failed={Failed}, Duration={DurationMs}ms",
+            generated, failed, sw.ElapsedMilliseconds);
     }
 }

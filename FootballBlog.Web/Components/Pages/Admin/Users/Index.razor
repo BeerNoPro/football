@@ -1,0 +1,200 @@
+@page "/admin/users"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inherits AdminPageBase
+
+<PageTitle>Người dùng — Admin | FootballBlog</PageTitle>
+
+<!-- Header -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+    <div>
+        <MudText Typo="Typo.h5" Style="color:#efefef;font-weight:700;margin-bottom:4px;">Người dùng</MudText>
+        <MudText Typo="Typo.body2" Style="color:#666;">Quản lý tài khoản người dùng và phân quyền</MudText>
+    </div>
+    <MudButton Variant="Variant.Filled" Size="Size.Small"
+               StartIcon="@Icons.Material.Filled.PersonAdd"
+               Style="background:#c8f04d;color:#0d0d0d;font-weight:600;"
+               OnClick='() => OpenPanel(null)'>
+        Thêm người dùng
+    </MudButton>
+</div>
+
+<!-- Stats bar -->
+<MudGrid Spacing="3" Style="margin-bottom:24px;">
+    <MudItem xs="6" sm="3">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:16px 20px;border-radius:10px;">
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Tổng tài khoản</MudText>
+            <MudText Typo="Typo.h5" Style="color:#efefef;font-weight:700;margin-top:6px;">4</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="6" sm="3">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:16px 20px;border-radius:10px;">
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Admin</MudText>
+            <MudText Typo="Typo.h5" Style="color:#a78bfa;font-weight:700;margin-top:6px;">1</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="6" sm="3">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:16px 20px;border-radius:10px;">
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Author</MudText>
+            <MudText Typo="Typo.h5" Style="color:#fbbf24;font-weight:700;margin-top:6px;">3</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="6" sm="3">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:16px 20px;border-radius:10px;">
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Active hôm nay</MudText>
+            <MudText Typo="Typo.h5" Style="color:#4ade80;font-weight:700;margin-top:6px;">2</MudText>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+<!-- Two-panel layout -->
+<div style="display:grid;grid-template-columns:@(_panelOpen ? "1fr 380px" : "1fr");gap:16px;height:calc(100vh - 280px);overflow:hidden;">
+
+    <!-- Left: table -->
+    <MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;overflow:hidden;display:flex;flex-direction:column;">
+
+        <!-- Toolbar -->
+        <div style="padding:14px 20px;border-bottom:1px solid #242424;display:flex;gap:10px;align-items:center;">
+            <MudTextField @bind-Value="_search" Placeholder="Tìm theo tên, email..."
+                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                          Style="background:#0d0d0d;border-radius:6px;max-width:280px;" Variant="Variant.Outlined"
+                          Margin="Margin.Dense" />
+            <MudSelect @bind-Value="_roleFilter" Placeholder="Vai trò" T="string" Clearable="true" Dense="true"
+                       Variant="Variant.Outlined" Margin="Margin.Dense"
+                       Style="background:#0d0d0d;border-radius:6px;max-width:160px;">
+                <MudSelectItem Value="@("Admin")">Admin</MudSelectItem>
+                <MudSelectItem Value="@("Author")">Author</MudSelectItem>
+                <MudSelectItem Value="@("Reader")">Reader</MudSelectItem>
+            </MudSelect>
+        </div>
+
+        <!-- Table -->
+        <div style="overflow-y:auto;flex:1;">
+            <MudTable T="UserRow" Items="_users" Dense="true" Hover="true"
+                      Style="background:transparent;"
+                      RowStyle="border-bottom:1px solid #1e1e1e;cursor:pointer;"
+                      OnRowClick="@(args => OpenPanel(args.Item))">
+                <HeaderContent>
+                    <MudTh Style="color:#555;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:10px 16px;border-bottom:1px solid #242424;">Người dùng</MudTh>
+                    <MudTh Style="color:#555;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:10px 16px;border-bottom:1px solid #242424;">Vai trò</MudTh>
+                    <MudTh Style="color:#555;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:10px 16px;border-bottom:1px solid #242424;">Đăng ký</MudTh>
+                    <MudTh Style="color:#555;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:10px 16px;border-bottom:1px solid #242424;">Hoạt động</MudTh>
+                    <MudTh Style="color:#555;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:10px 16px;border-bottom:1px solid #242424;"></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd Style="padding:12px 16px;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:32px;height:32px;border-radius:50%;background:#242424;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent);">
+                                @context.Name[0]
+                            </div>
+                            <div>
+                                <div style="color:#efefef;font-size:13px;font-weight:500;">@context.Name</div>
+                                <div style="color:#555;font-size:11px;">@context.Email</div>
+                            </div>
+                        </div>
+                    </MudTd>
+                    <MudTd Style="padding:12px 16px;">
+                        <span style="@GetRoleStyle(context.Role) font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;">@context.Role</span>
+                    </MudTd>
+                    <MudTd Style="padding:12px 16px;">
+                        <MudText Style="color:#666;font-size:12px;">@context.CreatedAt</MudText>
+                    </MudTd>
+                    <MudTd Style="padding:12px 16px;">
+                        <span style="@(context.IsActive ? "color:#4ade80;" : "color:#555;") font-size:12px;">
+                            @(context.IsActive ? "● Online" : "○ Offline")
+                        </span>
+                    </MudTd>
+                    <MudTd Style="padding:12px 16px;">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
+                                       Style="color:#555;" OnClick="@(() => OpenPanel(context))" />
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </div>
+    </MudPaper>
+
+    <!-- Right: edit panel -->
+    @if (_panelOpen)
+    {
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;overflow:hidden;display:flex;flex-direction:column;">
+            <div style="padding:16px 20px;border-bottom:1px solid #242424;display:flex;align-items:center;justify-content:space-between;">
+                <MudText Typo="Typo.subtitle1" Style="color:#efefef;font-weight:600;">
+                    @(_selectedUser == null ? "Thêm người dùng" : "Chỉnh sửa")
+                </MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small"
+                               Style="color:#555;" OnClick='() => _panelOpen = false' />
+            </div>
+            <div style="padding:20px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:16px;">
+                <MudTextField @bind-Value="_editName" Label="Tên hiển thị" Variant="Variant.Outlined"
+                              Margin="Margin.Dense" Style="background:#0d0d0d;border-radius:6px;" />
+                <MudTextField @bind-Value="_editEmail" Label="Email" Variant="Variant.Outlined"
+                              Margin="Margin.Dense" Style="background:#0d0d0d;border-radius:6px;" />
+                <MudSelect @bind-Value="_editRole" Label="Vai trò" T="string" Variant="Variant.Outlined"
+                           Margin="Margin.Dense" Style="background:#0d0d0d;border-radius:6px;">
+                    <MudSelectItem Value="@("Admin")">Admin</MudSelectItem>
+                    <MudSelectItem Value="@("Author")">Author</MudSelectItem>
+                    <MudSelectItem Value="@("Reader")">Reader</MudSelectItem>
+                </MudSelect>
+                @if (_selectedUser == null)
+                {
+                    <MudTextField @bind-Value="_editPassword" Label="Mật khẩu" InputType="InputType.Password"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense"
+                                  Style="background:#0d0d0d;border-radius:6px;" />
+                }
+                <MudSwitch @bind-Value="_editActive" Color="Color.Success" Label="Kích hoạt tài khoản" />
+            </div>
+            <div style="padding:16px 20px;border-top:1px solid #242424;display:flex;gap:8px;">
+                <MudButton Variant="Variant.Filled" FullWidth="true"
+                           Style="background:#c8f04d;color:#0d0d0d;font-weight:600;">
+                    @(_selectedUser == null ? "Tạo tài khoản" : "Lưu thay đổi")
+                </MudButton>
+                @if (_selectedUser != null)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined"
+                                   Style="border-color:#f87171;color:#f87171;" Size="Size.Medium" />
+                }
+            </div>
+        </MudPaper>
+    }
+
+</div>
+
+@code {
+    private bool _panelOpen;
+    private UserRow? _selectedUser;
+    private string? _search;
+    private string? _roleFilter;
+    private string _editName = "";
+    private string _editEmail = "";
+    private string _editRole = "Author";
+    private string _editPassword = "";
+    private bool _editActive = true;
+
+    private record UserRow(string Name, string Email, string Role, string CreatedAt, bool IsActive);
+
+    private List<UserRow> _users =
+    [
+        new("Admin", "admin@footballblog.vn", "Admin", "01/01/2024", true),
+        new("Nguyễn Văn A", "nguyenvana@gmail.com", "Author", "15/02/2024", true),
+        new("Trần Thị B", "tranthib@gmail.com", "Author", "01/03/2024", false),
+        new("Lê Văn C", "levanc@gmail.com", "Author", "20/03/2024", false),
+    ];
+
+    private void OpenPanel(UserRow? user)
+    {
+        _selectedUser = user;
+        _editName = user?.Name ?? "";
+        _editEmail = user?.Email ?? "";
+        _editRole = user?.Role ?? "Author";
+        _editActive = user?.IsActive ?? true;
+        _editPassword = "";
+        _panelOpen = true;
+    }
+
+    private static string GetRoleStyle(string role) => role switch
+    {
+        "Admin"  => "background:rgba(167,139,250,0.12);color:#a78bfa;",
+        "Author" => "background:rgba(251,191,36,0.12);color:#fbbf24;",
+        _        => "background:#1e1e1e;color:#555;"
+    };
+}

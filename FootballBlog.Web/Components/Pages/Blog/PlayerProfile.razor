@@ -1,0 +1,242 @@
+@page "/player/{Slug}"
+@layout PublicLayout3Col
+@rendermode InteractiveServer
+@using FootballBlog.Core.DTOs
+
+<SeoHead Title="@($"{_playerName} — FootballBlog")"
+         Description="@($"Thông tin cầu thủ {_playerName}: thống kê, tiểu sử và lịch thi đấu")" />
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+    <a href="/">Trang chủ</a>
+    <span>›</span>
+    <a href="/team/manchester-city">Manchester City</a>
+    <span>›</span>
+    <span style="color:var(--text)">@_playerName</span>
+</div>
+
+<!-- Player header -->
+<div class="player-header">
+    <div class="player-header-bg">⚽</div>
+    <div class="player-header-content">
+        <div class="player-number-badge">
+            <span class="num">@_number</span>
+            <span class="pos">@_position</span>
+        </div>
+        <div class="player-info-main">
+            <div class="player-name-lg">@_playerName</div>
+            <div style="font-size:13px;color:var(--muted2);margin-top:2px;">@_positionFull · @_foot</div>
+            <div class="player-meta-row">
+                <span class="player-meta-badge">@_nationality</span>
+                <span class="player-meta-badge">@_age tuổi</span>
+                <span class="player-meta-badge">@_height / @_weight</span>
+                <span class="player-meta-badge" style="background:rgba(200,240,77,0.12);color:var(--accent)">⚽ @_goals bàn mùa này</span>
+            </div>
+            <div style="margin-top:10px;">
+                <a href="/team/manchester-city" class="player-club-link">
+                    <span class="club-logo">🔵</span>
+                    <span>Manchester City</span>
+                    <span style="color:var(--muted);font-size:10px;">· Premier League</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Season stats bar -->
+<div class="player-stats-bar">
+    <div class="pstat">
+        <div class="pstat-val" style="color:var(--accent)">@_goals</div>
+        <div class="pstat-label">Bàn thắng</div>
+    </div>
+    <div class="pstat">
+        <div class="pstat-val">@_assists</div>
+        <div class="pstat-label">Kiến tạo</div>
+    </div>
+    <div class="pstat">
+        <div class="pstat-val">@_apps</div>
+        <div class="pstat-label">Trận ra sân</div>
+    </div>
+    <div class="pstat">
+        <div class="pstat-val" style="color:var(--accent)">@_rating</div>
+        <div class="pstat-label">Điểm TB</div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<div class="detail-tab-bar tabs">
+    <button class="tab-btn @(_tab == "stats" ? "active" : "")" @onclick='() => _tab = "stats"'>Thống kê</button>
+    <button class="tab-btn @(_tab == "bio" ? "active" : "")" @onclick='() => _tab = "bio"'>Tiểu sử</button>
+    <button class="tab-btn @(_tab == "career" ? "active" : "")" @onclick='() => _tab = "career"'>Sự nghiệp</button>
+    <button class="tab-btn @(_tab == "fixtures" ? "active" : "")" @onclick='() => _tab = "fixtures"'>Lịch thi đấu</button>
+</div>
+
+<div class="detail-scroll">
+
+    @if (_tab == "stats")
+    {
+        <div class="detail-panel active">
+            <!-- National team card -->
+            <div class="nat-card">
+                <span class="nat-flag">🇳🇴</span>
+                <div class="nat-info">
+                    <div class="nat-label">ĐT Quốc gia Na Uy</div>
+                    <div class="nat-stats">
+                        <div class="nat-stat"><div class="nat-stat-val">48</div><div class="nat-stat-label">Caps</div></div>
+                        <div class="nat-stat"><div class="nat-stat-val">32</div><div class="nat-stat-label">Bàn thắng</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Season stats detail -->
+            <div class="rating-card">
+                <div class="bio-title">Thống kê mùa 2024/25 — Premier League</div>
+                @foreach (var s in _statBars)
+                {
+                    <div class="stat-row">
+                        <span class="stat-name">@s.Label</span>
+                        <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:@s.Pct%;background:@s.Color;"></div></div>
+                        <span class="stat-val">@s.Value</span>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else if (_tab == "bio")
+    {
+        <div class="detail-panel active">
+            <div class="bio-card">
+                <div class="bio-title">Thông tin cá nhân</div>
+                <div class="bio-grid">
+                    @foreach (var b in _bioItems)
+                    {
+                        <div class="bio-item">
+                            <span class="bio-key">@b.Key</span>
+                            <span class="bio-val">@b.Value</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else if (_tab == "career")
+    {
+        <div class="detail-panel active">
+            <div class="career-card">
+                <div class="bio-title">Lịch sử câu lạc bộ</div>
+                @foreach (var c in _careerHistory)
+                {
+                    <div class="career-item">
+                        <div class="career-logo">@c.Emoji</div>
+                        <div class="career-info">
+                            <div class="career-team">@c.Team</div>
+                            <div class="career-years">@c.Years · @c.League</div>
+                        </div>
+                        <div class="career-stats">
+                            <div class="career-goals">@c.Goals ⚽</div>
+                            <div class="career-apps">@c.Apps trận</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else if (_tab == "fixtures")
+    {
+        <div class="detail-panel active">
+            <div class="upcoming-card">
+                <div class="upcoming-header">Lịch thi đấu sắp tới</div>
+                @foreach (var m in _upcomingMatches)
+                {
+                    <a href="/match/@m.Id" class="upcoming-match">
+                        <div class="um-date">
+                            @m.Date<br>
+                            <span style="color:var(--accent);font-weight:700;">@m.Time</span>
+                        </div>
+                        <div style="flex:1;">
+                            <div class="um-teams">@m.Teams</div>
+                            <div class="um-comp">@m.Comp</div>
+                        </div>
+                        <div class="um-badge">Dự đoán AI →</div>
+                    </a>
+                }
+            </div>
+        </div>
+    }
+
+</div>
+
+@code {
+    [Parameter] public string? Slug { get; set; }
+
+    private string _tab = "stats";
+    private string _playerName = "Erling Haaland";
+    private int _number = 9;
+    private string _position = "ST";
+    private string _positionFull = "Tiền đạo";
+    private string _foot = "Thuận chân phải";
+    private string _nationality = "🇳🇴 Na Uy";
+    private int _age = 24;
+    private string _height = "194cm";
+    private string _weight = "88kg";
+    private int _goals = 26;
+    private int _assists = 5;
+    private int _apps = 31;
+    private string _rating = "8.4";
+
+    protected override void OnParametersSet()
+    {
+        _playerName = Slug switch
+        {
+            "erling-haaland"   => "Erling Haaland",
+            "kevin-de-bruyne"  => "Kevin De Bruyne",
+            "phil-foden"       => "Phil Foden",
+            "bukayo-saka"      => "Bukayo Saka",
+            "mohamed-salah"    => "Mohamed Salah",
+            "cole-palmer"      => "Cole Palmer",
+            _ => Slug?.Replace("-", " ") ?? "Cầu thủ"
+        };
+    }
+
+    private record StatBar(string Label, string Value, int Pct, string Color = "var(--accent)");
+    private record BioItem(string Key, string Value);
+    private record CareerItem(string Emoji, string Team, string Years, string League, string Goals, int Apps);
+    private record UpcomingMatch(int Id, string Date, string Time, string Teams, string Comp);
+
+    private List<StatBar> _statBars =
+    [
+        new("Bàn thắng", "26", 87),
+        new("Kiến tạo", "5", 33, "#60a5fa"),
+        new("Sút / trận", "4.2", 70),
+        new("Sút trúng đích", "57%", 57),
+        new("Chạm bóng / trận", "22", 44),
+        new("Thẻ vàng", "1", 6, "#fbbf24"),
+    ];
+
+    private List<BioItem> _bioItems =
+    [
+        new("Ngày sinh", "21/07/2000 (24 tuổi)"),
+        new("Quốc tịch", "🇳🇴 Na Uy"),
+        new("Chiều cao", "194 cm"),
+        new("Cân nặng", "88 kg"),
+        new("Chân thuận", "Phải"),
+        new("Vị trí", "Tiền đạo (ST)"),
+        new("Số áo", "9"),
+        new("Hợp đồng đến", "30/06/2034"),
+    ];
+
+    private List<CareerItem> _careerHistory =
+    [
+        new("🔵", "Manchester City", "2022 — nay", "Premier League", "93", 89),
+        new("⚫", "Borussia Dortmund", "2020 — 2022", "Bundesliga", "86", 89),
+        new("🔴", "RB Salzburg", "2019 — 2020", "Austrian Bundesliga", "29", 27),
+        new("🟡", "Molde FK", "2017 — 2019", "Eliteserien", "20", 50),
+    ];
+
+    private List<UpcomingMatch> _upcomingMatches =
+    [
+        new(1, "15/04", "02:00", "Man City vs Arsenal", "Premier League · Vòng 33"),
+        new(2, "19/04", "21:30", "Aston Villa vs Man City", "Premier League · Vòng 34"),
+        new(3, "22/04", "02:00", "Man City vs Real Madrid", "Champions League · Bán kết"),
+    ];
+}

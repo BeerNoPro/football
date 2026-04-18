@@ -40,6 +40,7 @@ try
         ?? throw new InvalidOperationException("ApiBaseUrl không được cấu hình");
 
     // Typed HttpClients để gọi FootballBlog.API
+    builder.Services.AddHttpContextAccessor();
     builder.Services.AddHttpClient<IPostApiClient, PostApiClient>(client =>
         client.BaseAddress = new Uri(apiBaseUrl));
 
@@ -52,12 +53,15 @@ try
     builder.Services.AddHttpClient<ILiveScoreApiClient, LiveScoreApiClient>(client =>
         client.BaseAddress = new Uri(apiBaseUrl));
 
-    // Admin API client — dùng JwtAuthHandler để tự động gắn Bearer token
-    builder.Services.AddScoped<JwtTokenStore>();
+    // Admin API client — handlers chain:
+    // 1. JwtAuthHandler — thêm Bearer token vào request
+    // 2. ApiUnauthorizedHandler — catch 401 → redirect tới login
     builder.Services.AddTransient<JwtAuthHandler>();
+    builder.Services.AddTransient<ApiUnauthorizedHandler>();
     builder.Services.AddHttpClient<IAdminApiClient, AdminApiClient>(client =>
         client.BaseAddress = new Uri(apiBaseUrl))
-        .AddHttpMessageHandler<JwtAuthHandler>();
+        .AddHttpMessageHandler<JwtAuthHandler>()
+        .AddHttpMessageHandler<ApiUnauthorizedHandler>();
 
     // Cookie Auth — bảo vệ admin pages trên Blazor Web
     builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

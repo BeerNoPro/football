@@ -1,0 +1,296 @@
+@page "/team/{Slug}"
+@layout PublicLayout3Col
+@rendermode InteractiveServer
+@using FootballBlog.Core.DTOs
+
+<SeoHead Title="@($"{_teamName} — FootballBlog")"
+         Description="@($"Thông tin đội bóng {_teamName}: lịch thi đấu, kết quả, đội hình và thống kê mùa 2025/26")" />
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+    <a href="/">Trang chủ</a>
+    <span>›</span>
+    <a href="/league/premier-league">Premier League</a>
+    <span>›</span>
+    <span style="color:var(--text)">@_teamName</span>
+</div>
+
+<!-- Team header -->
+<div class="team-header">
+    <div class="team-header-bg">@_teamEmoji</div>
+    <div class="team-header-content">
+        <div class="team-logo-lg">@_teamEmoji</div>
+        <div class="team-info-main">
+            <div class="team-name-lg">@_teamName</div>
+            <div class="team-meta-row">
+                <div class="team-meta-badge">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</div>
+                <div class="team-meta-badge">📅 Mùa 2025/26</div>
+                <div class="team-meta-badge">🏟 Etihad Stadium</div>
+            </div>
+        </div>
+        <div class="form-badges">
+            <div class="form-badge w">W</div>
+            <div class="form-badge w">W</div>
+            <div class="form-badge d">D</div>
+            <div class="form-badge w">W</div>
+            <div class="form-badge w">W</div>
+        </div>
+    </div>
+</div>
+
+<!-- Season stats bar -->
+<div class="season-stats-bar">
+    <div class="season-stat">
+        <div class="ss-val" style="color:var(--accent)">#1</div>
+        <div class="ss-label">Hạng BXH</div>
+    </div>
+    <div class="season-stat">
+        <div class="ss-val">72</div>
+        <div class="ss-label">Điểm</div>
+    </div>
+    <div class="season-stat">
+        <div class="ss-val" style="color:#4ade80">21</div>
+        <div class="ss-label">Thắng</div>
+    </div>
+    <div class="season-stat">
+        <div class="ss-val" style="color:#fbbf24">9</div>
+        <div class="ss-label">Hòa</div>
+    </div>
+    <div class="season-stat">
+        <div class="ss-val" style="color:#f87171">2</div>
+        <div class="ss-label">Thua</div>
+    </div>
+    <div class="season-stat">
+        <div class="ss-val" style="color:#4ade80">68</div>
+        <div class="ss-label">Bàn thắng</div>
+    </div>
+    <div class="season-stat">
+        <div class="ss-val" style="color:#f87171">24</div>
+        <div class="ss-label">Thủng lưới</div>
+    </div>
+    <div class="season-stat">
+        <div class="ss-val" style="color:var(--accent)">+44</div>
+        <div class="ss-label">Hiệu số</div>
+    </div>
+    <div class="season-stat">
+        <div class="ss-val">10</div>
+        <div class="ss-label">Sạch lưới</div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<div class="detail-tab-bar tabs">
+    <button class="tab-btn @(_tab == "fixtures" ? "active" : "")" @onclick='() => _tab = "fixtures"'>Lịch đấu</button>
+    <button class="tab-btn @(_tab == "results" ? "active" : "")" @onclick='() => _tab = "results"'>Kết quả</button>
+    <button class="tab-btn @(_tab == "squad" ? "active" : "")" @onclick='() => _tab = "squad"'>Đội hình</button>
+    <button class="tab-btn @(_tab == "stats" ? "active" : "")" @onclick='() => _tab = "stats"'>Thống kê</button>
+    <button class="tab-btn @(_tab == "h2h" ? "active" : "")" @onclick='() => _tab = "h2h"'>H2H</button>
+</div>
+
+<div class="detail-scroll">
+
+    @if (_tab == "fixtures")
+    {
+        <div class="detail-panel active">
+            <div class="fixtures-section">
+                <div class="fixtures-date-label">Thứ Ba 15/04/2026</div>
+                <a class="match-row" href="/match/1">
+                    <div class="mr-time">02:00</div>
+                    <div class="mr-home" style="font-weight:700;color:#fff;"><span class="tn">Man City</span><div class="tl">🔵</div></div>
+                    <div class="score-c no-score">–</div>
+                    <div class="mr-away"><div class="tl">🔴</div><span class="tn">Arsenal</span></div>
+                    <div class="mr-status"><span class="badge-sch">02:00</span></div>
+                </a>
+            </div>
+            <div class="fixtures-section">
+                <div class="fixtures-date-label">Thứ Bảy 19/04/2026</div>
+                <a class="match-row" href="/match/2">
+                    <div class="mr-time">21:30</div>
+                    <div class="mr-home"><span class="tn">Aston Villa</span><div class="tl">🟣</div></div>
+                    <div class="score-c no-score">–</div>
+                    <div class="mr-away" style="font-weight:700;color:#fff;"><div class="tl">🔵</div><span class="tn">Man City</span></div>
+                    <div class="mr-status"><span class="badge-sch">21:30</span></div>
+                </a>
+            </div>
+            <div class="fixtures-section">
+                <div class="fixtures-date-label">Thứ Ba 22/04/2026 — Champions League</div>
+                <a class="match-row" href="/match/3">
+                    <div class="mr-time">02:00</div>
+                    <div class="mr-home" style="font-weight:700;color:#fff;"><span class="tn">Man City</span><div class="tl">🔵</div></div>
+                    <div class="score-c no-score">–</div>
+                    <div class="mr-away"><div class="tl">⚪</div><span class="tn">Real Madrid</span></div>
+                    <div class="mr-status"><span class="badge-sch">02:00</span></div>
+                </a>
+            </div>
+        </div>
+    }
+    else if (_tab == "results")
+    {
+        <div class="detail-panel active">
+            @foreach (var r in _results)
+            {
+                <div class="result-row">
+                    <div class="result-date">@r.Date</div>
+                    <div class="mr-home @(r.IsHome ? "live-team" : "")"><span class="tn">@r.Home</span><div class="tl">@r.HomeEmoji</div></div>
+                    <div class="score-c has-score">@r.Score</div>
+                    <div class="mr-away @(!r.IsHome ? "live-team" : "")"><div class="tl">@r.AwayEmoji</div><span class="tn">@r.Away</span></div>
+                    <div class="result-badge @r.OutcomeClass">@r.Outcome</div>
+                </div>
+            }
+        </div>
+    }
+    else if (_tab == "squad")
+    {
+        <div class="detail-panel active">
+            @foreach (var group in _squad)
+            {
+                <div class="squad-position-group">
+                    <div class="squad-pos-header">@group.Position</div>
+                    @foreach (var p in group.Players)
+                    {
+                        <a class="player-row" href="/player/@p.Slug">
+                            <div class="player-num">@p.Number</div>
+                            <div class="player-avatar">@p.Emoji</div>
+                            <div class="player-info">
+                                <div class="player-name">@p.Name</div>
+                                <div class="player-nat">@p.Nationality</div>
+                            </div>
+                            <span class="player-pos pos-@p.PosClass">@p.Pos</span>
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    }
+    else if (_tab == "stats")
+    {
+        <div class="detail-panel active">
+            <div class="stats-wrap">
+                <div class="stat-section-label">Tấn công</div>
+                @foreach (var s in _teamStats)
+                {
+                    <div class="stat-row-single">
+                        <div class="stat-label-left">@s.Label</div>
+                        <div class="stat-bar-full"><div class="stat-bar-fill" style="width:@s.Pct%"></div></div>
+                        <div class="stat-val-right">@s.Value</div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else if (_tab == "h2h")
+    {
+        <div class="detail-panel active">
+            <div class="h2h-wrap">
+                <div class="h2h-summary">
+                    <div class="h2h-team-stat">
+                        <div class="h2h-wins" style="color:var(--accent)">8</div>
+                        <div class="h2h-team-lbl">Man City</div>
+                    </div>
+                    <div class="h2h-center">
+                        <div class="h2h-draws">4</div>
+                        <div class="h2h-draw-lbl">Hòa</div>
+                    </div>
+                    <div class="h2h-team-stat">
+                        <div class="h2h-wins" style="color:#60a5fa">5</div>
+                        <div class="h2h-team-lbl">Arsenal</div>
+                    </div>
+                </div>
+                <div class="h2h-history-label">5 trận gần nhất vs Arsenal</div>
+                @foreach (var m in _h2hMatches)
+                {
+                    <a class="h2h-match" href="/match/@m.Id">
+                        <div class="h2h-date">@m.Date</div>
+                        <div class="h2h-teams">@m.Teams</div>
+                        <div class="h2h-score" style="color:@m.Color">@m.Score</div>
+                        <div class="h2h-comp">@m.Comp</div>
+                    </a>
+                }
+            </div>
+        </div>
+    }
+
+</div>
+
+@code {
+    [Parameter] public string? Slug { get; set; }
+
+    private string _tab = "fixtures";
+    private string _teamName = "Manchester City";
+    private string _teamEmoji = "🔵";
+
+    private record ResultRow(string Date, string Home, string HomeEmoji, string Away, string AwayEmoji, string Score, bool IsHome, string Outcome, string OutcomeClass);
+    private record SquadPlayer(int Number, string Name, string Emoji, string Nationality, string Pos, string PosClass, string Slug);
+    private record SquadGroup(string Position, List<SquadPlayer> Players);
+    private record StatSingle(string Label, string Value, int Pct);
+    private record H2HRow(string Date, string Teams, string Score, string Color, string Comp, int Id);
+
+    protected override void OnParametersSet()
+    {
+        (_teamName, _teamEmoji) = Slug switch
+        {
+            "manchester-city"  => ("Manchester City", "🔵"),
+            "arsenal"          => ("Arsenal", "🔴"),
+            "liverpool"        => ("Liverpool", "🔴"),
+            "chelsea"          => ("Chelsea", "🔵"),
+            "manchester-united"=> ("Manchester United", "🔴"),
+            "tottenham"        => ("Tottenham", "⚪"),
+            _                  => (Slug?.Replace("-", " ") ?? "Đội bóng", "⚽")
+        };
+    }
+
+    private List<ResultRow> _results =
+    [
+        new("12/04", "Man City", "🔵", "Newcastle", "⚫", "3 – 1", true, "W", "w"),
+        new("05/04", "Brentford", "🐝", "Man City", "🔵", "0 – 2", false, "W", "w"),
+        new("01/04", "Man City", "🔵", "Liverpool", "🔴", "1 – 1", true, "D", "d"),
+        new("25/03", "Man City", "🔵", "Wolves", "⚪", "4 – 0", true, "W", "w"),
+        new("19/03", "Chelsea", "🔵", "Man City", "🔵", "2 – 1", false, "L", "l"),
+        new("12/03", "Man City", "🔵", "Nottm Forest", "🟡", "2 – 0", true, "W", "w"),
+        new("05/03", "Man City", "🔵", "Everton", "🔵", "3 – 2", true, "W", "w"),
+        new("26/02", "Man United", "🔴", "Man City", "🔵", "0 – 3", false, "W", "w"),
+    ];
+
+    private List<SquadGroup> _squad =
+    [
+        new("Thủ môn", [
+            new(31, "Ederson", "🧤", "🇧🇷 Brazil", "GK", "gk", "ederson"),
+            new(18, "Stefan Ortega", "🧤", "🇩🇪 Germany", "GK", "gk", "stefan-ortega"),
+        ]),
+        new("Hậu vệ", [
+            new(2, "Kyle Walker", "🛡", "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England", "RB", "def", "kyle-walker"),
+            new(3, "Rúben Dias", "🛡", "🇵🇹 Portugal", "CB", "def", "ruben-dias"),
+            new(5, "John Stones", "🛡", "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England", "CB", "def", "john-stones"),
+            new(7, "Josko Gvardiol", "🛡", "🇭🇷 Croatia", "LB", "def", "josko-gvardiol"),
+        ]),
+        new("Tiền vệ", [
+            new(16, "Rodri", "⚙", "🇪🇸 Spain", "DM", "mid", "rodri"),
+            new(8, "Kevin De Bruyne", "⚙", "🇧🇪 Belgium", "CM", "mid", "kevin-de-bruyne"),
+            new(47, "Phil Foden", "⚙", "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England", "CM", "mid", "phil-foden"),
+        ]),
+        new("Tiền đạo", [
+            new(11, "Jeremy Doku", "⚡", "🇧🇪 Belgium", "RW", "fwd", "jeremy-doku"),
+            new(9, "Erling Haaland", "⚡", "🇳🇴 Norway", "ST", "fwd", "erling-haaland"),
+            new(26, "Savinho", "⚡", "🇧🇷 Brazil", "LW", "fwd", "savinho"),
+        ]),
+    ];
+
+    private List<StatSingle> _teamStats =
+    [
+        new("Bàn thắng / trận", "2.1", 78),
+        new("Kiểm soát bóng TB", "58%", 58),
+        new("Cú sút / trận", "16.4", 82),
+        new("Chuyền chính xác", "89%", 89),
+        new("Sạch lưới", "10/32", 62),
+        new("xG / trận", "2.24", 74),
+    ];
+
+    private List<H2HRow> _h2hMatches =
+    [
+        new("25/01/25", "Man City vs Arsenal", "2-1", "var(--accent)", "PL", 10),
+        new("08/10/24", "Arsenal vs Man City", "2-2", "#f87171", "PL", 11),
+        new("31/03/24", "Man City vs Arsenal", "0-0", "var(--accent)", "PL", 12),
+        new("04/01/24", "Arsenal vs Man City", "1-0", "#60a5fa", "PL", 13),
+        new("26/04/23", "Man City vs Arsenal", "4-1", "var(--accent)", "PL", 14),
+    ];
+}

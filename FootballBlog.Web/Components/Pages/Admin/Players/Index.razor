@@ -1,0 +1,229 @@
+@page "/admin/players"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inherits AdminPageBase
+
+<PageTitle>Cầu thủ — Admin | FootballBlog</PageTitle>
+
+<!-- Header -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+    <div>
+        <MudText Typo="Typo.h5" Style="color:#efefef;font-weight:700;margin-bottom:4px;">Cầu thủ</MudText>
+        <MudText Typo="Typo.body2" Style="color:#666;">3.247 cầu thủ · 156 đội · lọc theo đội: tất cả</MudText>
+    </div>
+    <MudButton Variant="Variant.Filled" Size="Size.Small"
+               StartIcon="@Icons.Material.Filled.PersonAdd"
+               Style="background:#c8f04d;color:#0d0d0d;font-weight:600;"
+               OnClick='() => OpenPanel(null)'>
+        Thêm cầu thủ
+    </MudButton>
+</div>
+
+<!-- Stats bar -->
+<MudGrid Spacing="3" Style="margin-bottom:24px;">
+    <MudItem xs="6" sm="3">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:16px 20px;border-radius:10px;">
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Tổng cầu thủ</MudText>
+            <MudText Typo="Typo.h5" Style="color:#efefef;font-weight:700;margin-top:6px;">3.247</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="6" sm="3">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:16px 20px;border-radius:10px;">
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Tiền đạo</MudText>
+            <MudText Typo="Typo.h5" Style="color:#c8f04d;font-weight:700;margin-top:6px;">247</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="6" sm="3">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:16px 20px;border-radius:10px;">
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Đang chấn thương</MudText>
+            <MudText Typo="Typo.h5" Style="color:#f87171;font-weight:700;margin-top:6px;">12</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="6" sm="3">
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:16px 20px;border-radius:10px;">
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Cho mượn</MudText>
+            <MudText Typo="Typo.h5" Style="color:#fbbf24;font-weight:700;margin-top:6px;">34</MudText>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+<!-- Two-panel layout -->
+<div style="display:grid;grid-template-columns:@(_panelOpen ? "1fr 380px" : "1fr");gap:16px;height:calc(100vh - 280px);overflow:hidden;">
+
+    <!-- Left: table -->
+    <MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;overflow:hidden;display:flex;flex-direction:column;">
+
+        <!-- Filter bar -->
+        <div style="padding:14px 20px;border-bottom:1px solid #242424;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <MudSelect @bind-Value="_teamFilter" Placeholder="Đội bóng" T="string" Clearable="true" Dense="true"
+                       Variant="Variant.Outlined" Margin="Margin.Dense"
+                       Style="background:#0d0d0d;border-radius:6px;max-width:180px;">
+                <MudSelectItem Value="@("manchester-city")">🔵 Man City</MudSelectItem>
+                <MudSelectItem Value="@("arsenal")">🔴 Arsenal</MudSelectItem>
+                <MudSelectItem Value="@("liverpool")">🔴 Liverpool</MudSelectItem>
+                <MudSelectItem Value="@("chelsea")">🔵 Chelsea</MudSelectItem>
+            </MudSelect>
+            <MudSelect @bind-Value="_posFilter" Placeholder="Vị trí" T="string" Clearable="true" Dense="true"
+                       Variant="Variant.Outlined" Margin="Margin.Dense"
+                       Style="background:#0d0d0d;border-radius:6px;max-width:130px;">
+                <MudSelectItem Value="@("GK")">Thủ môn</MudSelectItem>
+                <MudSelectItem Value="@("DEF")">Hậu vệ</MudSelectItem>
+                <MudSelectItem Value="@("MID")">Tiền vệ</MudSelectItem>
+                <MudSelectItem Value="@("FWD")">Tiền đạo</MudSelectItem>
+            </MudSelect>
+            <MudTextField @bind-Value="_search" Placeholder="Tìm cầu thủ..."
+                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                          Style="background:#0d0d0d;border-radius:6px;max-width:220px;" Variant="Variant.Outlined"
+                          Margin="Margin.Dense" />
+        </div>
+
+        <!-- Table -->
+        <div style="overflow-y:auto;flex:1;">
+            <MudTable T="PlayerRow" Items="_players" Dense="true" Hover="true"
+                      Style="background:transparent;"
+                      RowStyle="border-bottom:1px solid #1e1e1e;cursor:pointer;"
+                      OnRowClick="@(args => OpenPanel(args.Item))">
+                <HeaderContent>
+                    <MudTh Style="color:#555;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:10px 16px;border-bottom:1px solid #242424;">#</MudTh>
+                    <MudTh Style="color:#555;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:10px 16px;border-bottom:1px solid #242424;">Cầu thủ</MudTh>
+                    <MudTh Style="color:#555;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:10px 16px;border-bottom:1px solid #242424;">Đội</MudTh>
+                    <MudTh Style="color:#555;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:10px 16px;border-bottom:1px solid #242424;">Vị trí</MudTh>
+                    <MudTh Style="color:#555;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:10px 16px;border-bottom:1px solid #242424;">Quốc tịch</MudTh>
+                    <MudTh Style="color:#555;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:10px 16px;border-bottom:1px solid #242424;"></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd Style="padding:12px 16px;">
+                        <MudText Style="color:#555;font-size:13px;font-weight:600;">@context.Number</MudText>
+                    </MudTd>
+                    <MudTd Style="padding:12px 16px;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div>
+                                <div style="color:#efefef;font-size:13px;font-weight:500;">@context.Name</div>
+                                <div style="color:#555;font-size:11px;">@context.Age tuổi · @context.Height</div>
+                            </div>
+                        </div>
+                    </MudTd>
+                    <MudTd Style="padding:12px 16px;">
+                        <MudText Style="color:#999;font-size:12px;">@context.TeamEmoji @context.Team</MudText>
+                    </MudTd>
+                    <MudTd Style="padding:12px 16px;">
+                        <span style="@GetPosStyle(context.Position) font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;">@context.Position</span>
+                    </MudTd>
+                    <MudTd Style="padding:12px 16px;">
+                        <MudText Style="color:#666;font-size:12px;">@context.Nationality</MudText>
+                    </MudTd>
+                    <MudTd Style="padding:12px 16px;">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
+                                       Style="color:#555;" OnClick="@(() => OpenPanel(context))" />
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </div>
+    </MudPaper>
+
+    <!-- Right: edit panel -->
+    @if (_panelOpen)
+    {
+        <MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;overflow:hidden;display:flex;flex-direction:column;">
+            <div style="padding:16px 20px;border-bottom:1px solid #242424;display:flex;align-items:center;justify-content:space-between;">
+                <MudText Typo="Typo.subtitle1" Style="color:#efefef;font-weight:600;">
+                    @(_selectedPlayer == null ? "Thêm cầu thủ" : "Chỉnh sửa cầu thủ")
+                </MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small"
+                               Style="color:#555;" OnClick='() => _panelOpen = false' />
+            </div>
+            <div style="padding:20px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px;">
+                <div style="display:grid;grid-template-columns:80px 1fr;gap:12px;">
+                    <MudTextField @bind-Value="_editNumber" Label="Số áo" Variant="Variant.Outlined"
+                                  Margin="Margin.Dense" Style="background:#0d0d0d;border-radius:6px;" />
+                    <MudTextField @bind-Value="_editName" Label="Tên cầu thủ" Variant="Variant.Outlined"
+                                  Margin="Margin.Dense" Style="background:#0d0d0d;border-radius:6px;" />
+                </div>
+                <MudTextField @bind-Value="_editSlug" Label="Slug" Variant="Variant.Outlined"
+                              Margin="Margin.Dense" Style="background:#0d0d0d;border-radius:6px;" />
+                <MudSelect @bind-Value="_editPosition" Label="Vị trí" T="string" Variant="Variant.Outlined"
+                           Margin="Margin.Dense" Style="background:#0d0d0d;border-radius:6px;">
+                    <MudSelectItem Value="@("GK")">Thủ môn</MudSelectItem>
+                    <MudSelectItem Value="@("DEF")">Hậu vệ</MudSelectItem>
+                    <MudSelectItem Value="@("MID")">Tiền vệ</MudSelectItem>
+                    <MudSelectItem Value="@("FWD")">Tiền đạo</MudSelectItem>
+                </MudSelect>
+                <MudTextField @bind-Value="_editNationality" Label="Quốc tịch" Variant="Variant.Outlined"
+                              Margin="Margin.Dense" Style="background:#0d0d0d;border-radius:6px;" />
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <MudTextField @bind-Value="_editAge" Label="Tuổi" Variant="Variant.Outlined"
+                                  Margin="Margin.Dense" Style="background:#0d0d0d;border-radius:6px;" />
+                    <MudTextField @bind-Value="_editHeight" Label="Chiều cao" Variant="Variant.Outlined"
+                                  Margin="Margin.Dense" Style="background:#0d0d0d;border-radius:6px;" />
+                </div>
+                <MudTextField @bind-Value="_editExternalId" Label="External ID (API-Football)" Variant="Variant.Outlined"
+                              Margin="Margin.Dense" Style="background:#0d0d0d;border-radius:6px;" />
+            </div>
+            <div style="padding:16px 20px;border-top:1px solid #242424;display:flex;gap:8px;">
+                <MudButton Variant="Variant.Filled" FullWidth="true"
+                           Style="background:#c8f04d;color:#0d0d0d;font-weight:600;">
+                    @(_selectedPlayer == null ? "Thêm cầu thủ" : "Lưu thay đổi")
+                </MudButton>
+                @if (_selectedPlayer != null)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined"
+                                   Style="border-color:#f87171;color:#f87171;" Size="Size.Medium" />
+                }
+            </div>
+        </MudPaper>
+    }
+
+</div>
+
+@code {
+    private bool _panelOpen;
+    private PlayerRow? _selectedPlayer;
+    private string? _search;
+    private string? _teamFilter;
+    private string? _posFilter;
+    private string _editName = "";
+    private string _editSlug = "";
+    private string _editNumber = "";
+    private string _editPosition = "FWD";
+    private string _editNationality = "";
+    private string _editAge = "";
+    private string _editHeight = "";
+    private string _editExternalId = "";
+
+    private record PlayerRow(int Number, string Name, string Slug, string Team, string TeamEmoji, string Position, string Nationality, int Age, string Height);
+
+    private List<PlayerRow> _players =
+    [
+        new(9,  "Erling Haaland",    "erling-haaland",    "Man City", "🔵", "FWD", "🇳🇴 Norway",  24, "194cm"),
+        new(8,  "Kevin De Bruyne",   "kevin-de-bruyne",   "Man City", "🔵", "MID", "🇧🇪 Belgium", 33, "181cm"),
+        new(47, "Phil Foden",        "phil-foden",        "Man City", "🔵", "MID", "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England", 24, "171cm"),
+        new(11, "Mohamed Salah",     "mohamed-salah",     "Liverpool","🔴", "FWD", "🇪🇬 Egypt",   32, "175cm"),
+        new(20, "Cole Palmer",       "cole-palmer",       "Chelsea",  "🔵", "MID", "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England", 22, "185cm"),
+        new(7,  "Bukayo Saka",       "bukayo-saka",       "Arsenal",  "🔴", "FWD", "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England", 23, "178cm"),
+        new(8,  "Martin Ødegaard",   "martin-odegaard",   "Arsenal",  "🔴", "MID", "🇳🇴 Norway",  26, "178cm"),
+        new(1,  "Ederson",           "ederson",           "Man City", "🔵", "GK",  "🇧🇷 Brazil",  31, "188cm"),
+    ];
+
+    private void OpenPanel(PlayerRow? player)
+    {
+        _selectedPlayer = player;
+        _editName = player?.Name ?? "";
+        _editSlug = player?.Slug ?? "";
+        _editNumber = player?.Number.ToString() ?? "";
+        _editPosition = player?.Position ?? "FWD";
+        _editNationality = player?.Nationality ?? "";
+        _editAge = player?.Age.ToString() ?? "";
+        _editHeight = player?.Height ?? "";
+        _editExternalId = "";
+        _panelOpen = true;
+    }
+
+    private static string GetPosStyle(string pos) => pos switch
+    {
+        "GK"  => "background:rgba(200,240,77,0.10);color:#c8f04d;",
+        "DEF" => "background:rgba(96,165,250,0.12);color:#60a5fa;",
+        "MID" => "background:rgba(167,139,250,0.12);color:#a78bfa;",
+        "FWD" => "background:rgba(248,113,113,0.12);color:#f87171;",
+        _     => "background:#1e1e1e;color:#555;"
+    };
+}

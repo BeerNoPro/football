@@ -1,0 +1,287 @@
+@page "/match/{Id}"
+@layout PublicLayout3Col
+@rendermode InteractiveServer
+@using FootballBlog.Core.DTOs
+
+<SeoHead Title="Man City vs Arsenal — FootballBlog"
+         Description="Chi tiết trận đấu Man City vs Arsenal - Premier League. Đội hình, thống kê, diễn biến và dự đoán AI." />
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+    <a href="/">Trang chủ</a>
+    <span>›</span>
+    <a href="/league/premier-league">Premier League</a>
+    <span>›</span>
+    <span style="color:var(--text)">Man City vs Arsenal</span>
+</div>
+
+<!-- Match header -->
+<div class="match-header">
+    <div class="match-header-top">
+        <span style="font-size:16px">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+        <span class="league-tag">England — Premier League · GW 32</span>
+        <span class="badge-live" style="margin-left:auto">
+            <span class="live-dot" style="width:5px;height:5px;"></span>LIVE
+        </span>
+    </div>
+    <div class="match-header-teams">
+        <div class="team-block home">
+            <div class="team-name-lg"><a href="/team/manchester-city">Manchester City</a></div>
+            <div class="team-logo-lg">🔵</div>
+            <div class="team-record">W5 D1 L1</div>
+        </div>
+        <div class="score-display">
+            <div class="score-main live">1 – 0</div>
+            <div class="score-status">
+                <span class="live-dot"></span>
+                <span class="score-time">78'</span>
+                <span class="score-period">Hiệp 2</span>
+            </div>
+        </div>
+        <div class="team-block away">
+            <div class="team-name-lg"><a href="/team/arsenal">Arsenal</a></div>
+            <div class="team-logo-lg">🔴</div>
+            <div class="team-record">W4 D2 L1</div>
+        </div>
+    </div>
+    <div class="match-meta-row">
+        <div class="match-meta-item">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            07/04/2025
+        </div>
+        <div class="match-meta-item">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+            </svg>
+            20:00 ICT
+        </div>
+        <div class="match-meta-item">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
+            </svg>
+            Etihad Stadium
+        </div>
+    </div>
+</div>
+
+<!-- Detail tabs -->
+<div class="detail-tab-bar tabs">
+    <button class="tab-btn @(_tab == "lineups" ? "active" : "")" @onclick='() => _tab = "lineups"'>Đội hình</button>
+    <button class="tab-btn @(_tab == "events" ? "active" : "")" @onclick='() => _tab = "events"'>Diễn biến</button>
+    <button class="tab-btn @(_tab == "stats" ? "active" : "")" @onclick='() => _tab = "stats"'>Thống kê</button>
+    <button class="tab-btn @(_tab == "h2h" ? "active" : "")" @onclick='() => _tab = "h2h"'>Đối đầu</button>
+</div>
+
+<div class="detail-scroll">
+
+    @if (_tab == "lineups")
+    {
+        <div class="detail-panel active">
+            <div class="lineup-wrap">
+                <div class="lineup-col">
+                    <div class="lineup-team-header">
+                        <div class="lineup-team-logo">🔵</div>
+                        <div>
+                            <div class="lineup-team-name">Manchester City</div>
+                            <div class="lineup-formation">4-3-3</div>
+                        </div>
+                    </div>
+                    <div class="lineup-section-label">Đội hình xuất phát</div>
+                    @foreach (var p in _cityLineup)
+                    {
+                        <div class="player-row">
+                            <div class="player-num">@p.Number</div>
+                            <div class="player-name">@p.Name</div>
+                            <span class="player-pos pos-@p.PosClass">@p.Pos</span>
+                        </div>
+                    }
+                </div>
+                <div class="lineup-col">
+                    <div class="lineup-team-header">
+                        <div class="lineup-team-logo">🔴</div>
+                        <div>
+                            <div class="lineup-team-name">Arsenal</div>
+                            <div class="lineup-formation">4-3-3</div>
+                        </div>
+                    </div>
+                    <div class="lineup-section-label">Đội hình xuất phát</div>
+                    @foreach (var p in _arsenalLineup)
+                    {
+                        <div class="player-row">
+                            <div class="player-num">@p.Number</div>
+                            <div class="player-name">@p.Name</div>
+                            <span class="player-pos pos-@p.PosClass">@p.Pos</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else if (_tab == "events")
+    {
+        <div class="detail-panel active">
+            <div class="events-wrap">
+                <div class="event-timeline">
+                    <div class="event-item goal">
+                        <div class="event-minute">12'</div>
+                        <div class="event-icon">⚽</div>
+                        <div class="event-body">
+                            <div class="event-player">Erling Haaland</div>
+                            <div class="event-detail">Kiến tạo: Kevin De Bruyne</div>
+                            <div class="event-team-label">🔵 Manchester City</div>
+                        </div>
+                    </div>
+                    <div class="event-item card-y">
+                        <div class="event-minute">28'</div>
+                        <div class="event-icon">🟨</div>
+                        <div class="event-body">
+                            <div class="event-player">Granit Xhaka</div>
+                            <div class="event-detail">Phạm lỗi chiến thuật</div>
+                            <div class="event-team-label">🔴 Arsenal</div>
+                        </div>
+                    </div>
+                    <div class="event-item sub">
+                        <div class="event-minute">44'</div>
+                        <div class="event-icon">🔄</div>
+                        <div class="event-body">
+                            <div class="event-player">Gabriel Jesus → Eddie Nketiah</div>
+                            <div class="event-detail">Chấn thương</div>
+                            <div class="event-team-label">🔴 Arsenal</div>
+                        </div>
+                    </div>
+                    <div class="event-halftime">— Hết hiệp 1 · 1-0 —</div>
+                    <div class="event-item card-y">
+                        <div class="event-minute">58'</div>
+                        <div class="event-icon">🟨</div>
+                        <div class="event-body">
+                            <div class="event-player">Kyle Walker</div>
+                            <div class="event-detail">Phạm lỗi thô bạo</div>
+                            <div class="event-team-label">🔵 Manchester City</div>
+                        </div>
+                    </div>
+                    <div style="text-align:center;padding:16px;color:var(--muted);font-size:12px;">
+                        <span class="live-dot" style="display:inline-block;margin-right:6px;"></span>
+                        Đang cập nhật trực tiếp · 78'
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (_tab == "stats")
+    {
+        <div class="detail-panel active">
+            <div class="stats-wrap">
+                @foreach (var s in _stats)
+                {
+                    <div class="stat-row">
+                        <div class="stat-bar-wrap home">
+                            <div class="stat-val">@s.Home</div>
+                            <div class="stat-bar"><div class="stat-bar-fill" style="width:@s.HomePct%"></div></div>
+                        </div>
+                        <div class="stat-label">@s.Label</div>
+                        <div class="stat-bar-wrap">
+                            <div class="stat-val">@s.Away</div>
+                            <div class="stat-bar"><div class="stat-bar-fill away" style="width:@s.AwayPct%"></div></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else if (_tab == "h2h")
+    {
+        <div class="detail-panel active">
+            <div class="h2h-wrap">
+                <div class="h2h-summary">
+                    <div class="h2h-team-stat">
+                        <div class="h2h-wins" style="color:var(--accent)">8</div>
+                        <div class="h2h-team-lbl">Man City</div>
+                    </div>
+                    <div class="h2h-center">
+                        <div class="h2h-draws">4</div>
+                        <div class="h2h-draw-lbl">Hòa</div>
+                    </div>
+                    <div class="h2h-team-stat">
+                        <div class="h2h-wins" style="color:#60a5fa">5</div>
+                        <div class="h2h-team-lbl">Arsenal</div>
+                    </div>
+                </div>
+                <div class="h2h-history-label">5 trận gần nhất</div>
+                @foreach (var m in _h2hMatches)
+                {
+                    <div class="h2h-match">
+                        <div class="h2h-date">@m.Date</div>
+                        <div class="h2h-teams">@m.Teams</div>
+                        <div class="h2h-score" style="color:@m.Color">@m.Score</div>
+                        <div class="h2h-comp">@m.Comp</div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+</div>
+
+@code {
+    [Parameter] public string? Id { get; set; }
+
+    private string _tab = "lineups";
+
+    private record PlayerRow(int Number, string Name, string Pos, string PosClass);
+    private record StatRow(string Label, string Home, string Away, int HomePct, int AwayPct);
+    private record H2HMatch(string Date, string Teams, string Score, string Color, string Comp);
+
+    private List<PlayerRow> _cityLineup =
+    [
+        new(1, "Ederson", "GK", "gk"),
+        new(2, "Kyle Walker", "RB", "def"),
+        new(3, "Rúben Dias", "CB", "def"),
+        new(5, "John Stones", "CB", "def"),
+        new(7, "Josko Gvardiol", "LB", "def"),
+        new(16, "Rodri", "DM", "mid"),
+        new(8, "Kevin De Bruyne", "CM", "mid"),
+        new(47, "Phil Foden", "CM", "mid"),
+        new(11, "Jeremy Doku", "RW", "fwd"),
+        new(9, "Erling Haaland", "ST", "fwd"),
+        new(26, "Savinho", "LW", "fwd"),
+    ];
+
+    private List<PlayerRow> _arsenalLineup =
+    [
+        new(1, "David Raya", "GK", "gk"),
+        new(2, "Ben White", "RB", "def"),
+        new(6, "Gabriel", "CB", "def"),
+        new(12, "William Saliba", "CB", "def"),
+        new(35, "Oleksandr Zinchenko", "LB", "def"),
+        new(29, "Kai Havertz", "CM", "mid"),
+        new(34, "Granit Xhaka", "CM", "mid"),
+        new(8, "Martin Ødegaard", "CAM", "mid"),
+        new(7, "Bukayo Saka", "RW", "fwd"),
+        new(9, "Gabriel Jesus", "ST", "fwd"),
+        new(11, "Leandro Trossard", "LW", "fwd"),
+    ];
+
+    private List<StatRow> _stats =
+    [
+        new("Kiểm soát bóng", "56%", "44%", 56, 44),
+        new("Cú sút", "14", "7", 74, 37),
+        new("Sút trúng đích", "6", "2", 75, 25),
+        new("Phạt góc", "7", "5", 58, 42),
+        new("Đường chuyền", "487", "362", 57, 43),
+        new("Chuyền chính xác", "89%", "81%", 89, 81),
+        new("Phạm lỗi", "12", "10", 55, 45),
+        new("Thẻ vàng", "1", "2", 33, 67),
+        new("xG", "1.24", "0.35", 78, 22),
+    ];
+
+    private List<H2HMatch> _h2hMatches =
+    [
+        new("25/01/25", "Man City vs Arsenal", "2-1", "var(--accent)", "PL"),
+        new("08/10/24", "Arsenal vs Man City", "2-2", "#f87171", "PL"),
+        new("31/03/24", "Man City vs Arsenal", "0-0", "var(--accent)", "PL"),
+        new("04/01/24", "Arsenal vs Man City", "1-0", "#60a5fa", "PL"),
+        new("26/04/23", "Man City vs Arsenal", "4-1", "var(--accent)", "PL"),
+    ];
+}

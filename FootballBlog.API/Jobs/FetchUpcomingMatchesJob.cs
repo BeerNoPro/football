@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using FootballBlog.Core.DTOs;
 using FootballBlog.Core.Interfaces;
 using FootballBlog.Core.Models;
@@ -16,8 +17,10 @@ public class FetchUpcomingMatchesJob(
 {
     public async Task ExecuteAsync()
     {
+        var sw = Stopwatch.StartNew();
         FootballApiOptions opts = options.Value;
-        logger.LogInformation("FetchUpcomingMatchesJob started. Leagues: {Count}", opts.LeagueIds.Length);
+        logger.LogInformation("FetchUpcomingMatchesJob started. Leagues={LeagueCount}, FixturesPerLeague={FixturesPerLeague}",
+            opts.LeagueIds.Length, opts.FixturesPerLeague);
 
         int newMatches = 0;
         int updatedMatches = 0;
@@ -109,9 +112,10 @@ public class FetchUpcomingMatchesJob(
 
         await uow.CommitAsync();
 
+        sw.Stop();
         logger.LogInformation(
-            "FetchUpcomingMatchesJob finished. New={New}, Updated={Updated}",
-            newMatches, updatedMatches);
+            "FetchUpcomingMatchesJob finished. New={NewMatches}, Updated={UpdatedMatches}, Duration={DurationMs}ms",
+            newMatches, updatedMatches, sw.ElapsedMilliseconds);
     }
 
     // ── Upsert helpers ────────────────────────────────────────────────────────

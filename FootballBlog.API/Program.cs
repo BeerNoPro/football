@@ -44,6 +44,10 @@ try
             .ReadFrom.Configuration(context.Configuration)
             .ReadFrom.Services(services)
             .Enrich.FromLogContext()
+            .Enrich.When(
+                e => e.Properties.TryGetValue("SourceContext", out var sc) &&
+                    (sc.ToString().Contains("\"FootballBlog.API.Jobs") || sc.ToString().Contains("\"Hangfire")),
+                e => e.WithProperty("IsJobLog", true))
             // Console
             .WriteTo.Console(outputTemplate: OutputTemplate)
             // app/ — log chung toàn app (Information+)
@@ -64,8 +68,7 @@ try
             // jobs/ — Hangfire background jobs + job classes
             .WriteTo.Logger(lc => lc
                 .Filter.ByIncludingOnly(e =>
-                    e.Properties.TryGetValue("SourceContext", out var sc) &&
-                    (sc.ToString().Contains("Hangfire") || sc.ToString().Contains(".Jobs.")))
+                    e.Properties.TryGetValue("IsJobLog", out var isJob) && isJob.ToString() == "True")
                 .WriteTo.File(Path.Combine(logBasePath, "jobs", "jobs-.log"),
                     rollingInterval: RollingInterval.Day,
                     outputTemplate: OutputTemplate)));

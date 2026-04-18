@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using FootballBlog.Core.DTOs;
 using FootballBlog.Core.Interfaces;
@@ -17,6 +18,7 @@ public class PublishPredictionJob(
 {
     public async Task ExecuteAsync(int predictionId)
     {
+        var sw = Stopwatch.StartNew();
         logger.LogInformation("PublishPredictionJob started for prediction {PredictionId}", predictionId);
 
         var pred = await uow.MatchPredictions.GetByIdAsync(predictionId);
@@ -28,7 +30,7 @@ public class PublishPredictionJob(
 
         if (pred.IsPublished)
         {
-            logger.LogDebug("Prediction {PredictionId} already published", predictionId);
+            logger.LogDebug("Prediction {PredictionId} already published, skipping", predictionId);
             return;
         }
 
@@ -70,9 +72,10 @@ public class PublishPredictionJob(
 
         BackgroundJob.Enqueue<TelegramNotificationJob>(j => j.SendPredictionAsync(predictionId));
 
+        sw.Stop();
         logger.LogInformation(
-            "Prediction {PredictionId} published as post {PostId} (slug: {Slug})",
-            predictionId, post.Id, slug);
+            "PublishPredictionJob finished for prediction {PredictionId} as post {PostId}. Duration={DurationMs}ms",
+            predictionId, post.Id, sw.ElapsedMilliseconds);
     }
 
     private static string BuildPostContent(

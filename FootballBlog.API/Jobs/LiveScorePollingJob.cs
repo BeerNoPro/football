@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using FootballBlog.API.Hubs;
 using FootballBlog.Core.DTOs;
 using FootballBlog.Core.Interfaces;
@@ -16,6 +17,7 @@ public class LiveScorePollingJob(
 {
     public async Task ExecuteAsync()
     {
+        var sw = Stopwatch.StartNew();
         // Adaptive gate — kiểm tra DB trước (0 API cost), thoát sớm nếu không có live match
         IEnumerable<LiveMatch> liveInDb = await uow.LiveMatches.GetLiveMatchesAsync();
         List<LiveMatch> liveInDbList = liveInDb.ToList();
@@ -109,8 +111,9 @@ public class LiveScorePollingJob(
                 .MatchUpdated(dto);
         }
 
+        sw.Stop();
         logger.LogInformation(
-            "LiveScorePollingJob finished. Inserted={Inserted}, Updated={Updated}",
-            inserted, updated);
+            "LiveScorePollingJob finished. Inserted={Inserted}, Updated={Updated}, Duration={DurationMs}ms, Broadcasts={BroadcastCount}",
+            inserted, updated, sw.ElapsedMilliseconds, liveFromApiList.Count);
     }
 }
