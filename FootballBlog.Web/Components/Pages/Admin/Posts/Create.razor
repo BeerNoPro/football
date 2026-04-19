@@ -1,4 +1,4 @@
-@page "/admin/posts/create"
+﻿@page "/admin/posts/create"
 @attribute [Authorize]
 @rendermode InteractiveServer
 @inherits AdminPageBase
@@ -6,6 +6,9 @@
 @inject ICategoryApiClient CategoryClient
 @inject ISnackbar Snackbar
 @inject NavigationManager Nav
+
+@* Provider trong island circuit — không đặt ở AdminLayout (SSR scope khác) *@
+<MudPopoverProvider />
 
 <PageTitle>Tạo bài viết — Admin | FootballBlog</PageTitle>
 

@@ -1,7 +1,10 @@
-@page "/admin/players"
+﻿@page "/admin/players"
 @attribute [Authorize]
 @rendermode InteractiveServer
 @inherits AdminPageBase
+
+@* Provider trong island circuit — không đặt ở AdminLayout (SSR scope khác) *@
+<MudPopoverProvider />
 
 <PageTitle>Cầu thủ — Admin | FootballBlog</PageTitle>
 

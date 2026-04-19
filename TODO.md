@@ -130,6 +130,49 @@ FootballBlog/
 > **Để re-seed:** xóa tất cả rows trong bảng `ApiKeyConfigs` → restart API → seeder tự chạy lại.
 > **Không lưu DB:** `ConnectionStrings`, `Jwt:Key`, `Redis` — infra config, giữ nguyên trong appsettings/user-secrets.
 
+### Phase 6.6 — Admin UI Stabilization ✅ (done 2026-04-19)
+
+> **Vấn đề đã fix**: Mỗi agent session hiểu sai pattern MudBlazor providers → bug duplicate section ID.
+> **Root cause**: AdminLayout.razor (SSR) có cả 3 providers + island pages cũng khai báo → crash 500.
+> **Fix**: Xóa providers khỏi AdminLayout, mỗi island page tự khai báo đúng provider cần dùng.
+> **Rule đã update**: `.claude/rules/blazor.md` — thêm checklist rõ ràng, bảng mapping provider ↔ component.
+
+- [x] Xóa MudPopoverProvider/MudDialogProvider/MudSnackbarProvider khỏi AdminLayout.razor
+- [x] Thêm providers đúng vào Categories/Index.razor (ISnackbar + IDialogService)
+- [x] Thêm providers đúng vào Tags/Index.razor (ISnackbar + IDialogService)
+- [x] Thêm MudPopoverProvider + MudSnackbarProvider vào Jobs/Index.razor (ISnackbar)
+- [x] Cập nhật `.claude/rules/blazor.md` — checklist + bảng mapping, xóa mâu thuẫn
+
+### Phase 6.7 — Wire Real API vào Admin UI ⬜ ← NEXT
+
+> Tất cả admin pages hiện dùng mock data. Kết nối API thực theo thứ tự ưu tiên.
+
+**Ưu tiên 1 — Pages có API endpoint đã có sẵn (IAdminApiClient):**
+- [ ] `Posts/Index.razor` → `GET /api/posts/all` (đã có, chỉ cần wire)
+- [ ] `Posts/Create.razor` → `POST /api/posts` + media upload (đã có)
+- [ ] `Posts/Edit.razor` → `GET /api/posts/{id}` + `PUT /api/posts/{id}` (đã có)
+- [ ] `Categories/Index.razor` → `GET/POST/PUT/DELETE /api/categories` (đã có)
+- [ ] `Tags/Index.razor` → `GET/POST/DELETE /api/tags` (đã có)
+- [ ] `Predictions/Index.razor` → `GET /api/predictions` (cần thêm endpoint)
+- [ ] `ApiKeys/Index.razor` → `GET/POST/PUT/DELETE /api/admin/api-keys` (cần thêm endpoint)
+
+**Ưu tiên 2 — Pages cần API endpoint mới:**
+- [ ] `Matches/Index.razor` → `GET /api/matches` với filter (status, league)
+- [ ] `Prompts/Index.razor` → `GET/POST/PUT/DELETE /api/admin/prompts` (PromptTemplate entity)
+- [ ] `Jobs/Index.razor` → `GET /hangfire/jobs/enqueued` (Hangfire dashboard API)
+- [ ] `Users/Index.razor` → `GET/PUT /api/admin/users` (Identity users)
+- [ ] `Teams/Index.razor` → `GET /api/teams` (đã có partial qua UoW)
+- [ ] `Players/Index.razor` → `GET/POST/PUT/DELETE /api/players` (cần endpoint mới)
+
+**Ưu tiên 3 — Dashboard widgets:**
+- [ ] `Dashboard.razor` → tổng hợp: count posts/categories/matches/predictions từ API
+
+**Cách implement từng page:**
+1. Dùng `/api-client` skill để tạo/mở rộng `IAdminApiClient`
+2. Replace mock data trong `OnInitializedAsync` bằng `await AdminClient.GetXxxAsync()`
+3. Wire Save/Delete buttons vào `await AdminClient.CreateXxxAsync()` / `DeleteXxxAsync()`
+4. Toast ISnackbar khi success/error
+
 ### Phase 7 — Deploy & DevOps ⬜
 - [ ] Dockerfile (multi-stage, Web + API)
 - [ ] Railway deploy (dev/staging)

@@ -1,8 +1,11 @@
-@page "/admin/prompts"
+﻿@page "/admin/prompts"
 @attribute [Authorize]
 @rendermode InteractiveServer
 @inherits AdminPageBase
 @inject IAdminApiClient AdminClient
+
+@* Provider trong island circuit — không đặt ở AdminLayout (SSR scope khác) *@
+<MudPopoverProvider />
 
 <PageTitle>Prompt Templates — Admin | FootballBlog</PageTitle>
 

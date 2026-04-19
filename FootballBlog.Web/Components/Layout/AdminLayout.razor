@@ -1,10 +1,11 @@
 @inherits LayoutComponentBase
-@rendermode InteractiveServer
+
+<HeadContent>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+</HeadContent>
 
 <MudThemeProvider Theme="_adminTheme" IsDarkMode="true" />
-<MudPopoverProvider />
-<MudDialogProvider />
-<MudSnackbarProvider />
 
 <MudLayout>
     <MudAppBar Elevation="0" Dense="true" Style="background:#111111;border-bottom:1px solid #242424;">

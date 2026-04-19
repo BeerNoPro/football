@@ -7,9 +7,48 @@ paths:
 # Blazor Rules
 
 ## Render Mode (CRITICAL)
-- Blog/Home/Post/Category/Tag → KHÔNG đặt @rendermode (Static SSR, SEO)
-- Live score widget + admin → `@rendermode InteractiveServer`
-- KHÔNG dùng `@rendermode InteractiveWebAssembly`
+
+### Kiến trúc hiện tại: Interactive Island per-page
+- `<Routes />` trong App.razor là **SSR** — không có global rendermode
+- Admin pages dùng `@rendermode InteractiveServer` trên từng page → "Interactive Island"
+- Public pages (Home, PostDetail, etc.) và Login/Logout dùng SSR (không có `@rendermode`)
+- Login.razor **BẮT BUỘC là SSR** vì dùng `HttpContext`, `<form method="post">`, `HttpContext.Response.Redirect` — không hoạt động trong InteractiveServer
+
+### Anti-pattern vòng lặp — KHÔNG làm lại
+❌ **KHÔNG đặt `@rendermode InteractiveServer` lên `<Routes />`** → Login.razor (dùng HttpContext + SSR form) sẽ bị phá vỡ  
+❌ **KHÔNG đặt `@rendermode InteractiveServer` lên AdminLayout** → lỗi `Cannot pass parameter 'Body'` (RenderFragment không serialize được sang island)  
+❌ **KHÔNG bỏ `@rendermode` khỏi admin pages** → drawer toggle và MudBlazor components mất interactivity
+
+### MudBlazor providers — Interactive Island pattern
+
+**AdminLayout là SSR → KHÔNG đặt MudPopoverProvider/MudDialogProvider/MudSnackbarProvider ở AdminLayout.**  
+Lý do: AdminLayout (SSR) và island page (InteractiveServer) là 2 render context tách biệt. Nếu cả 2 khai báo cùng provider → section ID bị đăng ký 2 lần → crash `InvalidOperationException: There is already a subscriber`.
+
+**Rule**: Mỗi admin page tự khai báo đúng providers mình cần, ngay sau các directive:
+
+| Nếu page dùng | Cần khai báo |
+|---|---|
+| MudSelect / MudMenu / MudTooltip / MudAutocomplete | `<MudPopoverProvider />` |
+| IDialogService | `<MudDialogProvider />` |
+| ISnackbar | `<MudSnackbarProvider />` |
+
+```razor
+@page "/admin/example"
+@rendermode InteractiveServer
+@inherits AdminPageBase
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+```
+
+> **Checklist khi tạo admin page mới:**  
+> - [ ] AdminLayout không có providers → đừng thêm vào đó  
+> - [ ] Page dùng MudSelect/MudMenu → thêm `<MudPopoverProvider />`  
+> - [ ] Page inject IDialogService → thêm `<MudDialogProvider />`  
+> - [ ] Page inject ISnackbar → thêm `<MudSnackbarProvider />`
 
 ## Gọi API từ Blazor
 - Dùng typed HttpClient được inject, KHÔNG gọi DbContext trực tiếp

@@ -1,8 +1,11 @@
-@page "/admin/matches"
+﻿@page "/admin/matches"
 @attribute [Authorize]
 @rendermode InteractiveServer
 @inherits AdminPageBase
 @inject IAdminApiClient AdminClient
+
+@* Provider trong island circuit — không đặt ở AdminLayout (SSR scope khác) *@
+<MudPopoverProvider />
 
 <PageTitle>Trận đấu — Admin | FootballBlog</PageTitle>
 

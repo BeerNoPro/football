@@ -4,6 +4,9 @@
 @inherits AdminPageBase
 @inject NavigationManager Nav
 
+@* Provider phải nằm trong island (cùng circuit) — KHÔNG đặt ở AdminLayout (SSR scope khác) *@
+<MudPopoverProvider />
+
 <PageTitle>Đội bóng — Admin | FootballBlog</PageTitle>
 
 <!-- Header -->

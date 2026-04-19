@@ -1,8 +1,11 @@
-@page "/admin/predictions"
+﻿@page "/admin/predictions"
 @attribute [Authorize]
 @rendermode InteractiveServer
 @inherits AdminPageBase
 @inject IAdminApiClient AdminClient
+
+@* Provider trong island circuit — không đặt ở AdminLayout (SSR scope khác) *@
+<MudPopoverProvider />
 
 <PageTitle>AI Predictions — Admin | FootballBlog</PageTitle>
 
