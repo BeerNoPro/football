@@ -87,6 +87,11 @@
                    Style="color:#999;border-color:#333;" Disabled="_triggering">
             Run Predictions
         </MudButton>
+        <MudButton OnClick="TriggerSeedLeagueDataAsync" Variant="Variant.Outlined" Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.Download"
+                   Style="color:#999;border-color:#333;" Disabled="_triggering">
+            Seed League Data
+        </MudButton>
     </div>
     @if (_lastTriggerMsg != null)
     {
@@ -168,6 +173,18 @@
         bool ok = await AdminClient.TriggerPredictAllAsync();
         _lastTriggerMsg = ok
             ? "GeneratePredictionJob đã được đưa vào queue — theo dõi tại Hangfire Dashboard."
+            : "Không thể trigger job. Kiểm tra logs.";
+        Snackbar.Add(ok ? "Job đã enqueue!" : "Trigger thất bại", ok ? Severity.Success : Severity.Error);
+        _triggering = false;
+    }
+
+    private async Task TriggerSeedLeagueDataAsync()
+    {
+        _triggering = true;
+        _lastTriggerMsg = null;
+        bool ok = await AdminClient.TriggerSeedLeagueDataAsync();
+        _lastTriggerMsg = ok
+            ? "SeedLeagueDataJob đã được đưa vào queue — theo dõi tại Hangfire Dashboard."
             : "Không thể trigger job. Kiểm tra logs.";
         Snackbar.Add(ok ? "Job đã enqueue!" : "Trigger thất bại", ok ? Severity.Success : Severity.Error);
         _triggering = false;

@@ -22,6 +22,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<MatchContextData> MatchContexts => Set<MatchContextData>();
     public DbSet<ApiKeyConfig> ApiKeyConfigs => Set<ApiKeyConfig>();
     public DbSet<PromptTemplate> PromptTemplates => Set<PromptTemplate>();
+    public DbSet<Venue> Venues => Set<Venue>();
+    public DbSet<Standing> Standings => Set<Standing>();
+    public DbSet<Player> Players => Set<Player>();
+    public DbSet<SquadMember> SquadMembers => Set<SquadMember>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -198,6 +202,69 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.HasOne(c => c.Match)
                   .WithOne(m => m.ContextData)
                   .HasForeignKey<MatchContextData>(c => c.MatchId);
+        });
+
+        // Venue
+        modelBuilder.Entity<Venue>(entity =>
+        {
+            entity.HasIndex(v => v.ExternalId).IsUnique();
+            entity.Property(v => v.Name).HasMaxLength(200).IsRequired();
+            entity.Property(v => v.City).HasMaxLength(100);
+            entity.Property(v => v.ImageUrl).HasMaxLength(500);
+        });
+
+        // Team — thêm VenueId FK
+        modelBuilder.Entity<Team>()
+            .HasOne(t => t.Venue)
+            .WithMany(v => v.Teams)
+            .HasForeignKey(t => t.VenueId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Standing — unique per (league, team, season)
+        modelBuilder.Entity<Standing>(entity =>
+        {
+            entity.HasIndex(s => new { s.LeagueId, s.TeamId, s.Season }).IsUnique();
+            entity.Property(s => s.Form).HasMaxLength(20);
+            entity.Property(s => s.Description).HasMaxLength(200);
+            entity.Property(s => s.Status).HasMaxLength(20);
+
+            entity.HasOne(s => s.League)
+                  .WithMany()
+                  .HasForeignKey(s => s.LeagueId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(s => s.Team)
+                  .WithMany()
+                  .HasForeignKey(s => s.TeamId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Player
+        modelBuilder.Entity<Player>(entity =>
+        {
+            entity.HasIndex(p => p.ExternalId).IsUnique();
+            entity.Property(p => p.Name).HasMaxLength(200).IsRequired();
+            entity.Property(p => p.Nationality).HasMaxLength(100);
+            entity.Property(p => p.Position).HasMaxLength(50);
+            entity.Property(p => p.Photo).HasMaxLength(500);
+        });
+
+        // SquadMember — unique per (team, player)
+        modelBuilder.Entity<SquadMember>(entity =>
+        {
+            entity.HasIndex(s => new { s.TeamId, s.PlayerId }).IsUnique();
+            entity.Property(s => s.Position).HasMaxLength(50);
+
+            entity.HasOne(s => s.Team)
+                  .WithMany(t => t.SquadMembers)
+                  .HasForeignKey(s => s.TeamId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(s => s.Player)
+                  .WithMany(p => p.SquadMembers)
+                  .HasForeignKey(s => s.PlayerId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

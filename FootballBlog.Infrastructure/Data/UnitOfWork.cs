@@ -19,6 +19,10 @@ public class UnitOfWork : IUnitOfWork
     public ITeamRepository Teams { get; }
     public IMatchContextRepository MatchContexts { get; }
     public IPromptTemplateRepository PromptTemplates { get; }
+    public IVenueRepository Venues { get; }
+    public IStandingRepository Standings { get; }
+    public IPlayerRepository Players { get; }
+    public ISquadMemberRepository SquadMembers { get; }
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -34,6 +38,10 @@ public class UnitOfWork : IUnitOfWork
         Teams = new TeamRepository(context);
         MatchContexts = new MatchContextRepository(context);
         PromptTemplates = new PromptTemplateRepository(context);
+        Venues = new VenueRepository(context);
+        Standings = new StandingRepository(context);
+        Players = new PlayerRepository(context);
+        SquadMembers = new SquadMemberRepository(context);
     }
 
     public Task<int> CommitAsync() => _context.SaveChangesAsync();

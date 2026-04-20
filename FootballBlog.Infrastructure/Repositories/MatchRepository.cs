@@ -75,4 +75,8 @@ public class MatchRepository(ApplicationDbContext dbContext) : BaseRepository<Ma
             .OrderBy(m => m.KickoffUtc)
             .ToListAsync();
     }
+
+    public async Task<bool> HasFixturesForLeagueAsync(int leagueId, string season) =>
+        await _dbSet.AsNoTracking()
+            .AnyAsync(m => m.LeagueId == leagueId && m.Season == season);
 }

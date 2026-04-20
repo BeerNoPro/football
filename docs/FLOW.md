@@ -55,7 +55,7 @@ FootballBlog.Web  (Blazor — :7241)
                                       Services       Hangfire Jobs
                                            │               │
                                       IUnitOfWork   Football API
-                                      (10 repos)    Claude/Gemini API
+                                      (14 repos)    Claude/Gemini API
                                            │        Telegram Bot API
                                       PostgreSQL
                                       Redis
@@ -417,6 +417,59 @@ LiveScoreWidget.razor (InteractiveServer, IAsyncDisposable)
 
 ---
 
+### 6f. SeedLeagueDataJob — Seed toàn bộ data một lần
+
+**Trigger:** Thủ công từ Admin UI `/admin/jobs` (không schedule tự động)
+
+**Mục đích:** Populate DB với data đầy đủ phục vụ test UI mà không tiêu tốn quota liên tục.
+
+**DB-first pattern** — mỗi bước check DB trước, chỉ gọi API khi thiếu data:
+
+```
+SeedLeagueDataJob.ExecuteAsync()
+      │  Config: LeagueIds[] (từ appsettings), Season = năm hiện tại
+      │
+      For each leagueId:
+        ┌─ Step 1: Teams + Venues ────────────────────────────────────┐
+        │  Football API: GET /teams?league={id}&season={season}       │
+        │  → Upsert Team (by ExternalId) + Venue (by ExternalId)      │
+        │  → Team.VenueId = venue.Id (nếu chưa có)                   │
+        │  uow.CommitAsync()                                          │
+        └─────────────────────────────────────────────────────────────┘
+        │
+        ┌─ Step 2: Standings ─────────────────────────────────────────┐
+        │  Check: uow.Standings.HasDataForSeasonAsync(leagueId, year) │
+        │  ├─ Có → skip API call                                      │
+        │  └─ Không → Football API: GET /standings?league={id}&season │
+        │             → Upsert Standing (by LeagueId+TeamId+Season)   │
+        │             uow.CommitAsync()                               │
+        └─────────────────────────────────────────────────────────────┘
+        │
+        ┌─ Step 3: Fixtures (past 30 + next 30 ngày) ─────────────────┐
+        │  Check: Matches table có data cho league+season này chưa    │
+        │  ├─ Có → skip API call                                      │
+        │  └─ Không → Football API:                                   │
+        │             GET /fixtures?league={id}&season={s}&from=&to=  │
+        │             → Upsert Country, League, Team, Match           │
+        │             uow.CommitAsync()                               │
+        └─────────────────────────────────────────────────────────────┘
+
+Budget tiêu thụ (~15 API calls cho 5 giải):
+  GET /teams    × 5 leagues = 5 calls
+  GET /standings × 5 leagues = 5 calls (skip nếu đã có)
+  GET /fixtures  × 5 leagues = 5 calls (skip nếu đã có)
+```
+
+**FootballApiClient methods mới** (dùng bởi SeedLeagueDataJob):
+
+| Method | Endpoint | Returns |
+|--------|---------|---------|
+| `GetTeamsByLeagueAsync(leagueId, season)` | `GET /teams?league=X&season=Y` | `IEnumerable<TeamRawDto>` (kèm venue) |
+| `GetStandingsAsync(leagueId, season)` | `GET /standings?league=X&season=Y` | `IEnumerable<StandingRawDto>` |
+| `GetFixturesByRangeAsync(leagueId, season, from, to)` | `GET /fixtures?league=X&season=Y&from=&to=` | `IEnumerable<FixtureRawDto>` |
+
+---
+
 ## 7. AI Prediction Pipeline
 
 Luồng hoàn chỉnh từ job schedule đến blog post tự động:
@@ -545,22 +598,28 @@ LiveScorePollingJob phát hiện trận Finished:
 ## 9. Data Model Relationships
 
 ```
-Post ──────────── Category      (N:1, FK: CategoryId)
-Post ──────────── ApplicationUser  (N:1, FK: AuthorId)
-Post ──────────── PostTag ──────── Tag  (N:M, composite key PostId+TagId)
+Post ──────────── Category           (N:1, FK: CategoryId)
+Post ──────────── ApplicationUser    (N:1, FK: AuthorId)
+Post ──────────── PostTag ─────────── Tag  (N:M, composite key PostId+TagId)
 Post ◀──────────── MatchPrediction.BlogPost  (1:0..1, sau khi publish)
 
-Match ──────────── League        (N:1, FK: LeagueId)
-Match ──────────── Team           (N:1, FK: HomeTeamId)
-Match ──────────── Team           (N:1, FK: AwayTeamId)
-Match ──────────── MatchPrediction  (1:0..1, unique constraint MatchId)
-Match ──────────── MatchContextData (1:0..1, JSONB blob)
-Match ◀──────────── LiveMatch     (1:0..1, FK nullable, SetNull on delete)
+Match ──────────── League            (N:1, FK: LeagueId)
+Match ──────────── Team              (N:1, FK: HomeTeamId)
+Match ──────────── Team              (N:1, FK: AwayTeamId)
+Match ──────────── MatchPrediction   (1:0..1, unique constraint MatchId)
+Match ──────────── MatchContextData  (1:0..1, JSONB blob)
+Match ◀──────────── LiveMatch        (1:0..1, FK nullable, SetNull on delete)
 
-League ──────────── Country      (N:1)
-Team ──────────── Country         (N:1, nullable)
+League ──────────── Country          (N:1)
+Team ──────────── Country            (N:1, nullable)
+Team ──────────── Venue              (N:1, FK: VenueId, nullable — sân chủ)
+Team ──────────── SquadMember ─────── Player  (N:M qua SquadMember, unique TeamId+PlayerId)
 
-LiveMatch ──────── MatchEvent     (1:N, goal/card/sub/penalty)
+Standing ──────── League             (N:1, FK: LeagueId)
+Standing ──────── Team               (N:1, FK: TeamId)
+                  unique: (LeagueId, TeamId, Season)
+
+LiveMatch ──────── MatchEvent        (1:N, goal/card/sub/penalty)
 ```
 
 **Entity fields quan trọng:**
@@ -592,7 +651,27 @@ RefereeContext? { Name, Notes }
 FatigueContext? { HomeDaysSinceLastMatch, AwayDaysSinceLastMatch, HomePlayingEurope, Notes }
 ```
 
-**IUnitOfWork — 10 repositories:**
+`Venue`:
+- `ExternalId` — Venue ID từ Football API (unique index)
+- `Name`, `City`, `Capacity?`, `ImageUrl?`
+- Populate từ `GET /teams?league=X&season=Y` (team response kèm venue)
+
+`Standing`:
+- `LeagueId`, `TeamId`, `Season` — unique constraint (3 fields)
+- `Rank`, `Points`, `Played`, `Won`, `Drawn`, `Lost`, `GoalsFor`, `GoalsAgainst`, `GoalsDiff`
+- `Form` — "WWDLW" (5 trận gần nhất)
+- `Description` — "Promotion - Champions League"
+- `UpdatedAt`
+
+`Player`:
+- `ExternalId` — Player ID từ Football API (unique index)
+- `Name`, `Photo?`, `Nationality?`, `Position?`, `Age?`
+
+`SquadMember` (join table Team ↔ Player):
+- `TeamId`, `PlayerId` — unique constraint
+- `Number?`, `Position?`
+
+**IUnitOfWork — 14 repositories:**
 ```
 uow.Posts           // IPostRepository
 uow.Categories      // ICategoryRepository
@@ -600,10 +679,14 @@ uow.Tags            // ITagRepository
 uow.LiveMatches     // ILiveMatchRepository
 uow.Matches         // IMatchRepository
 uow.MatchPredictions // IMatchPredictionRepository
-uow.Countries       // ICountryRepository  — upsert by Code
-uow.Leagues         // ILeagueRepository   — upsert by ExternalId
-uow.Teams           // ITeamRepository     — upsert by ExternalId
+uow.Countries       // ICountryRepository   — upsert by Code
+uow.Leagues         // ILeagueRepository    — upsert by ExternalId
+uow.Teams           // ITeamRepository      — upsert by ExternalId
 uow.MatchContexts   // IMatchContextRepository — 1-to-1 với Match (JSONB)
+uow.Venues          // IVenueRepository     — upsert by ExternalId
+uow.Standings       // IStandingRepository  — unique (LeagueId, TeamId, Season)
+uow.Players         // IPlayerRepository    — upsert by ExternalId
+uow.SquadMembers    // ISquadMemberRepository — unique (TeamId, PlayerId)
 ```
 
 **DbContext config quan trọng:**
@@ -613,6 +696,10 @@ uow.MatchContexts   // IMatchContextRepository — 1-to-1 với Match (JSONB)
 - `LiveMatch.ExternalId` — unique index
 - `PostTag` — composite PK (PostId, TagId)
 - `LiveMatch → Match` — optional FK, `OnDelete: SetNull`
+- `Venue.ExternalId` — unique index
+- `Standing` — unique index (LeagueId, TeamId, Season)
+- `Player.ExternalId` — unique index
+- `SquadMember` — unique index (TeamId, PlayerId)
 
 ---
 
@@ -657,8 +744,9 @@ Redis INCR "football_api:requests:{date}" → nếu > 90 → skip, log warning
 
 | Job | Cron | Trigger | Mô tả |
 |-----|------|---------|-------|
+| `SeedLeagueDataJob` | Không schedule | **Thủ công** từ Admin UI | Seed toàn bộ data giải đấu 1 lần — Teams, Venues, Standings, Fixtures (~15 API calls) |
 | `FetchUpcomingMatchesJob` | `0 */6 * * *` (mỗi 6h) | Recurring | Đồng bộ lịch đấu từ Football API |
-| `LiveScorePollingJob` | `* * * * *` (mỗi phút) | Recurring | Poll live score + SignalR broadcast |
+| `LiveScorePollingJob` | `* * * * *` (mỗi phút) | Recurring | Poll live score + SignalR broadcast (adaptive gate: skip nếu không có live match trong DB) |
 | `GeneratePredictionJob` | `0 * * * *` (mỗi giờ) | Recurring | Tạo AI prediction cho các trận sắp diễn ra |
 | `PreMatchDataJob.FetchH2HAsync` | Scheduled (H-5h) | Enqueued by FetchUpcoming | Lấy H2H data |
 | `PreMatchDataJob.FetchLineupsAsync` | Scheduled (H-15min) | Enqueued by FetchUpcoming | Lấy lineup data |
@@ -843,10 +931,12 @@ using (var scope = app.Services.CreateScope())
 | 2 | `AddMatchAndPrediction` | 2026-04-03 | Match, League, Team, Country, MatchPrediction, LiveMatch, MatchContextData |
 | 3 | `IdentityMigration` | 2026-04-03 | ASP.NET Core Identity tables |
 | 4 | `FixLiveMatchSchema` | 2026-04-05 | Sửa schema LiveMatch |
-| 5 | `RefactorMatchSchema` | 2026-04-15 | Refactor bảng Match |
-| 6 | `AddEventTypeEnum` | 2026-04-15 | MatchEvent.Type → enum |
-| 7 | `AddApiKeyConfig` | 2026-04-17 | Bảng `ApiKeyConfigs` cho quản lý API key |
+| 5 | `RefactorMatchSchema` | 2026-04-15 | Refactor bảng Match dùng FK thay vì string |
+| 6 | `AddEventTypeEnum` | 2026-04-15 | MatchEvent.Type → integer enum |
+| 7 | `AddApiKeyConfig` | 2026-04-17 | Bảng `ApiKeyConfigs` — quản lý API key đa nhà cung cấp |
+| 8 | `AddPromptTemplate` | 2026-04-18 | Bảng `PromptTemplates` — lưu AI prompt để A/B test |
+| 9 | `AddVenueStandingPlayerSquad` | 2026-04-20 | Bảng `Venues`, `Standings`, `Players`, `SquadMembers` + Team.VenueId FK |
 
 ---
 
-*Cập nhật lần cuối: Phase 1-6 hoàn thành. Phase 7 (Deploy & DevOps) chưa bắt đầu.*
+*Cập nhật lần cuối: 2026-04-20. Phase 1–6.6 hoàn thành. Phase 6.7 (Wire Admin UI + Seed data) đang thực hiện. Phase 7 (Deploy & DevOps) chưa bắt đầu.*

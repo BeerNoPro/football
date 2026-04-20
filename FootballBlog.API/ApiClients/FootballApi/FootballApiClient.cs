@@ -199,6 +199,195 @@ public class FootballApiClient(
         }
     }
 
+    public async Task<IEnumerable<TeamRawDto>?> GetTeamsByLeagueAsync(int leagueId, int season)
+    {
+        if (!await rateLimiter.TryConsumeAsync())
+        {
+            return null;
+        }
+
+        try
+        {
+            logger.LogDebug("Fetching teams for league {LeagueId} season {Season}", leagueId, season);
+
+            string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"teams?league={leagueId}&season={season}");
+            if (key is not null)
+            {
+                request.Headers.Add("x-apisports-key", key);
+            }
+
+            var response = await httpClient.SendAsync(request);
+            if (response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.Forbidden && key is not null)
+            {
+                await keyRotator.MarkExhaustedAsync("FootballApi", key);
+            }
+
+            response.EnsureSuccessStatusCode();
+
+            var envelope = await response.Content.ReadFromJsonAsync<FootballApiEnvelope<TeamResponse>>(JsonOptions);
+            if (envelope?.Response is null)
+            {
+                return [];
+            }
+
+            LogApiErrors($"teams?league={leagueId}&season={season}", envelope.Errors);
+
+            IEnumerable<TeamRawDto> teams = envelope.Response.Select(r => new TeamRawDto(
+                TeamExternalId: r.Team.Id,
+                TeamName: r.Team.Name,
+                TeamCode: r.Team.Code,
+                TeamLogo: r.Team.Logo,
+                CountryName: null,
+                VenueExternalId: r.Venue?.Id,
+                VenueName: r.Venue?.Name,
+                VenueCity: r.Venue?.City,
+                VenueCapacity: r.Venue?.Capacity,
+                VenueImageUrl: r.Venue?.Image
+            ));
+
+            logger.LogInformation("Fetched {Count} teams for league {LeagueId}", teams.Count(), leagueId);
+            return teams;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to fetch teams for league {LeagueId}", leagueId);
+            return null;
+        }
+    }
+
+    public async Task<IEnumerable<StandingRawDto>?> GetStandingsAsync(int leagueId, int season)
+    {
+        if (!await rateLimiter.TryConsumeAsync())
+        {
+            return null;
+        }
+
+        try
+        {
+            logger.LogDebug("Fetching standings for league {LeagueId} season {Season}", leagueId, season);
+
+            string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"standings?league={leagueId}&season={season}");
+            if (key is not null)
+            {
+                request.Headers.Add("x-apisports-key", key);
+            }
+
+            var response = await httpClient.SendAsync(request);
+            if (response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.Forbidden && key is not null)
+            {
+                await keyRotator.MarkExhaustedAsync("FootballApi", key);
+            }
+
+            response.EnsureSuccessStatusCode();
+
+            var envelope = await response.Content.ReadFromJsonAsync<FootballApiEnvelope<StandingsEnvelope>>(JsonOptions);
+            if (envelope?.Response is null || envelope.Response.Length == 0)
+            {
+                LogApiErrors($"standings?league={leagueId}&season={season}", envelope?.Errors ?? default);
+                return [];
+            }
+
+            LogApiErrors($"standings?league={leagueId}&season={season}", envelope.Errors);
+
+            // API trả về mảng groups (Total / Home / Away) — lấy group đầu tiên (Total)
+            StandingEntry[] entries = envelope.Response[0].League.Standings.Length > 0
+                ? envelope.Response[0].League.Standings[0]
+                : [];
+
+            int apiSeason = envelope.Response[0].League.Season;
+
+            IEnumerable<StandingRawDto> standings = entries.Select(e => new StandingRawDto(
+                LeagueExternalId: leagueId,
+                Season: apiSeason,
+                TeamExternalId: e.Team.Id,
+                TeamName: e.Team.Name,
+                Rank: e.Rank,
+                Points: e.Points,
+                Played: e.All.Played,
+                Won: e.All.Won,
+                Drawn: e.All.Drawn,
+                Lost: e.All.Lost,
+                GoalsFor: e.All.Goals.For,
+                GoalsAgainst: e.All.Goals.Against,
+                GoalsDiff: e.GoalsDiff,
+                Form: e.Form,
+                Description: e.Description,
+                Status: e.Status,
+                UpdatedAt: e.UpdatedAt
+            ));
+
+            logger.LogInformation("Fetched {Count} standing entries for league {LeagueId}", standings.Count(), leagueId);
+            return standings;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to fetch standings for league {LeagueId}", leagueId);
+            return null;
+        }
+    }
+
+    public async Task<IEnumerable<FixtureRawDto>?> GetFixturesByRangeAsync(int leagueId, int season, DateOnly from, DateOnly to)
+    {
+        if (!await rateLimiter.TryConsumeAsync())
+        {
+            return null;
+        }
+
+        try
+        {
+            string fromStr = from.ToString("yyyy-MM-dd");
+            string toStr = to.ToString("yyyy-MM-dd");
+            logger.LogDebug("Fetching fixtures for league {LeagueId} season {Season} from {From} to {To}",
+                leagueId, season, fromStr, toStr);
+
+            string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+            var request = new HttpRequestMessage(HttpMethod.Get,
+                $"fixtures?league={leagueId}&season={season}&from={fromStr}&to={toStr}");
+            if (key is not null)
+            {
+                request.Headers.Add("x-apisports-key", key);
+            }
+
+            var response = await httpClient.SendAsync(request);
+            if (response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.Forbidden && key is not null)
+            {
+                await keyRotator.MarkExhaustedAsync("FootballApi", key);
+            }
+
+            response.EnsureSuccessStatusCode();
+
+            var envelope = await response.Content.ReadFromJsonAsync<FootballApiEnvelope<FixtureResponse>>(JsonOptions);
+            if (envelope?.Response is null)
+            {
+                return [];
+            }
+
+            LogApiErrors($"fixtures?league={leagueId}&season={season}&from={fromStr}&to={toStr}", envelope.Errors);
+
+            IEnumerable<FixtureRawDto> fixtures = envelope.Response.Select(MapToFixtureDto);
+            logger.LogInformation("Fetched {Count} fixtures for league {LeagueId} [{From} → {To}]",
+                fixtures.Count(), leagueId, fromStr, toStr);
+            return fixtures;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to fetch fixtures for league {LeagueId}", leagueId);
+            return null;
+        }
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private void LogApiErrors(string endpoint, System.Text.Json.JsonElement errors)
+    {
+        if (errors.ValueKind == System.Text.Json.JsonValueKind.Object)
+        {
+            logger.LogWarning("Football API returned errors on {Endpoint}: {Errors}", endpoint, errors);
+        }
+    }
+
     // ── Mappers ────────────────────────────────────────────────────────────────
 
     private static FixtureRawDto MapToFixtureDto(FixtureResponse r) => new(

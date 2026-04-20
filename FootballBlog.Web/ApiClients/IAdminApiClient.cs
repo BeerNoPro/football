@@ -32,6 +32,7 @@ public interface IAdminApiClient
     Task<MatchStatsDto?> GetMatchStatsAsync();
     Task<bool> TriggerFetchMatchesAsync();
     Task<bool> TriggerPredictAllAsync();
+    Task<bool> TriggerSeedLeagueDataAsync();
 
     // Predictions
     Task<PagedResult<MatchPredictionDto>?> GetPredictionsAsync(int page = 1, int pageSize = 20, bool? isPublished = null);

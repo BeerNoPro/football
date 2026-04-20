@@ -25,4 +25,7 @@ public interface IMatchRepository : IRepository<Match>
 
     /// <summary>Trận Scheduled chưa có ContextData và sắp đấu trong X giờ tới.</summary>
     Task<IEnumerable<Match>> GetWithoutContextAsync(int hoursAhead = 24);
+
+    /// <summary>Kiểm tra DB đã có fixtures cho league+season chưa — dùng bởi SeedLeagueDataJob.</summary>
+    Task<bool> HasFixturesForLeagueAsync(int leagueId, string season);
 }

@@ -14,7 +14,12 @@ public class Team
     /// <summary>Nullable — club có thể không gắn với quốc gia cụ thể (ví dụ: đội tuyển quốc tế).</summary>
     public int? CountryId { get; set; }
 
+    /// <summary>Sân vận động chủ sân — populate từ /teams endpoint.</summary>
+    public int? VenueId { get; set; }
+
     public Country? Country { get; set; }
+    public Venue? Venue { get; set; }
     public ICollection<Match> HomeMatches { get; set; } = [];
     public ICollection<Match> AwayMatches { get; set; } = [];
+    public ICollection<SquadMember> SquadMembers { get; set; } = [];
 }

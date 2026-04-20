@@ -13,6 +13,10 @@ public interface IUnitOfWork : IDisposable
     ITeamRepository Teams { get; }
     IMatchContextRepository MatchContexts { get; }
     IPromptTemplateRepository PromptTemplates { get; }
+    IVenueRepository Venues { get; }
+    IStandingRepository Standings { get; }
+    IPlayerRepository Players { get; }
+    ISquadMemberRepository SquadMembers { get; }
 
     /// <summary>Commit tất cả thay đổi trong 1 transaction.</summary>
     Task<int> CommitAsync();

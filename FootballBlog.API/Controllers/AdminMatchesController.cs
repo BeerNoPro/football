@@ -101,4 +101,12 @@ public class AdminMatchesController(
         logger.LogInformation("Admin triggered GeneratePredictionJob for all pending matches");
         return Ok(ApiResponse<bool>.Ok(true));
     }
+
+    [HttpPost("seed-leagues")]
+    public IActionResult TriggerSeedLeagueData()
+    {
+        jobClient.Enqueue<SeedLeagueDataJob>(j => j.ExecuteAsync());
+        logger.LogInformation("Admin triggered SeedLeagueDataJob");
+        return Ok(ApiResponse<bool>.Ok(true));
+    }
 }

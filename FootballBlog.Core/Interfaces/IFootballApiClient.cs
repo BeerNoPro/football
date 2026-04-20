@@ -16,4 +16,13 @@ public interface IFootballApiClient
 
     /// <summary>Dữ liệu lineup dạng raw JSON. Dùng cho PreMatchDataJob 15min trước kickoff (Phase 5 xử lý).</summary>
     Task<string?> GetLineupsRawAsync(int fixtureId);
+
+    /// <summary>Lấy danh sách đội kèm venue cho một giải. GET /teams?league=X&amp;season=Y.</summary>
+    Task<IEnumerable<TeamRawDto>?> GetTeamsByLeagueAsync(int leagueId, int season);
+
+    /// <summary>Lấy bảng xếp hạng. GET /standings?league=X&amp;season=Y.</summary>
+    Task<IEnumerable<StandingRawDto>?> GetStandingsAsync(int leagueId, int season);
+
+    /// <summary>Lấy fixtures trong khoảng ngày. GET /fixtures?league=X&amp;season=Y&amp;from=...&amp;to=...</summary>
+    Task<IEnumerable<FixtureRawDto>?> GetFixturesByRangeAsync(int leagueId, int season, DateOnly from, DateOnly to);
 }

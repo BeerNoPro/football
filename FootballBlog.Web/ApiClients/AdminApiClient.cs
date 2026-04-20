@@ -331,6 +331,20 @@ public class AdminApiClient(HttpClient httpClient, ILogger<AdminApiClient> logge
         }
     }
 
+    public async Task<bool> TriggerSeedLeagueDataAsync()
+    {
+        try
+        {
+            var response = await httpClient.PostAsync("api/admin/matches/seed-leagues", null);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to trigger seed league data");
+            return false;
+        }
+    }
+
     public async Task<PagedResult<MatchPredictionDto>?> GetPredictionsAsync(int page = 1, int pageSize = 20, bool? isPublished = null)
     {
         try

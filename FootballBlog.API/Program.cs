@@ -48,6 +48,10 @@ try
                 e => e.Properties.TryGetValue("SourceContext", out var sc) &&
                     (sc.ToString().Contains("\"FootballBlog.API.Jobs") || sc.ToString().Contains("\"Hangfire")),
                 e => e.WithProperty("IsJobLog", true))
+            .Enrich.When(
+                e => e.Properties.TryGetValue("SourceContext", out var sc) &&
+                    sc.ToString().Contains("QueryLoggingInterceptor"),
+                e => e.WithProperty("IsDbLog", true))
             // Console
             .WriteTo.Console(outputTemplate: OutputTemplate)
             // app/ — log chung toàn app (Information+)
@@ -71,13 +75,23 @@ try
                     e.Properties.TryGetValue("IsJobLog", out var isJob) && isJob.ToString() == "True")
                 .WriteTo.File(Path.Combine(logBasePath, "jobs", "jobs-.log"),
                     rollingInterval: RollingInterval.Day,
+                    outputTemplate: OutputTemplate))
+            // db/ — EF Core SQL queries (tách riêng tránh spam app.log)
+            .WriteTo.Logger(lc => lc
+                .Filter.ByIncludingOnly(e =>
+                    e.Properties.TryGetValue("IsDbLog", out var isDb) && isDb.ToString() == "True")
+                .WriteTo.File(Path.Combine(logBasePath, "db", "db-.log"),
+                    rollingInterval: RollingInterval.Day,
                     outputTemplate: OutputTemplate)));
 
     builder.Services.AddControllers();
 
     // EF Core + PostgreSQL
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    builder.Services.AddSingleton<QueryLoggingInterceptor>();
+    builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
+        options
+            .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+            .AddInterceptors(sp.GetRequiredService<QueryLoggingInterceptor>()));
 
     // ASP.NET Core Identity
     builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
@@ -134,6 +148,9 @@ try
 
     // Telegram
     builder.Services.AddScoped<ITelegramService, TelegramService>();
+
+    // Hangfire jobs (phải đăng ký tường minh để DI resolve được)
+    builder.Services.AddScoped<SeedLeagueDataJob>();
 
     // Output Cache — cache GET blog endpoints 5 phút, invalidate khi có write
     builder.Services.AddOutputCache(options =>
@@ -270,6 +287,9 @@ try
     {
         RecurringJob.RemoveIfExists("generate-predictions");
     }
+
+    // SeedLeagueData — trigger thủ công từ Admin UI, không schedule tự động
+    RecurringJob.RemoveIfExists("seed-league-data");
 
     app.UseHttpsRedirection();
     app.UseStaticFiles();
