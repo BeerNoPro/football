@@ -11,6 +11,7 @@ public class SquadMemberRepository : BaseRepository<SquadMember>, ISquadMemberRe
 
     public async Task<SquadMember?> GetByTeamAndPlayerAsync(int teamId, int playerId) =>
         await _dbSet.AsNoTracking()
+            .TagWithCaller()
             .FirstOrDefaultAsync(s => s.TeamId == teamId && s.PlayerId == playerId);
 
     public async Task<IEnumerable<SquadMember>> GetByTeamIdAsync(int teamId) =>
@@ -18,8 +19,11 @@ public class SquadMemberRepository : BaseRepository<SquadMember>, ISquadMemberRe
             .Include(s => s.Player)
             .Where(s => s.TeamId == teamId)
             .OrderBy(s => s.Number)
+            .TagWithCaller()
             .ToListAsync();
 
     public async Task<bool> HasSquadAsync(int teamId) =>
-        await _dbSet.AsNoTracking().AnyAsync(s => s.TeamId == teamId);
+        await _dbSet.AsNoTracking()
+            .TagWithCaller()
+            .AnyAsync(s => s.TeamId == teamId);
 }

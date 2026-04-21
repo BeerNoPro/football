@@ -6,6 +6,7 @@ public class FootballApiOptions
 
     public string BaseUrl { get; set; } = string.Empty;
     public int DailyRequestLimit { get; set; } = 100;
+    public int PerMinuteRequestLimit { get; set; } = 10;
     public int FixturesPerLeague { get; set; } = 20;
     public int[] LeagueIds { get; set; } = [];
     public int? SeasonOverride { get; set; }

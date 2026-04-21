@@ -57,12 +57,14 @@ try
             // Console — loại trừ SQL queries
             .WriteTo.Logger(lc => lc
                 .Filter.ByExcluding(e =>
-                    e.Properties.TryGetValue("IsDbLog", out var isDb) && isDb.ToString() == "True")
+                    (e.Properties.TryGetValue("IsDbLog", out var isDb) && isDb.ToString() == "True") ||
+                    (e.Properties.TryGetValue("SourceContext", out var sc) && sc.ToString().Contains("QueryLoggingInterceptor")))
                 .WriteTo.Console(outputTemplate: OutputTemplate))
             // app/ — log chung toàn app, loại trừ SQL queries (đã có db/)
             .WriteTo.Logger(lc => lc
                 .Filter.ByExcluding(e =>
-                    e.Properties.TryGetValue("IsDbLog", out var isDb) && isDb.ToString() == "True")
+                    (e.Properties.TryGetValue("IsDbLog", out var isDb) && isDb.ToString() == "True") ||
+                    (e.Properties.TryGetValue("SourceContext", out var sc) && sc.ToString().Contains("QueryLoggingInterceptor")))
                 .WriteTo.File(Path.Combine(logBasePath, "app", "app-.log"),
                     rollingInterval: RollingInterval.Day,
                     outputTemplate: OutputTemplate))

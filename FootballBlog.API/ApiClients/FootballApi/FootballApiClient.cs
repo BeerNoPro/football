@@ -21,33 +21,35 @@ public class FootballApiClient(
 
     public async Task<IEnumerable<FixtureRawDto>?> GetUpcomingFixturesAsync(int leagueId, int next = 20)
     {
+        string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+        if (key is null)
+        {
+            return null;
+        }
+
         if (!await rateLimiter.TryConsumeAsync())
         {
-            logger.LogWarning("GetUpcomingFixtures blocked by rate limiter — league {LeagueId}", leagueId);
+            logger.LogWarning("GetUpcomingFixtures blocked by daily rate limit — league {LeagueId}", leagueId);
             return null;
         }
 
         try
         {
-            logger.LogDebug("Fetching upcoming fixtures for league {LeagueId}, next={Next}", leagueId, next);
-
             string season = DateTime.UtcNow.Month >= 7
                 ? DateTime.UtcNow.Year.ToString()
                 : (DateTime.UtcNow.Year - 1).ToString();
 
-            string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+            logger.LogDebug("Fetching upcoming fixtures for league {LeagueId}, next={Next}", leagueId, next);
+
             var request = new HttpRequestMessage(HttpMethod.Get,
                 $"fixtures?league={leagueId}&season={season}&next={next}");
-            if (key is not null)
-            {
-                request.Headers.Add("x-apisports-key", key);
-            }
+            request.Headers.Add("x-apisports-key", key);
 
             var response = await httpClient.SendAsync(request);
 
-            if (response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.Forbidden && key is not null)
+            if (await HandleRateLimitAsync(response, key, $"fixtures?league={leagueId}&season={season}&next={next}"))
             {
-                await keyRotator.MarkExhaustedAsync("FootballApi", key);
+                return null;
             }
 
             response.EnsureSuccessStatusCode();
@@ -73,9 +75,15 @@ public class FootballApiClient(
 
     public async Task<IEnumerable<LiveMatch>?> GetAllLiveFixturesAsync()
     {
+        string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+        if (key is null)
+        {
+            return null;
+        }
+
         if (!await rateLimiter.TryConsumeAsync())
         {
-            logger.LogWarning("GetAllLiveFixtures blocked by rate limiter");
+            logger.LogWarning("GetAllLiveFixtures blocked by daily rate limit");
             return null;
         }
 
@@ -83,18 +91,14 @@ public class FootballApiClient(
         {
             logger.LogDebug("Fetching all live fixtures");
 
-            string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
             var request = new HttpRequestMessage(HttpMethod.Get, "fixtures?live=all");
-            if (key is not null)
-            {
-                request.Headers.Add("x-apisports-key", key);
-            }
+            request.Headers.Add("x-apisports-key", key);
 
             var response = await httpClient.SendAsync(request);
 
-            if (response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.Forbidden && key is not null)
+            if (await HandleRateLimitAsync(response, key, "fixtures?live=all"))
             {
-                await keyRotator.MarkExhaustedAsync("FootballApi", key);
+                return null;
             }
 
             response.EnsureSuccessStatusCode();
@@ -119,9 +123,15 @@ public class FootballApiClient(
 
     public async Task<IEnumerable<FixtureRawDto>?> GetHeadToHeadAsync(int homeTeamExternalId, int awayTeamExternalId, int last = 10)
     {
+        string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+        if (key is null)
+        {
+            return null;
+        }
+
         if (!await rateLimiter.TryConsumeAsync())
         {
-            logger.LogWarning("GetHeadToHead blocked by rate limiter — {HomeId} vs {AwayId}", homeTeamExternalId, awayTeamExternalId);
+            logger.LogWarning("GetHeadToHead blocked by daily rate limit — {HomeId} vs {AwayId}", homeTeamExternalId, awayTeamExternalId);
             return null;
         }
 
@@ -129,19 +139,15 @@ public class FootballApiClient(
         {
             logger.LogDebug("Fetching H2H for {Home} vs {Away}", homeTeamExternalId, awayTeamExternalId);
 
-            string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
             var request = new HttpRequestMessage(HttpMethod.Get,
                 $"fixtures/headtohead?h2h={homeTeamExternalId}-{awayTeamExternalId}&last={last}");
-            if (key is not null)
-            {
-                request.Headers.Add("x-apisports-key", key);
-            }
+            request.Headers.Add("x-apisports-key", key);
 
             var response = await httpClient.SendAsync(request);
 
-            if (response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.Forbidden && key is not null)
+            if (await HandleRateLimitAsync(response, key, $"fixtures/headtohead?h2h={homeTeamExternalId}-{awayTeamExternalId}"))
             {
-                await keyRotator.MarkExhaustedAsync("FootballApi", key);
+                return null;
             }
 
             response.EnsureSuccessStatusCode();
@@ -166,9 +172,15 @@ public class FootballApiClient(
 
     public async Task<string?> GetLineupsRawAsync(int fixtureId)
     {
+        string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+        if (key is null)
+        {
+            return null;
+        }
+
         if (!await rateLimiter.TryConsumeAsync())
         {
-            logger.LogWarning("GetLineupsRaw blocked by rate limiter — fixture {FixtureId}", fixtureId);
+            logger.LogWarning("GetLineupsRaw blocked by daily rate limit — fixture {FixtureId}", fixtureId);
             return null;
         }
 
@@ -176,18 +188,14 @@ public class FootballApiClient(
         {
             logger.LogDebug("Fetching lineups for fixture {FixtureId}", fixtureId);
 
-            string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
             var request = new HttpRequestMessage(HttpMethod.Get, $"fixtures/lineups?fixture={fixtureId}");
-            if (key is not null)
-            {
-                request.Headers.Add("x-apisports-key", key);
-            }
+            request.Headers.Add("x-apisports-key", key);
 
             var response = await httpClient.SendAsync(request);
 
-            if (response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.Forbidden && key is not null)
+            if (await HandleRateLimitAsync(response, key, $"fixtures/lineups?fixture={fixtureId}"))
             {
-                await keyRotator.MarkExhaustedAsync("FootballApi", key);
+                return null;
             }
 
             response.EnsureSuccessStatusCode();
@@ -205,9 +213,15 @@ public class FootballApiClient(
 
     public async Task<IEnumerable<TeamRawDto>?> GetTeamsByLeagueAsync(int leagueId, int season)
     {
+        string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+        if (key is null)
+        {
+            return null;
+        }
+
         if (!await rateLimiter.TryConsumeAsync())
         {
-            logger.LogWarning("GetTeamsByLeague blocked by rate limiter — league {LeagueId}", leagueId);
+            logger.LogWarning("GetTeamsByLeague blocked by daily rate limit — league {LeagueId}", leagueId);
             return null;
         }
 
@@ -215,17 +229,14 @@ public class FootballApiClient(
         {
             logger.LogDebug("Fetching teams for league {LeagueId} season {Season}", leagueId, season);
 
-            string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
             var request = new HttpRequestMessage(HttpMethod.Get, $"teams?league={leagueId}&season={season}");
-            if (key is not null)
-            {
-                request.Headers.Add("x-apisports-key", key);
-            }
+            request.Headers.Add("x-apisports-key", key);
 
             var response = await httpClient.SendAsync(request);
-            if (response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.Forbidden && key is not null)
+
+            if (await HandleRateLimitAsync(response, key, $"teams?league={leagueId}&season={season}"))
             {
-                await keyRotator.MarkExhaustedAsync("FootballApi", key);
+                return null;
             }
 
             response.EnsureSuccessStatusCode();
@@ -266,9 +277,15 @@ public class FootballApiClient(
 
     public async Task<IEnumerable<StandingRawDto>?> GetStandingsAsync(int leagueId, int season)
     {
+        string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+        if (key is null)
+        {
+            return null;
+        }
+
         if (!await rateLimiter.TryConsumeAsync())
         {
-            logger.LogWarning("GetStandings blocked by rate limiter — league {LeagueId}", leagueId);
+            logger.LogWarning("GetStandings blocked by daily rate limit — league {LeagueId}", leagueId);
             return null;
         }
 
@@ -276,17 +293,14 @@ public class FootballApiClient(
         {
             logger.LogDebug("Fetching standings for league {LeagueId} season {Season}", leagueId, season);
 
-            string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
             var request = new HttpRequestMessage(HttpMethod.Get, $"standings?league={leagueId}&season={season}");
-            if (key is not null)
-            {
-                request.Headers.Add("x-apisports-key", key);
-            }
+            request.Headers.Add("x-apisports-key", key);
 
             var response = await httpClient.SendAsync(request);
-            if (response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.Forbidden && key is not null)
+
+            if (await HandleRateLimitAsync(response, key, $"standings?league={leagueId}&season={season}"))
             {
-                await keyRotator.MarkExhaustedAsync("FootballApi", key);
+                return null;
             }
 
             response.EnsureSuccessStatusCode();
@@ -302,7 +316,6 @@ public class FootballApiClient(
                 return [];
             }
 
-            // API trả về mảng groups (Total / Home / Away) — lấy group đầu tiên (Total)
             StandingEntry[] entries = envelope.Response[0].League.Standings.Length > 0
                 ? envelope.Response[0].League.Standings[0]
                 : [];
@@ -326,7 +339,7 @@ public class FootballApiClient(
                 Form: e.Form,
                 Description: e.Description,
                 Status: e.Status,
-                UpdatedAt: e.UpdatedAt
+                UpdatedAt: e.UpdatedAt.UtcDateTime
             ));
 
             logger.LogInformation("Fetched {Count} standing entries for league {LeagueId}", standings.Count(), leagueId);
@@ -341,9 +354,15 @@ public class FootballApiClient(
 
     public async Task<IEnumerable<FixtureRawDto>?> GetFixturesByRangeAsync(int leagueId, int season, DateOnly from, DateOnly to)
     {
+        string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+        if (key is null)
+        {
+            return null;
+        }
+
         if (!await rateLimiter.TryConsumeAsync())
         {
-            logger.LogWarning("GetFixturesByRange blocked by rate limiter — league {LeagueId}", leagueId);
+            logger.LogWarning("GetFixturesByRange blocked by daily rate limit — league {LeagueId}", leagueId);
             return null;
         }
 
@@ -354,18 +373,15 @@ public class FootballApiClient(
             logger.LogDebug("Fetching fixtures for league {LeagueId} season {Season} from {From} to {To}",
                 leagueId, season, fromStr, toStr);
 
-            string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
             var request = new HttpRequestMessage(HttpMethod.Get,
                 $"fixtures?league={leagueId}&season={season}&from={fromStr}&to={toStr}");
-            if (key is not null)
-            {
-                request.Headers.Add("x-apisports-key", key);
-            }
+            request.Headers.Add("x-apisports-key", key);
 
             var response = await httpClient.SendAsync(request);
-            if (response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.Forbidden && key is not null)
+
+            if (await HandleRateLimitAsync(response, key, $"fixtures?league={leagueId}&season={season}&from={fromStr}&to={toStr}"))
             {
-                await keyRotator.MarkExhaustedAsync("FootballApi", key);
+                return null;
             }
 
             response.EnsureSuccessStatusCode();
@@ -395,9 +411,38 @@ public class FootballApiClient(
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private bool HasApiErrors(string endpoint, System.Text.Json.JsonElement errors)
+    /// <summary>
+    /// Đọc response body khi 429/403 để phân biệt per-minute vs daily limit,
+    /// gọi MarkExhaustedAsync với TTL phù hợp (65s vs midnight UTC).
+    /// Returns true nếu là rate limit response (caller nên return null).
+    /// </summary>
+    private async Task<bool> HandleRateLimitAsync(HttpResponseMessage response, string apiKey, string endpoint)
     {
-        if (errors.ValueKind == System.Text.Json.JsonValueKind.Object)
+        if (response.StatusCode is not (HttpStatusCode.TooManyRequests or HttpStatusCode.Forbidden))
+        {
+            return false;
+        }
+
+        string body = await response.Content.ReadAsStringAsync();
+
+        // API-Football: daily limit chứa "day"/"exceeded"/"requests"
+        // Per-minute limit chứa "minute"/"rate"
+        bool isDailyLimit = body.Contains("day", StringComparison.OrdinalIgnoreCase)
+                         || body.Contains("exceeded", StringComparison.OrdinalIgnoreCase);
+
+        logger.LogWarning(
+            "Football API {Status} on [{Endpoint}] — {LimitType} | body: {Body}",
+            (int)response.StatusCode, endpoint,
+            isDailyLimit ? "DAILY LIMIT" : "per-minute rate limit",
+            body);
+
+        await keyRotator.MarkExhaustedAsync("FootballApi", apiKey, isDailyLimit);
+        return true;
+    }
+
+    private bool HasApiErrors(string endpoint, JsonElement errors)
+    {
+        if (errors.ValueKind == JsonValueKind.Object)
         {
             logger.LogWarning("Football API returned errors on {Endpoint}: {Errors}", endpoint, errors);
             return true;
@@ -409,7 +454,7 @@ public class FootballApiClient(
 
     private static FixtureRawDto MapToFixtureDto(FixtureResponse r) => new(
         ExternalId: r.Fixture.Id,
-        KickoffUtc: r.Fixture.Date,
+        KickoffUtc: r.Fixture.Date.UtcDateTime,
         StatusShort: r.Fixture.Status.Short,
         HomeScore: r.Goals.Home,
         AwayScore: r.Goals.Away,
@@ -445,13 +490,9 @@ public class FootballApiClient(
         AwayScore = r.Goals.Away ?? 0,
         Status = MapStatus(r.Fixture.Status.Short),
         Minute = r.Fixture.Status.Elapsed,
-        StartedAt = r.Fixture.Date
+        StartedAt = r.Fixture.Date.UtcDateTime
     };
 
-    /// <summary>
-    /// Derive country code từ flag URL (e.g. ".../flags/gb.svg" → "GB")
-    /// hoặc fallback về 3 ký tự đầu của country name.
-    /// </summary>
     private static string DeriveCountryCode(string countryName, string? flagUrl)
     {
         if (!string.IsNullOrEmpty(flagUrl))
@@ -463,7 +504,6 @@ public class FootballApiClient(
             }
         }
 
-        // Fallback: uppercase, no spaces, max 10 chars
         string normalized = countryName.ToUpperInvariant().Replace(" ", "");
         return normalized[..Math.Min(10, normalized.Length)];
     }

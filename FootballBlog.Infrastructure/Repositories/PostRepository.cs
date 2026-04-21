@@ -15,6 +15,7 @@ public class PostRepository : BaseRepository<Post>, IPostRepository
             .Include(p => p.Category)
             .Include(p => p.Author)
             .Include(p => p.PostTags).ThenInclude(pt => pt.Tag)
+            .TagWithCaller()
             .FirstOrDefaultAsync(p => p.Slug == slug && p.PublishedAt != null);
 
     public async Task<Post?> GetDetailByIdAsync(int id) =>
@@ -23,6 +24,7 @@ public class PostRepository : BaseRepository<Post>, IPostRepository
             .Include(p => p.Category)
             .Include(p => p.Author)
             .Include(p => p.PostTags).ThenInclude(pt => pt.Tag)
+            .TagWithCaller()
             .FirstOrDefaultAsync(p => p.Id == id);
 
     public async Task<IEnumerable<Post>> GetAllWithDetailsAsync(int page, int pageSize) =>
@@ -33,10 +35,11 @@ public class PostRepository : BaseRepository<Post>, IPostRepository
             .OrderByDescending(p => p.UpdatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .TagWithCaller()
             .ToListAsync();
 
     public async Task<int> CountAllAsync() =>
-        await _dbSet.CountAsync();
+        await _dbSet.TagWithCaller().CountAsync();
 
     public async Task<IEnumerable<Post>> GetPublishedAsync(int page, int pageSize) =>
         await _dbSet
@@ -47,6 +50,7 @@ public class PostRepository : BaseRepository<Post>, IPostRepository
             .OrderByDescending(p => p.PublishedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .TagWithCaller()
             .ToListAsync();
 
     public async Task<IEnumerable<Post>> GetByCategoryAsync(string categorySlug, int page, int pageSize) =>
@@ -58,6 +62,7 @@ public class PostRepository : BaseRepository<Post>, IPostRepository
             .OrderByDescending(p => p.PublishedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .TagWithCaller()
             .ToListAsync();
 
     public async Task<IEnumerable<Post>> GetByTagAsync(string tagSlug, int page, int pageSize) =>
@@ -69,14 +74,15 @@ public class PostRepository : BaseRepository<Post>, IPostRepository
             .OrderByDescending(p => p.PublishedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .TagWithCaller()
             .ToListAsync();
 
     public async Task<int> CountPublishedAsync() =>
-        await _dbSet.CountAsync(p => p.PublishedAt != null);
+        await _dbSet.TagWithCaller().CountAsync(p => p.PublishedAt != null);
 
     public async Task<int> CountByCategoryAsync(string categorySlug) =>
-        await _dbSet.CountAsync(p => p.PublishedAt != null && p.Category.Slug == categorySlug);
+        await _dbSet.TagWithCaller().CountAsync(p => p.PublishedAt != null && p.Category.Slug == categorySlug);
 
     public async Task<int> CountByTagAsync(string tagSlug) =>
-        await _dbSet.CountAsync(p => p.PublishedAt != null && p.PostTags.Any(pt => pt.Tag.Slug == tagSlug));
+        await _dbSet.TagWithCaller().CountAsync(p => p.PublishedAt != null && p.PostTags.Any(pt => pt.Tag.Slug == tagSlug));
 }

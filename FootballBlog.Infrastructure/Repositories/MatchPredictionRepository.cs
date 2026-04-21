@@ -12,6 +12,7 @@ public class MatchPredictionRepository(ApplicationDbContext dbContext)
         => await _dbSet
             .AsNoTracking()
             .Include(p => p.Match)
+            .TagWithCaller()
             .FirstOrDefaultAsync(p => p.MatchId == matchId);
 
     public async Task<IEnumerable<MatchPrediction>> GetUnpublishedAsync()
@@ -20,11 +21,13 @@ public class MatchPredictionRepository(ApplicationDbContext dbContext)
             .Include(p => p.Match)
             .Where(p => !p.IsPublished)
             .OrderBy(p => p.Match.KickoffUtc)
+            .TagWithCaller()
             .ToListAsync();
 
     public async Task<MatchPrediction?> GetByTelegramMessageIdAsync(long messageId)
         => await _dbSet
             .AsNoTracking()
             .Include(p => p.Match)
+            .TagWithCaller()
             .FirstOrDefaultAsync(p => p.TelegramMessageId == messageId);
 }

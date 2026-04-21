@@ -36,14 +36,24 @@ public class ApiKeyRotator(
         {
             var keys = await GetKeysFromCacheOrDbAsync(provider);
 
+            if (keys.Count == 0)
+            {
+                logger.LogWarning("No API keys configured for provider {Provider} — add keys via Admin UI", provider);
+                return null;
+            }
+
+            int blockedCount = 0;
+            int exhaustedCount = 0;
+
             foreach (var key in keys)
             {
                 string hash = KeyHash(key.KeyValue);
 
-                // Key bị block ngay lập tức do 429/403
                 if (await _db.KeyExistsAsync(BlockedKey(provider, hash)))
                 {
-                    logger.LogDebug("API key {Hash} for {Provider} is blocked today", hash, provider);
+                    TimeSpan? ttl = await _db.KeyTimeToLiveAsync(BlockedKey(provider, hash));
+                    logger.LogDebug("API key {Hash} for {Provider} blocked — expires in {Ttl}", hash, provider, ttl);
+                    blockedCount++;
                     continue;
                 }
 
@@ -53,7 +63,8 @@ public class ApiKeyRotator(
                     int used = usageVal.HasValue ? (int)usageVal : 0;
                     if (used >= key.DailyLimit)
                     {
-                        logger.LogDebug("API key {Hash} for {Provider} exhausted ({Used}/{Limit})", hash, provider, used, key.DailyLimit);
+                        logger.LogDebug("API key {Hash} for {Provider} daily limit exhausted ({Used}/{Limit})", hash, provider, used, key.DailyLimit);
+                        exhaustedCount++;
                         continue;
                     }
                 }
@@ -61,7 +72,9 @@ public class ApiKeyRotator(
                 return key.KeyValue;
             }
 
-            logger.LogWarning("All API keys for provider {Provider} are exhausted or inactive", provider);
+            logger.LogWarning(
+                "No available API key for {Provider} — {Blocked} blocked, {Exhausted} daily-exhausted out of {Total} keys. Jobs will resume after Redis TTL expires.",
+                provider, blockedCount, exhaustedCount, keys.Count);
             return null;
         }
         catch (Exception ex)
@@ -71,18 +84,29 @@ public class ApiKeyRotator(
         }
     }
 
-    public async Task MarkExhaustedAsync(string provider, string key)
+    public async Task MarkExhaustedAsync(string provider, string key, bool isDailyLimit = true)
     {
         try
         {
             string hash = KeyHash(key);
-            DateTime midnight = DateTime.UtcNow.Date.AddDays(1);
-            TimeSpan ttl = midnight - DateTime.UtcNow;
+            TimeSpan ttl = isDailyLimit
+                ? DateTime.UtcNow.Date.AddDays(1) - DateTime.UtcNow
+                : TimeSpan.FromSeconds(65);
 
-            // Set blocked flag — expire lúc midnight UTC
             await _db.StringSetAsync(BlockedKey(provider, hash), 1, ttl);
 
-            logger.LogWarning("API key {Hash} for {Provider} blocked until midnight UTC", hash, provider);
+            if (isDailyLimit)
+            {
+                logger.LogWarning(
+                    "API key {Hash} for {Provider} DAILY LIMIT exhausted — blocked until midnight UTC ({Ttl:hh\\:mm\\:ss} remaining)",
+                    hash, provider, ttl);
+            }
+            else
+            {
+                logger.LogWarning(
+                    "API key {Hash} for {Provider} per-minute rate limit hit — blocked for 65s",
+                    hash, provider);
+            }
         }
         catch (Exception ex)
         {

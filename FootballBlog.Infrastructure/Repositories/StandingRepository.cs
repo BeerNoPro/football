@@ -11,6 +11,7 @@ public class StandingRepository : BaseRepository<Standing>, IStandingRepository
 
     public async Task<Standing?> GetByLeagueTeamSeasonAsync(int leagueId, int teamId, int season) =>
         await _dbSet.AsNoTracking()
+            .TagWithCaller()
             .FirstOrDefaultAsync(s => s.LeagueId == leagueId && s.TeamId == teamId && s.Season == season);
 
     public async Task<IEnumerable<Standing>> GetByLeagueSeasonAsync(int leagueId, int season) =>
@@ -18,9 +19,11 @@ public class StandingRepository : BaseRepository<Standing>, IStandingRepository
             .Include(s => s.Team)
             .Where(s => s.LeagueId == leagueId && s.Season == season)
             .OrderBy(s => s.Rank)
+            .TagWithCaller()
             .ToListAsync();
 
     public async Task<bool> HasDataForSeasonAsync(int leagueId, int season) =>
         await _dbSet.AsNoTracking()
+            .TagWithCaller()
             .AnyAsync(s => s.LeagueId == leagueId && s.Season == season);
 }

@@ -13,33 +13,58 @@ public class RedisFootballApiRateLimiter(
 {
     private readonly IDatabase _db = redis.GetDatabase();
     private readonly int _dailyLimit = options.Value.DailyRequestLimit;
+    private readonly int _perMinuteLimit = options.Value.PerMinuteRequestLimit;
 
-    private static string TodayKey => $"apikey:usage:FootballApi:global:{DateTime.UtcNow:yyyy-MM-dd}";
+    private static string TodayKey =>
+        $"apikey:usage:FootballApi:global:{DateTime.UtcNow:yyyy-MM-dd}";
+
+    // TTL 65s để align với block time của ApiKeyRotator khi hit 429
+    private static string MinuteKey =>
+        $"apikey:usage:FootballApi:perminute:{DateTime.UtcNow:yyyy-MM-dd-HH-mm}";
 
     public async Task<bool> TryConsumeAsync()
     {
         try
         {
-            string key = TodayKey;
-            long newCount = await _db.StringIncrementAsync(key);
-
-            // Lần đầu tiên trong ngày — set expire đến midnight UTC ngày mai
-            if (newCount == 1)
+            // Per-minute check trước — proactive, tránh hit 429
+            long minuteCount = await _db.StringIncrementAsync(MinuteKey);
+            if (minuteCount == 1)
             {
-                DateTime midnight = DateTime.UtcNow.Date.AddDays(1);
-                await _db.KeyExpireAsync(key, midnight);
+                await _db.KeyExpireAsync(MinuteKey, TimeSpan.FromSeconds(65));
             }
 
-            if (newCount > _dailyLimit)
+            if (minuteCount > _perMinuteLimit)
             {
-                await _db.StringDecrementAsync(key); // hoàn lại
+                await _db.StringDecrementAsync(MinuteKey);
                 logger.LogWarning(
-                    "Football API daily limit reached ({Count}/{Limit}). Request blocked.",
-                    newCount - 1, _dailyLimit);
+                    "Football API per-minute limit reached ({Count}/{Limit}/min). Request blocked.",
+                    minuteCount - 1, _perMinuteLimit);
                 return false;
             }
 
-            logger.LogDebug("Football API request consumed. Usage: {Count}/{Limit}", newCount, _dailyLimit);
+            // Daily check sau
+            string dailyKey = TodayKey;
+            long dailyCount = await _db.StringIncrementAsync(dailyKey);
+
+            if (dailyCount == 1)
+            {
+                DateTime midnight = DateTime.UtcNow.Date.AddDays(1);
+                await _db.KeyExpireAsync(dailyKey, midnight);
+            }
+
+            if (dailyCount > _dailyLimit)
+            {
+                await _db.StringDecrementAsync(dailyKey);
+                await _db.StringDecrementAsync(MinuteKey);
+                logger.LogWarning(
+                    "Football API daily limit reached ({Count}/{Limit}). Request blocked.",
+                    dailyCount - 1, _dailyLimit);
+                return false;
+            }
+
+            logger.LogDebug(
+                "Football API request consumed. Usage: {Daily}/{DailyLimit} today, {Minute}/{MinuteLimit}/min",
+                dailyCount, _dailyLimit, minuteCount, _perMinuteLimit);
             return true;
         }
         catch (Exception ex)

@@ -43,17 +43,27 @@ public class SeedLeagueDataJob(
         {
             logger.LogInformation("Processing league {LeagueId}...", leagueId);
 
+            // Pre-check DB — một lần, dùng chung cho Step 1 và Step 2
+            // Nếu fixtures đã có → teams đã được seed trước đó (fixtures require teams)
+            int? internalLeagueId = await GetInternalLeagueIdAsync(leagueId, leagueCache);
+            bool hasFixtures = internalLeagueId.HasValue &&
+                               await uow.Matches.HasFixturesForLeagueAsync(internalLeagueId.Value, season.ToString());
+
             // ── Step 1: Teams + Venues ──────────────────────────────────────
-            // Luôn fetch teams để đảm bảo VenueId được populate đúng.
-            // UpsertTeamWithVenueAsync idempotent — chỉ update VenueId nếu chưa có.
-            IEnumerable<TeamRawDto>? teams = await apiClient.GetTeamsByLeagueAsync(leagueId, season);
-            if (teams is null)
+            // Chỉ fetch khi fixtures chưa có — fixtures tồn tại đồng nghĩa teams đã được seed.
+            if (hasFixtures)
             {
-                logger.LogWarning("SeedLeagueDataJob aborted at league {LeagueId} — null response from GetTeamsByLeague", leagueId);
-                return;
+                logger.LogInformation("League {LeagueId} already seeded — skipping teams API call", leagueId);
             }
             else
             {
+                IEnumerable<TeamRawDto>? teams = await apiClient.GetTeamsByLeagueAsync(leagueId, season);
+                if (teams is null)
+                {
+                    logger.LogWarning("Skipping league {LeagueId} — null response from GetTeamsByLeague", leagueId);
+                    continue;
+                }
+
                 foreach (TeamRawDto teamDto in teams)
                 {
                     int? venueId = null;
@@ -70,48 +80,43 @@ public class SeedLeagueDataJob(
                 await uow.CommitAsync();
             }
 
-            // ── Step 2: Fixtures (last 30 days + next 30 days) ──────────────
+            // ── Step 2: Fixtures ──────────────────────────────────────────
             // Phải chạy TRƯỚC standings vì step này upsert Country + League vào DB.
             // Standings cần internalLeagueId → League phải tồn tại trước.
-            int? internalLeagueId = await GetInternalLeagueIdAsync(leagueId, leagueCache);
-            bool hasFixtures = internalLeagueId.HasValue &&
-                               await uow.Matches.HasFixturesForLeagueAsync(internalLeagueId.Value, season.ToString());
-
             if (hasFixtures)
             {
                 logger.LogInformation("Fixtures for league {LeagueId} season {Season} already in DB — skipping", leagueId, season);
             }
             else
             {
-                DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+                DateOnly seasonStart = new DateOnly(season, 7, 1);
+                DateOnly seasonEnd = new DateOnly(season + 1, 7, 1);
                 IEnumerable<FixtureRawDto>? fixtures = await apiClient.GetFixturesByRangeAsync(
                     leagueId, season,
-                    from: today.AddDays(-30),
-                    to: today.AddDays(30));
+                    from: seasonStart,
+                    to: seasonEnd);
 
                 if (fixtures is null)
                 {
-                    logger.LogWarning("SeedLeagueDataJob aborted at league {LeagueId} — null response from GetFixturesByRange", leagueId);
-                    return;
+                    logger.LogWarning("Skipping league {LeagueId} — null response from GetFixturesByRange", leagueId);
+                    continue;
                 }
-                else
+
+                foreach (FixtureRawDto fixture in fixtures)
                 {
-                    foreach (FixtureRawDto fixture in fixtures)
-                    {
-                        int countryId = await UpsertCountryAsync(fixture, countryCache);
-                        int leagueInternalId = await UpsertLeagueAsync(fixture, countryId, leagueCache);
-                        int homeTeamId = await UpsertTeamFromFixtureAsync(fixture.HomeTeamExternalId, fixture.HomeTeamName, fixture.HomeTeamLogo, countryId, teamCache);
-                        int awayTeamId = await UpsertTeamFromFixtureAsync(fixture.AwayTeamExternalId, fixture.AwayTeamName, fixture.AwayTeamLogo, countryId, teamCache);
+                    int countryId = await UpsertCountryAsync(fixture, countryCache);
+                    int leagueInternalId = await UpsertLeagueAsync(fixture, countryId, leagueCache);
+                    int homeTeamId = await UpsertTeamFromFixtureAsync(fixture.HomeTeamExternalId, fixture.HomeTeamName, fixture.HomeTeamLogo, countryId, teamCache);
+                    int awayTeamId = await UpsertTeamFromFixtureAsync(fixture.AwayTeamExternalId, fixture.AwayTeamName, fixture.AwayTeamLogo, countryId, teamCache);
 
-                        await UpsertMatchAsync(fixture, homeTeamId, awayTeamId, leagueInternalId);
-                        fixturesUpserted++;
-                    }
-
-                    await uow.CommitAsync();
-
-                    // Cập nhật internalLeagueId sau khi fixtures đã upsert League vào DB
-                    internalLeagueId = await GetInternalLeagueIdAsync(leagueId, leagueCache);
+                    await UpsertMatchAsync(fixture, homeTeamId, awayTeamId, leagueInternalId);
+                    fixturesUpserted++;
                 }
+
+                await uow.CommitAsync();
+
+                // Cập nhật internalLeagueId sau khi fixtures đã upsert League vào DB
+                internalLeagueId = await GetInternalLeagueIdAsync(leagueId, leagueCache);
             }
 
             // ── Step 3: Standings ───────────────────────────────────────────

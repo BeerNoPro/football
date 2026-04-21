@@ -10,5 +10,7 @@ public class VenueRepository : BaseRepository<Venue>, IVenueRepository
     public VenueRepository(ApplicationDbContext context) : base(context) { }
 
     public async Task<Venue?> GetByExternalIdAsync(int externalId) =>
-        await _dbSet.AsNoTracking().FirstOrDefaultAsync(v => v.ExternalId == externalId);
+        await _dbSet.AsNoTracking()
+            .TagWithCaller()
+            .FirstOrDefaultAsync(v => v.ExternalId == externalId);
 }

@@ -10,5 +10,7 @@ public class MatchContextRepository : BaseRepository<MatchContextData>, IMatchCo
     public MatchContextRepository(ApplicationDbContext context) : base(context) { }
 
     public async Task<MatchContextData?> GetByMatchIdAsync(int matchId) =>
-        await _dbSet.AsNoTracking().FirstOrDefaultAsync(c => c.MatchId == matchId);
+        await _dbSet.AsNoTracking()
+            .TagWithCaller()
+            .FirstOrDefaultAsync(c => c.MatchId == matchId);
 }

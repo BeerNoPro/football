@@ -1,6 +1,76 @@
-@FootballBlog.API_HostAddress = http://localhost:5131
+@host = https://localhost:7007
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkBmb290YmFsbGJsb2cuZGV2IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6ImFkbWluQGZvb3RiYWxsYmxvZy5kZXYiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc3NzM4ODAyNn0.RZIpBrCKJ_pBeg18sKGfU09QebynC7V5VQe2PuJSjec
 
-GET {{FootballBlog.API_HostAddress}}/weatherforecast/
-Accept: application/json
+# ==============================================================
+# [1] AUTH — Login, copy token vào @token ở trên
+# ==============================================================
 
-###
+### Login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@footballblog.dev",
+  "password": "Admin123"
+}
+
+# ==============================================================
+# [2] CHECK TRẠNG THÁI — Chạy trước khi seed để biết DB rỗng chưa
+# ==============================================================
+
+### Match stats (total, live, withPrediction, pending)
+GET {{host}}/api/admin/matches/stats
+Authorization: Bearer {{token}}
+
+### Prediction stats (total, published, accuracy)
+GET {{host}}/api/admin/predictions/stats
+Authorization: Bearer {{token}}
+
+# ==============================================================
+# [3] SEED & TRIGGER JOBS
+# ==============================================================
+
+### Seed Leagues — Teams + Fixtures (season-range) + Standings vào DB
+### Chạy xong theo dõi job tại: https://localhost:7007/hangfire
+POST {{host}}/api/admin/matches/seed-leagues
+Authorization: Bearer {{token}}
+
+### Fetch Upcoming Matches (FetchUpcomingMatchesJob)
+POST {{host}}/api/jobstest/trigger/fetch-matches
+Authorization: Bearer {{token}}
+
+### Generate Predictions (GeneratePredictionJob)
+POST {{host}}/api/jobstest/trigger/generate-predictions
+Authorization: Bearer {{token}}
+
+### Live Score Polling (LiveScorePollingJob)
+POST {{host}}/api/jobstest/trigger/live-score
+Authorization: Bearer {{token}}
+
+# ==============================================================
+# [4] VERIFY DATA — Chạy sau seed để xác nhận data vào DB
+# ==============================================================
+
+### List matches — page 1 (kiểm tra total > 0)
+GET {{host}}/api/admin/matches?page=1&pageSize=10
+Authorization: Bearer {{token}}
+
+### List matches — chỉ Scheduled
+GET {{host}}/api/admin/matches?status=Scheduled&pageSize=10
+Authorization: Bearer {{token}}
+
+### List matches — chỉ Finished
+GET {{host}}/api/admin/matches?status=Finished&pageSize=10
+Authorization: Bearer {{token}}
+
+### List predictions
+GET {{host}}/api/admin/predictions?page=1&pageSize=10
+Authorization: Bearer {{token}}
+
+# ==============================================================
+# [5] API KEY — Kiểm tra quota còn lại (blocked = job bị abort)
+# ==============================================================
+
+### List API keys
+GET {{host}}/api/admin/api-keys
+Authorization: Bearer {{token}}

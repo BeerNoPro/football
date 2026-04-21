@@ -16,7 +16,7 @@ internal record FixtureResponse(
 
 internal record FixtureInfo(
     [property: JsonPropertyName("id")] int Id,
-    [property: JsonPropertyName("date")] DateTime Date,
+    [property: JsonPropertyName("date")] DateTimeOffset Date,
     [property: JsonPropertyName("status")] FixtureStatus Status,
     [property: JsonPropertyName("venue")] VenueInfo? Venue,
     [property: JsonPropertyName("referee")] string? Referee);
@@ -89,7 +89,7 @@ internal record StandingEntry(
     [property: JsonPropertyName("status")] string? Status,
     [property: JsonPropertyName("description")] string? Description,
     [property: JsonPropertyName("all")] StandingStats All,
-    [property: JsonPropertyName("update")] DateTime UpdatedAt);
+    [property: JsonPropertyName("update")] DateTimeOffset UpdatedAt);
 
 internal record StandingStats(
     [property: JsonPropertyName("played")] int Played,

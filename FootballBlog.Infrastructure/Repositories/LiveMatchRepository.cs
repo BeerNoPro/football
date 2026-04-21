@@ -14,14 +14,18 @@ public class LiveMatchRepository : BaseRepository<LiveMatch>, ILiveMatchReposito
             .Where(m => m.Status == MatchStatus.Live)
             .Include(m => m.Events)
             .OrderBy(m => m.StartedAt)
+            .TagWithCaller()
             .ToListAsync();
 
     public async Task<LiveMatch?> GetByExternalIdAsync(int externalId) =>
-        await _dbSet.FirstOrDefaultAsync(m => m.ExternalId == externalId);
+        await _dbSet
+            .TagWithCaller()
+            .FirstOrDefaultAsync(m => m.ExternalId == externalId);
 
     public async Task<IEnumerable<LiveMatch>> GetByStatusAsync(MatchStatus status) =>
         await _dbSet
             .Where(m => m.Status == status)
             .OrderBy(m => m.StartedAt)
+            .TagWithCaller()
             .ToListAsync();
 }

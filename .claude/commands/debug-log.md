@@ -7,12 +7,31 @@ Khi được gọi (`/debug-log [loại]`):
 | Lệnh | File |
 |------|------|
 | `/debug-log` | `logs/app/app-{hôm nay}.log` |
-| `/debug-log error` | `logs/error/web-error-{hôm nay}.log` |
+| `/debug-log error` | `logs/error/error-{hôm nay}.log` |
 | `/debug-log jobs` | `logs/jobs/jobs-{hôm nay}.log` |
 | `/debug-log api` | `logs/api/api-{hôm nay}.log` |
 | `/debug-log build` | `logs/build/build-{hôm nay}.log` |
+| `/debug-log database` | `logs/database/db-{hôm nay}.log` ⚠️ xem bên dưới |
 
 Nếu file chưa có → nhắc chạy app trước.
+
+### ⚠️ db.log — chỉ đọc khi thực sự cần
+
+`db.log` có thể đạt **800KB–1MB+/ngày** do bulk INSERT và query spam từ seeding job. Tiêu tốn lớn context window.
+
+**Chỉ đọc db.log khi lỗi có một trong các từ khóa sau:**
+`SQL` · `EF` · `DbUpdate` · `query` · `timeout` · `deadlock` · `migration` · `timestamp with time zone` · `Cannot write DateTime`
+
+**Bỏ qua db.log khi debug:**
+- Lỗi 429 / rate limit / API
+- Lỗi Blazor / UI / render
+- Lỗi Job logic (không liên quan DB query)
+- Lỗi Auth / JWT
+
+**Nếu cần đọc db.log** → dùng `Grep` với pattern cụ thể thay vì `Read` toàn file:
+```
+Grep pattern="SLOW|ERR|TaggedQuery" path="logs/database/db-{hôm nay}.log"
+```
 
 ---
 

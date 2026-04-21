@@ -13,5 +13,6 @@ public class PromptTemplateRepository(ApplicationDbContext dbContext)
             .AsNoTracking()
             .Where(t => t.Provider == provider && t.IsActive)
             .OrderByDescending(t => t.UpdatedAt)
+            .TagWithCaller()
             .FirstOrDefaultAsync();
 }
