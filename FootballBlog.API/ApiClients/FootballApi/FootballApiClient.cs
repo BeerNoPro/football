@@ -23,6 +23,7 @@ public class FootballApiClient(
     {
         if (!await rateLimiter.TryConsumeAsync())
         {
+            logger.LogWarning("GetUpcomingFixtures blocked by rate limiter — league {LeagueId}", leagueId);
             return null;
         }
 
@@ -74,6 +75,7 @@ public class FootballApiClient(
     {
         if (!await rateLimiter.TryConsumeAsync())
         {
+            logger.LogWarning("GetAllLiveFixtures blocked by rate limiter");
             return null;
         }
 
@@ -119,6 +121,7 @@ public class FootballApiClient(
     {
         if (!await rateLimiter.TryConsumeAsync())
         {
+            logger.LogWarning("GetHeadToHead blocked by rate limiter — {HomeId} vs {AwayId}", homeTeamExternalId, awayTeamExternalId);
             return null;
         }
 
@@ -165,6 +168,7 @@ public class FootballApiClient(
     {
         if (!await rateLimiter.TryConsumeAsync())
         {
+            logger.LogWarning("GetLineupsRaw blocked by rate limiter — fixture {FixtureId}", fixtureId);
             return null;
         }
 
@@ -203,6 +207,7 @@ public class FootballApiClient(
     {
         if (!await rateLimiter.TryConsumeAsync())
         {
+            logger.LogWarning("GetTeamsByLeague blocked by rate limiter — league {LeagueId}", leagueId);
             return null;
         }
 
@@ -231,7 +236,10 @@ public class FootballApiClient(
                 return [];
             }
 
-            LogApiErrors($"teams?league={leagueId}&season={season}", envelope.Errors);
+            if (HasApiErrors($"teams?league={leagueId}&season={season}", envelope.Errors))
+            {
+                return null;
+            }
 
             IEnumerable<TeamRawDto> teams = envelope.Response.Select(r => new TeamRawDto(
                 TeamExternalId: r.Team.Id,
@@ -260,6 +268,7 @@ public class FootballApiClient(
     {
         if (!await rateLimiter.TryConsumeAsync())
         {
+            logger.LogWarning("GetStandings blocked by rate limiter — league {LeagueId}", leagueId);
             return null;
         }
 
@@ -283,13 +292,15 @@ public class FootballApiClient(
             response.EnsureSuccessStatusCode();
 
             var envelope = await response.Content.ReadFromJsonAsync<FootballApiEnvelope<StandingsEnvelope>>(JsonOptions);
-            if (envelope?.Response is null || envelope.Response.Length == 0)
+            if (HasApiErrors($"standings?league={leagueId}&season={season}", envelope?.Errors ?? default))
             {
-                LogApiErrors($"standings?league={leagueId}&season={season}", envelope?.Errors ?? default);
-                return [];
+                return null;
             }
 
-            LogApiErrors($"standings?league={leagueId}&season={season}", envelope.Errors);
+            if (envelope?.Response is null || envelope.Response.Length == 0)
+            {
+                return [];
+            }
 
             // API trả về mảng groups (Total / Home / Away) — lấy group đầu tiên (Total)
             StandingEntry[] entries = envelope.Response[0].League.Standings.Length > 0
@@ -332,6 +343,7 @@ public class FootballApiClient(
     {
         if (!await rateLimiter.TryConsumeAsync())
         {
+            logger.LogWarning("GetFixturesByRange blocked by rate limiter — league {LeagueId}", leagueId);
             return null;
         }
 
@@ -359,12 +371,15 @@ public class FootballApiClient(
             response.EnsureSuccessStatusCode();
 
             var envelope = await response.Content.ReadFromJsonAsync<FootballApiEnvelope<FixtureResponse>>(JsonOptions);
+            if (HasApiErrors($"fixtures?league={leagueId}&season={season}&from={fromStr}&to={toStr}", envelope?.Errors ?? default))
+            {
+                return null;
+            }
+
             if (envelope?.Response is null)
             {
                 return [];
             }
-
-            LogApiErrors($"fixtures?league={leagueId}&season={season}&from={fromStr}&to={toStr}", envelope.Errors);
 
             IEnumerable<FixtureRawDto> fixtures = envelope.Response.Select(MapToFixtureDto);
             logger.LogInformation("Fetched {Count} fixtures for league {LeagueId} [{From} → {To}]",
@@ -380,12 +395,14 @@ public class FootballApiClient(
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private void LogApiErrors(string endpoint, System.Text.Json.JsonElement errors)
+    private bool HasApiErrors(string endpoint, System.Text.Json.JsonElement errors)
     {
         if (errors.ValueKind == System.Text.Json.JsonValueKind.Object)
         {
             logger.LogWarning("Football API returned errors on {Endpoint}: {Errors}", endpoint, errors);
+            return true;
         }
+        return false;
     }
 
     // ── Mappers ────────────────────────────────────────────────────────────────

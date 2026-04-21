@@ -36,8 +36,8 @@ public class FetchUpcomingMatchesJob(
             IEnumerable<FixtureRawDto>? fixtures = await apiClient.GetUpcomingFixturesAsync(configLeagueId, opts.FixturesPerLeague);
             if (fixtures is null)
             {
-                logger.LogWarning("Skipping league {LeagueId} — null response (rate limit or HTTP error)", configLeagueId);
-                continue;
+                logger.LogWarning("FetchUpcomingMatchesJob aborted at league {LeagueId} — null response (rate limit or HTTP error)", configLeagueId);
+                return;
             }
 
             foreach (FixtureRawDto fixture in fixtures)

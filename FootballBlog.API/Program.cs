@@ -46,26 +46,36 @@ try
             .Enrich.FromLogContext()
             .Enrich.When(
                 e => e.Properties.TryGetValue("SourceContext", out var sc) &&
-                    (sc.ToString().Contains("\"FootballBlog.API.Jobs") || sc.ToString().Contains("\"Hangfire")),
+                    (sc.ToString().Contains("\"FootballBlog.API.Jobs") ||
+                     sc.ToString().Contains("\"FootballBlog.API.ApiClients") ||
+                     sc.ToString().Contains("\"Hangfire")),
                 e => e.WithProperty("IsJobLog", true))
             .Enrich.When(
                 e => e.Properties.TryGetValue("SourceContext", out var sc) &&
                     sc.ToString().Contains("QueryLoggingInterceptor"),
                 e => e.WithProperty("IsDbLog", true))
-            // Console
-            .WriteTo.Console(outputTemplate: OutputTemplate)
-            // app/ — log chung toàn app (Information+)
-            .WriteTo.File(Path.Combine(logBasePath, "app", "app-.log"),
-                rollingInterval: RollingInterval.Day,
-                outputTemplate: OutputTemplate)
+            // Console — loại trừ SQL queries
+            .WriteTo.Logger(lc => lc
+                .Filter.ByExcluding(e =>
+                    e.Properties.TryGetValue("IsDbLog", out var isDb) && isDb.ToString() == "True")
+                .WriteTo.Console(outputTemplate: OutputTemplate))
+            // app/ — log chung toàn app, loại trừ SQL queries (đã có db/)
+            .WriteTo.Logger(lc => lc
+                .Filter.ByExcluding(e =>
+                    e.Properties.TryGetValue("IsDbLog", out var isDb) && isDb.ToString() == "True")
+                .WriteTo.File(Path.Combine(logBasePath, "app", "app-.log"),
+                    rollingInterval: RollingInterval.Day,
+                    outputTemplate: OutputTemplate))
             // error/ — chỉ Error + Fatal
             .WriteTo.File(Path.Combine(logBasePath, "error", "error-.log"),
                 rollingInterval: RollingInterval.Day,
                 restrictedToMinimumLevel: LogEventLevel.Error,
                 outputTemplate: OutputTemplate)
-            // api/ — HTTP request/response log (từ UseSerilogRequestLogging middleware)
+            // api/ — HTTP request/response log, loại trừ SQL queries
             .WriteTo.Logger(lc => lc
-                .Filter.ByIncludingOnly(e => e.Properties.ContainsKey("RequestPath"))
+                .Filter.ByIncludingOnly(e =>
+                    e.Properties.ContainsKey("RequestPath") &&
+                    !(e.Properties.TryGetValue("IsDbLog", out var isDb) && isDb.ToString() == "True"))
                 .WriteTo.File(Path.Combine(logBasePath, "api", "api-.log"),
                     rollingInterval: RollingInterval.Day,
                     outputTemplate: OutputTemplate))
@@ -80,7 +90,7 @@ try
             .WriteTo.Logger(lc => lc
                 .Filter.ByIncludingOnly(e =>
                     e.Properties.TryGetValue("IsDbLog", out var isDb) && isDb.ToString() == "True")
-                .WriteTo.File(Path.Combine(logBasePath, "db", "db-.log"),
+                .WriteTo.File(Path.Combine(logBasePath, "database", "db-.log"),
                     rollingInterval: RollingInterval.Day,
                     outputTemplate: OutputTemplate)));
 

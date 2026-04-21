@@ -23,7 +23,7 @@ public class SeedLeagueDataJob(
     {
         var sw = Stopwatch.StartNew();
         FootballApiOptions opts = options.Value;
-        int season = CurrentSeason();
+        int season = CurrentSeason(opts);
 
         logger.LogInformation("SeedLeagueDataJob started. Leagues={LeagueCount}, Season={Season}",
             opts.LeagueIds.Length, season);
@@ -49,7 +49,8 @@ public class SeedLeagueDataJob(
             IEnumerable<TeamRawDto>? teams = await apiClient.GetTeamsByLeagueAsync(leagueId, season);
             if (teams is null)
             {
-                logger.LogWarning("Skipping league {LeagueId} teams — null response (rate limit or HTTP error)", leagueId);
+                logger.LogWarning("SeedLeagueDataJob aborted at league {LeagueId} — null response from GetTeamsByLeague", leagueId);
+                return;
             }
             else
             {
@@ -90,7 +91,8 @@ public class SeedLeagueDataJob(
 
                 if (fixtures is null)
                 {
-                    logger.LogWarning("Skipping league {LeagueId} fixtures — null response", leagueId);
+                    logger.LogWarning("SeedLeagueDataJob aborted at league {LeagueId} — null response from GetFixturesByRange", leagueId);
+                    return;
                 }
                 else
                 {
@@ -403,8 +405,8 @@ public class SeedLeagueDataJob(
         return league.Id;
     }
 
-    private static int CurrentSeason() =>
-        DateTime.UtcNow.Month >= 7 ? DateTime.UtcNow.Year : DateTime.UtcNow.Year - 1;
+    private static int CurrentSeason(FootballApiOptions opts) =>
+        opts.SeasonOverride ?? (DateTime.UtcNow.Month >= 7 ? DateTime.UtcNow.Year : DateTime.UtcNow.Year - 1);
 
     private static MatchStatus MapStatus(string s) => s switch
     {
