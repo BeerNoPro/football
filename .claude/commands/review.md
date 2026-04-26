@@ -6,14 +6,14 @@ Khi được gọi (`/review [focus]`):
 
 ## BƯỚC 1 — Xác định phạm vi thay đổi
 
-Tất cả lệnh `git` tự động được RTK hook rewrite → output được filter + compress.
-
 ```bash
-git diff --staged        # xem những gì đã stage
-git diff                 # xem những gì chưa stage
-git diff HEAD~1          # review commit cuối cùng
-git diff HEAD~3..HEAD    # review 3 commit gần nhất
+rtk git diff --staged        # xem những gì đã stage
+rtk git diff                 # xem những gì chưa stage
+rtk git diff HEAD~1          # review commit cuối
+rtk git diff HEAD~3..HEAD    # review 3 commit gần nhất
 ```
+
+`rtk git diff` dùng `rtk diff` bên trong → chỉ hiện changed lines, bỏ context thừa.
 
 Từ diff, lập danh sách:
 - **Files thay đổi** — tên file + loại thay đổi (add/modify/delete)
@@ -21,38 +21,42 @@ Từ diff, lập danh sách:
 
 ---
 
-## BƯỚC 2 — Tìm context liên quan (không đọc cả file)
+## BƯỚC 2 — Tìm context liên quan
 
 ### 2a. Locate đúng đoạn cần đọc
 
 ```bash
-grep -n "TênMethod\|TênClass" FootballBlog.API/Path/To/File.cs | head -10
-```
+# Tìm symbol → lấy line number
+rtk grep "TênMethod|TênClass" FootballBlog.API/Path/To/File.cs
 
-Lấy line number → Read file với `offset` + `limit` chỉ đoạn đó (±30 dòng).
+# Xem chỉ signatures (strips body — rất ít token)
+rtk read FootballBlog.API/Path/To/File.cs -l aggressive
+
+# Tóm tắt nhanh 2 dòng
+rtk smart FootballBlog.API/Path/To/File.cs
+```
 
 ### 2b. Tìm interface tương ứng
 
 ```bash
-find . -name "IXxx*.cs" -path "*/Interfaces/*" | head -5
+rtk find "IXxx*.cs" FootballBlog.Core/Interfaces/
 ```
 
 ### 2c. Tìm callers của method bị sửa
 
 ```bash
-grep -rn "TênMethod(" FootballBlog.API/ FootballBlog.Web/ --include="*.cs" | head -20
+rtk grep "TênMethod(" FootballBlog.API/ FootballBlog.Web/ FootballBlog.Core/
 ```
 
-RTK compress kết quả thừa → chỉ giữ những dòng có giá trị.
-Xác định: method sửa có làm vỡ contract không? Caller nào bị ảnh hưởng?
+Grouped by file → dễ thấy caller nào bị ảnh hưởng, có vỡ contract không.
 
 ### 2d. Kiểm tra migration nếu có thay đổi Model/DbContext
 
 ```bash
-ls -t FootballBlog.Infrastructure/Migrations/*.cs | head -3
+rtk ls FootballBlog.Infrastructure/Migrations/
 ```
 
-So sánh migration mới nhất với entity thay đổi — có khớp không?
+Migration mới nhất có khớp với entity thay đổi không?
 
 ---
 

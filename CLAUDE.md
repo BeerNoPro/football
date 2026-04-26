@@ -31,9 +31,13 @@ uow.MatchContexts — 1-to-1 với Match (JSONB)
 - appsettings: xem `FootballBlog.API/appsettings.json` (đừng đọc cả file — grep key cần)
 
 ## Search & Context Optimization
-- **Tìm file**: dùng `Glob` (pattern) — nhanh, ít token
-- **Tìm nội dung**: dùng `Grep` (regex) — KHÔNG dùng Bash grep/rg
-- **Đọc file**: `Grep` trước → `Read` với `offset`+`limit` chỉ đoạn cần — KHÔNG đọc cả file
+Dùng RTK Bash commands — RTK hook tự intercept, filter output, tiết kiệm token:
+- **Tìm file**: `rtk find "*.cs" path/` — compact tree output
+- **Tìm nội dung**: `rtk grep "pattern" path/` — grouped by file, strips whitespace
+- **Xem cấu trúc file**: `rtk read file.cs -l aggressive` — chỉ signatures, không load body
+- **Tóm tắt nhanh**: `rtk smart file.cs` — 2-line heuristic summary
+- **Xem thư mục**: `rtk ls path/` — token-optimized directory listing
+- **Đọc log**: `rtk log logs/file.log` — filter + deduplicate tự động
 - **HTML prototype**: chỉ đọc đến `<!-- STYLES -->` — bỏ qua `<style>` block
 - **Context limit**: đóng conversation lúc 15-20 messages → `/cleanup` → tab mới
 

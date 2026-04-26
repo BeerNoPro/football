@@ -12,7 +12,7 @@ Hỏi:
 ## Bước 2 — Kiểm tra files đã tồn tại
 
 ```bash
-find . -name "*{Feature}*" -not -path "*/bin/*" -not -path "*/obj/*" | head -20
+rtk find "*{Feature}*" .
 ```
 
 Tránh tạo trùng — xem những gì đã có trước.
@@ -20,8 +20,8 @@ Tránh tạo trùng — xem những gì đã có trước.
 ## Bước 3 — Kiểm tra DI registrations hiện tại
 
 ```bash
-grep -n "AddScoped\|AddSingleton\|AddTransient\|AddHttpClient" FootballBlog.API/Program.cs | tail -30
-grep -n "AddScoped\|AddSingleton\|AddTransient\|AddHttpClient" FootballBlog.Web/Program.cs | tail -30
+rtk grep "AddScoped|AddSingleton|AddTransient|AddHttpClient" FootballBlog.API/Program.cs
+rtk grep "AddScoped|AddSingleton|AddTransient|AddHttpClient" FootballBlog.Web/Program.cs
 ```
 
 ## Bước 4 — Tạo files theo project structure
@@ -39,14 +39,16 @@ grep -n "AddScoped\|AddSingleton\|AddTransient\|AddHttpClient" FootballBlog.Web/
 - `FootballBlog.API/Jobs/{Feature}Job.cs` — Hangfire background job
 - Blazor component với `@rendermode InteractiveServer`
 
-## Bước 5 — Đăng ký DI trong Program.cs
-
-Thêm vào đúng Program.cs của project liên quan.
-
-## Bước 6 — Ghi task còn lại
+## Bước 5 — Build check sau khi tạo xong
 
 ```bash
-grep -n "Phase" TODO.md | tail -10
+rtk dotnet build FootballBlog.sln --no-restore
+```
+
+## Bước 6 — Ghi task còn lại vào TODO.md
+
+```bash
+rtk grep "Phase" TODO.md
 ```
 
 Thêm subtask vào TODO.md phase tương ứng.

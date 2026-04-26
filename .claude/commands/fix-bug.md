@@ -12,28 +12,37 @@ Nếu user cung cấp stacktrace → parse: exception type, message, file:line.
 
 Nếu không có stacktrace → đọc log hôm nay:
 ```bash
-grep -n "ERR\|FTL\|Exception" logs/error/error-$(date +%Y-%m-%d).log | tail -50
-grep -n "ERR\|FTL\|Exception" logs/app/app-$(date +%Y-%m-%d).log | tail -50
+rtk log logs/error/error-$(date +%Y-%m-%d).log
+rtk log logs/app/app-$(date +%Y-%m-%d).log
+```
+
+Hoặc filter theo pattern cụ thể:
+```bash
+rtk grep "ERR|FTL|Exception" logs/app/app-$(date +%Y-%m-%d).log
 ```
 
 Xác định: lỗi xảy ra ở layer nào? Trigger là gì (request / job / user action)?
 
 ### 1b. Trace toàn bộ luồng liên quan
 
-Từ file:line trong stacktrace, dùng bash để trace:
+Từ file:line trong stacktrace:
 
 ```bash
-# Tìm class/method bị lỗi
-grep -rn "TênClass\|TênMethod" FootballBlog.API/ FootballBlog.Core/ --include="*.cs" | head -20
+# Tìm class/method bị lỗi — grouped by file
+rtk grep "TênClass|TênMethod" FootballBlog.API/ FootballBlog.Core/
 
-# Tìm callers — ai gọi method đó?
-grep -rn "TênMethod(" FootballBlog.API/ FootballBlog.Web/ FootballBlog.Core/ --include="*.cs" | head -20
+# Tìm callers
+rtk grep "TênMethod(" FootballBlog.API/ FootballBlog.Web/ FootballBlog.Core/
 
 # Tìm interface implementation
-grep -rn "IXxxService\|: XxxService" FootballBlog.Infrastructure/ --include="*.cs" | head -10
-```
+rtk grep "IXxxService|: XxxService" FootballBlog.Infrastructure/
 
-RTK hook tự wrap tất cả lệnh bash → output được compress, tiết kiệm token.
+# Xem cấu trúc file — chỉ signatures, không load body
+rtk read FootballBlog.API/Path/To/File.cs -l aggressive
+
+# Tóm tắt nhanh nếu chỉ cần biết file làm gì
+rtk smart FootballBlog.API/Path/To/File.cs
+```
 
 Luồng trace theo thứ tự:
 ```
@@ -44,19 +53,11 @@ Luồng trace theo thứ tự:
 5. Nếu là Blazor: Component → ApiClient → API Controller → Service
 ```
 
-Đọc đúng đoạn cần thiết — không đọc cả file:
-```bash
-# Xem quanh line bị lỗi (±20 dòng)
-sed -n '{start},{end}p' FootballBlog.API/Path/To/File.cs
-```
-
 ### 1c. Kiểm tra Bugs.md
 
 ```bash
-grep -n "từ khóa liên quan" Bugs.md | head -10
+rtk grep "từ khóa liên quan" Bugs.md
 ```
-
-Xem lỗi này có liên quan đến architectural decision hoặc known issue không.
 
 ### 1d. Đọc rule tương ứng với layer bị lỗi
 
@@ -124,7 +125,7 @@ Reply **"apply"** để thực hiện, hoặc **"không"** nếu muốn điều 
 1. Sửa code theo đúng proposed fix đã được approve
 2. Build check sau mỗi thay đổi:
 ```bash
-dotnet build FootballBlog.sln --no-restore -v minimal 2>&1 | grep -E "error|warning|Build" | tail -20
+rtk dotnet build FootballBlog.sln --no-restore
 ```
 3. Nếu fix cần migration → hỏi riêng, không tự apply
 4. Nếu fix cần skill khác → gợi ý dùng skill đó ngay sau khi apply xong

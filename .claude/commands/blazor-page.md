@@ -9,19 +9,17 @@ Hỏi:
 - Route pattern? (e.g., `/bai-viet/{slug}`, `/danh-muc/{slug}`)
 - Cần inject client nào? (IPostApiClient / ICategoryApiClient / ...)
 
-## Bước 2 — Kiểm tra page đã tồn tại chưa
+## Bước 2 — Kiểm tra page và route đã tồn tại chưa
 
 ```bash
-find FootballBlog.Web/Components/Pages -name "*{Page}*" 2>/dev/null
+# Tìm page cùng tên
+rtk find "*{Page}*.razor" FootballBlog.Web/Components/Pages/
+
+# Kiểm tra route conflict
+rtk grep "@page" FootballBlog.Web/Components/Pages/
 ```
 
-## Bước 3 — Kiểm tra route conflict
-
-```bash
-grep -rn "@page" FootballBlog.Web/Components/Pages/ --include="*.razor" | grep "route-pattern" | head -10
-```
-
-## Bước 4 — Tạo file Razor theo đúng nhóm
+## Bước 3 — Tạo file Razor theo đúng nhóm
 
 **Blog public (Static SSR — KHÔNG đặt @rendermode):**
 ```razor
@@ -64,21 +62,20 @@ grep -rn "@page" FootballBlog.Web/Components/Pages/ --include="*.razor" | grep "
 }
 ```
 
-## Bước 5 — Tạo code-behind nếu logic > 50 dòng
+## Bước 4 — Tạo code-behind nếu logic > 50 dòng
 
 Tách thành `{Page}.razor.cs` partial class.
 
-## Bước 6 — Kiểm tra nav layout
+## Bước 5 — Kiểm tra nav layout cần cập nhật không
 
 ```bash
-grep -n "href\|NavLink\|NavigateTo" FootballBlog.Web/Components/Layout/ -r --include="*.razor" | head -20
+rtk grep "href|NavLink|NavigateTo" FootballBlog.Web/Components/Layout/
 ```
 
 Nếu cần route mới trong nav → nhắc cập nhật layout component.
 
-## Bước 7 — Nhắc build CSS nếu dùng Tailwind class mới
+## Bước 6 — Nhắc build CSS nếu dùng Tailwind class mới
 
 ```bash
-# Nếu thêm class Tailwind mới vào public page
 npm run build:css
 ```

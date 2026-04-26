@@ -5,7 +5,7 @@ Khi được gọi (`/cleanup`):
 ## Bước 1 — Liệt kê plans hiện có
 
 ```bash
-ls -la .claude/plans/ 2>/dev/null || echo "Không có plans/"
+rtk ls .claude/plans/
 ```
 
 Đánh giá từng file:
@@ -16,7 +16,7 @@ ls -la .claude/plans/ 2>/dev/null || echo "Không có plans/"
 ## Bước 2 — Kiểm tra TODO.md
 
 ```bash
-grep -n "⬜\|TODO\|pending" TODO.md | head -20
+rtk grep "⬜|TODO|pending" TODO.md
 ```
 
 Đảm bảo tasks chưa xong đã được ghi vào TODO.md trước khi xóa plan.
@@ -24,13 +24,13 @@ grep -n "⬜\|TODO\|pending" TODO.md | head -20
 ## Bước 3 — Kiểm tra trùng lặp ngữ cảnh
 
 ```bash
-# Xem nội dung commands/ và rules/ có khớp gì với CLAUDE.md không
-grep -n "IUnitOfWork\|CommitAsync\|ApiResponse" CLAUDE.md | head -10
-grep -rn "IUnitOfWork\|CommitAsync\|ApiResponse" .claude/rules/ | head -10
+# Xem thông tin nào trong CLAUDE.md bị trùng với rules/
+rtk grep "IUnitOfWork|CommitAsync|ApiResponse" CLAUDE.md
+rtk grep "IUnitOfWork|CommitAsync|ApiResponse" .claude/rules/
 ```
 
-- CLAUDE.md vs rules/ → nếu thông tin trùng, xóa khỏi CLAUDE.md (rules load theo path)
-- commands/ vs CLAUDE.md → nếu có hướng dẫn trùng nhau, xóa bản thừa
+- CLAUDE.md vs rules/ → nếu trùng, xóa khỏi CLAUDE.md (rules load theo path)
+- commands/ vs CLAUDE.md → nếu trùng, xóa bản thừa
 - TODO.md vs CLAUDE.md "Current Phase" → chỉ giữ ở TODO.md
 
 ## Bước 4 — Báo cáo

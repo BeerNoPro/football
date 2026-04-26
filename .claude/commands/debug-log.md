@@ -25,26 +25,19 @@ Nếu file chưa có → nhắc chạy app trước.
 date +%Y-%m-%d
 ```
 
-Dùng kết quả để điền tên file log chính xác (ví dụ `logs/app/app-2026-04-25.log`).
-
 ---
 
-## Bước 2 — Lọc lỗi từ log
+## Bước 2 — Lọc và đọc log
 
 ```bash
-grep -n "ERR\|FTL\|Exception" logs/app/app-2026-04-25.log | tail -80
-```
+# Filter + deduplicate log, chỉ giữ dòng quan trọng
+rtk log logs/app/app-2026-04-26.log
 
-RTK hook tự rewrite thành `rtk grep ...` → output được filter + compress, tiết kiệm token.
+# Tìm lỗi theo pattern cụ thể, grouped by file
+rtk grep "ERR|FTL|Exception" logs/app/app-2026-04-26.log
 
-Xem cuối log (lỗi mới nhất):
-```bash
-tail -n 150 logs/app/app-2026-04-25.log
-```
-
-Lọc theo khoảng giờ cụ thể (khi user báo "lỗi lúc 2h chiều"):
-```bash
-grep "2026-04-25 14:" logs/app/app-2026-04-25.log | grep "ERR\|FTL\|Exception"
+# Lọc theo giờ cụ thể (khi user báo "lỗi lúc 2h chiều")
+rtk grep "2026-04-26 14:" logs/app/app-2026-04-26.log
 ```
 
 ---
@@ -52,23 +45,28 @@ grep "2026-04-25 14:" logs/app/app-2026-04-25.log | grep "ERR\|FTL\|Exception"
 ## Bước 3 — Đọc stacktrace đầy đủ quanh lỗi
 
 ```bash
-grep -n -A 10 "ExceptionType\|message lỗi cụ thể" logs/app/app-2026-04-25.log | head -60
+# Xem context ±5 dòng quanh exception
+rtk grep "ExceptionType|message lỗi cụ thể" logs/app/app-2026-04-26.log
 ```
-
-`-A 10` lấy 10 dòng sau match để có stacktrace. RTK compress output thừa tự động.
 
 ---
 
 ## Bước 4 — Trace về source code
 
-Từ `file:line` trong stacktrace, tìm method bị lỗi:
-```bash
-grep -rn "TênMethod\|TênClass" FootballBlog.API/ FootballBlog.Core/ --include="*.cs" | head -20
-```
+Từ `file:line` trong stacktrace:
 
-Tìm callers của method đó:
 ```bash
-grep -rn "TênMethod(" FootballBlog.API/ FootballBlog.Web/ --include="*.cs" | head -20
+# Tìm class/method bị lỗi — grouped by file, compact output
+rtk grep "TênClass|TênMethod" FootballBlog.API/
+
+# Tìm callers
+rtk grep "TênMethod(" FootballBlog.API/ FootballBlog.Web/ FootballBlog.Core/
+
+# Xem cấu trúc file (chỉ signatures, không load body)
+rtk read FootballBlog.API/Path/To/File.cs -l aggressive
+
+# Tóm tắt nhanh 2 dòng một file
+rtk smart FootballBlog.API/Path/To/File.cs
 ```
 
 Xác định layer bị ảnh hưởng: Controller / Service / Repository / Job / Blazor Component.
@@ -77,26 +75,27 @@ Xác định layer bị ảnh hưởng: Controller / Service / Repository / Job 
 
 ## Bước 5 — Đối chiếu kiến trúc
 
-Trước khi kết luận, kiểm tra:
-- `Bugs.md` — lỗi này có phải architectural decision đã biết không?
-- `CLAUDE.md` → IUnitOfWork, DTO pattern, phân tầng Web→API→Core←Infrastructure
-- Rule tương ứng với layer bị lỗi:
-  - Repository / EF → `.claude/rules/database.md`
-  - Controller / API → `.claude/rules/api.md`
-  - Blazor → `.claude/rules/blazor.md`
-  - Logging → `.claude/rules/logging.md`
+```bash
+rtk grep "TênMethod|TênClass" Bugs.md
+```
+
+Kiểm tra rule tương ứng với layer:
+- Repository / EF → `.claude/rules/database.md`
+- Controller / API → `.claude/rules/api.md`
+- Blazor → `.claude/rules/blazor.md`
+- Logging → `.claude/rules/logging.md`
 
 ---
 
 ## ⚠️ db.log — chỉ đọc khi thực sự cần
 
-`db.log` có thể đạt **800KB–1MB+/ngày** do bulk INSERT và query spam từ seeding job.
+Đạt **800KB–1MB+/ngày** do bulk INSERT từ seeding job.
 
-**Chỉ đọc db.log khi lỗi chứa:** `SQL` · `EF` · `DbUpdate` · `query` · `timeout` · `deadlock` · `migration` · `Cannot write DateTime`
+**Chỉ đọc khi lỗi chứa:** `SQL` · `EF` · `DbUpdate` · `query` · `timeout` · `deadlock` · `migration` · `Cannot write DateTime`
 
-**Nếu cần đọc db.log** — dùng grep có filter ketat, không đọc toàn file:
 ```bash
-grep -n "SLOW\|ERR\|Exception" logs/database/db-2026-04-25.log | head -40
+# Filter aggressively — không đọc toàn file
+rtk grep "SLOW|ERR|Exception" logs/database/db-2026-04-26.log
 ```
 
 ---
@@ -143,4 +142,3 @@ grep -n "SLOW\|ERR\|Exception" logs/database/db-2026-04-25.log | head -40
 - **KHÔNG tự ý sửa code** khi chỉ đọc log
 - Luôn chuyển sang `/fix-bug` nếu muốn fix — không shortcut
 - Nếu có nhiều lỗi → ưu tiên theo mức độ: `FTL` > `ERR` > lỗi lặp nhiều lần
-- Tất cả lệnh `grep` / `tail` / `cat` đều tự qua RTK hook — không cần làm gì thêm
