@@ -2,12 +2,26 @@
 
 Khi được gọi với tên page (e.g., `/blazor-page PostDetail`):
 
-1. Hỏi xác nhận:
-   - Page này thuộc nhóm nào? Blog public (SSR) / Admin (InteractiveServer) / Realtime widget (InteractiveServer)
-   - Route pattern? (e.g., `/bai-viet/{slug}`, `/danh-muc/{slug}`)
-   - Cần inject client nào? (IPostApiClient / ICategoryApiClient / ...)
+## Bước 1 — Xác nhận
 
-2. Tạo file Razor theo đúng nhóm:
+Hỏi:
+- Page thuộc nhóm nào? Blog public (SSR) / Admin (InteractiveServer) / Realtime widget (InteractiveServer)
+- Route pattern? (e.g., `/bai-viet/{slug}`, `/danh-muc/{slug}`)
+- Cần inject client nào? (IPostApiClient / ICategoryApiClient / ...)
+
+## Bước 2 — Kiểm tra page đã tồn tại chưa
+
+```bash
+find FootballBlog.Web/Components/Pages -name "*{Page}*" 2>/dev/null
+```
+
+## Bước 3 — Kiểm tra route conflict
+
+```bash
+grep -rn "@page" FootballBlog.Web/Components/Pages/ --include="*.razor" | grep "route-pattern" | head -10
+```
+
+## Bước 4 — Tạo file Razor theo đúng nhóm
 
 **Blog public (Static SSR — KHÔNG đặt @rendermode):**
 ```razor
@@ -50,8 +64,21 @@ Khi được gọi với tên page (e.g., `/blazor-page PostDetail`):
 }
 ```
 
-3. Tạo file `.razor.cs` nếu logic > 50 dòng (tách code-behind)
+## Bước 5 — Tạo code-behind nếu logic > 50 dòng
 
-4. Nếu cần route mới trong nav → nhắc cập nhật layout component
+Tách thành `{Page}.razor.cs` partial class.
 
-5. Nhắc chạy `npm run build:css` nếu thêm Tailwind class mới
+## Bước 6 — Kiểm tra nav layout
+
+```bash
+grep -n "href\|NavLink\|NavigateTo" FootballBlog.Web/Components/Layout/ -r --include="*.razor" | head -20
+```
+
+Nếu cần route mới trong nav → nhắc cập nhật layout component.
+
+## Bước 7 — Nhắc build CSS nếu dùng Tailwind class mới
+
+```bash
+# Nếu thêm class Tailwind mới vào public page
+npm run build:css
+```

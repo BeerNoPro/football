@@ -6,10 +6,13 @@ Khi được gọi (`/review [focus]`):
 
 ## BƯỚC 1 — Xác định phạm vi thay đổi
 
+Tất cả lệnh `git` tự động được RTK hook rewrite → output được filter + compress.
+
 ```bash
-git diff --staged   # nếu đã stage
-git diff            # nếu chưa stage
-git diff HEAD~1     # review commit cuối
+git diff --staged        # xem những gì đã stage
+git diff                 # xem những gì chưa stage
+git diff HEAD~1          # review commit cuối cùng
+git diff HEAD~3..HEAD    # review 3 commit gần nhất
 ```
 
 Từ diff, lập danh sách:
@@ -18,38 +21,44 @@ Từ diff, lập danh sách:
 
 ---
 
-## BƯỚC 2 — Tìm context liên quan (với source lớn)
+## BƯỚC 2 — Tìm context liên quan (không đọc cả file)
 
-Với **mỗi file thay đổi**, thực hiện theo thứ tự:
+### 2a. Locate đúng đoạn cần đọc
 
-### 2a. Đọc đúng đoạn — không đọc cả file
+```bash
+grep -n "TênMethod\|TênClass" FootballBlog.API/Path/To/File.cs | head -10
 ```
-Grep symbol → xác định line number
-Read với offset+limit chỉ đoạn đó (±30 dòng)
-```
+
+Lấy line number → Read file với `offset` + `limit` chỉ đoạn đó (±30 dòng).
 
 ### 2b. Tìm interface tương ứng
-- File là `XxxService.cs` → tìm `IXxxService.cs`
-- File là `XxxRepository.cs` → tìm `IXxxRepository.cs`
-- Dùng `Glob **/Interfaces/IXxx*.cs` để locate
+
+```bash
+find . -name "IXxx*.cs" -path "*/Interfaces/*" | head -5
+```
 
 ### 2c. Tìm callers của method bị sửa
+
+```bash
+grep -rn "TênMethod(" FootballBlog.API/ FootballBlog.Web/ --include="*.cs" | head -20
 ```
-Grep "TênMethod(" --include *.cs
-```
+
+RTK compress kết quả thừa → chỉ giữ những dòng có giá trị.
 Xác định: method sửa có làm vỡ contract không? Caller nào bị ảnh hưởng?
 
 ### 2d. Kiểm tra migration nếu có thay đổi Model/DbContext
+
+```bash
+ls -t FootballBlog.Infrastructure/Migrations/*.cs | head -3
 ```
-Glob **/Migrations/*_*.cs  → xem migration mới nhất
-```
-So sánh với entity thay đổi — migration có khớp không?
+
+So sánh migration mới nhất với entity thay đổi — có khớp không?
 
 ---
 
 ## BƯỚC 3 — Checklist review theo layer
 
-Chỉ check những mục **liên quan** đến layer đang review — bỏ qua mục không áp dụng.
+Chỉ check những mục **liên quan** đến layer đang review.
 
 ### Service Layer
 - [ ] Async/await đúng — không `.Result` / `.Wait()`

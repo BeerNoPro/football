@@ -2,9 +2,21 @@
 
 Khi được gọi với tên entity (e.g., `/api-client Tag`):
 
-1. Xác nhận các methods cần thiết (dựa trên controller tương ứng đã có trong API)
+## Bước 1 — Xác nhận endpoints đã có
 
-2. Tạo 3 files theo đúng pattern:
+```bash
+grep -n "HttpGet\|HttpPost\|HttpPut\|HttpDelete\|Route" FootballBlog.API/Controllers/{Entity}Controller.cs 2>/dev/null | head -20
+```
+
+Nếu controller chưa có → nhắc tạo controller trước, không tạo client cho endpoint không tồn tại.
+
+## Bước 2 — Kiểm tra interface/client đã tồn tại chưa
+
+```bash
+find . -name "I{Entity}ApiClient.cs" -o -name "{Entity}ApiClient.cs" | grep -v "/bin/\|/obj/"
+```
+
+## Bước 3 — Tạo 3 files theo pattern
 
 **`FootballBlog.Core/Interfaces/I{Entity}ApiClient.cs`:**
 ```csharp
@@ -45,6 +57,16 @@ builder.Services.AddHttpClient<I{Entity}ApiClient, {Entity}ApiClient>(client =>
 });
 ```
 
-3. Kiểm tra endpoint tương ứng trong API Controller đã có chưa — nếu chưa thì nhắc tạo trước
+## Bước 4 — Xác nhận đăng ký đã đúng chỗ
 
-4. Nhắc inject `I{Entity}ApiClient` vào Blazor pages cần dùng
+```bash
+grep -n "{Entity}ApiClient" FootballBlog.Web/Program.cs
+```
+
+## Bước 5 — Nhắc inject vào Blazor pages
+
+```bash
+grep -rn "I{Entity}ApiClient" FootballBlog.Web/Components/ --include="*.razor" | head -10
+```
+
+Liệt kê các page cần inject client mới.
