@@ -1,5 +1,6 @@
 @using System.Security.Claims
 @inject NavigationManager Nav
+@inject IFixtureApiClient FixtureClient
 
 <aside class="left-sidebar">
     <a href="/" class="logo-wrap" style="display:block; text-decoration:none;">
@@ -23,22 +24,30 @@
         </div>
     </div>
 
-    <!-- League tree — Phase 4 sẽ populate từ Football API -->
     <div class="league-tree" id="league-tree">
-        @if (_leagueTree.Count == 0)
+        @if (_loading)
         {
-            <div style="padding:12px 14px; color:var(--muted); font-size:11px;">
-                Dữ liệu giải đấu sẽ có ở Phase 4
-            </div>
+            <div style="padding:12px 14px; color:var(--muted); font-size:11px;">Đang tải...</div>
+        }
+        else if (_leagueTree.Count == 0)
+        {
+            <div style="padding:12px 14px; color:var(--muted); font-size:11px;">Không có giải đấu nào.</div>
         }
         else
         {
-            @foreach (var group in _leagueTree)
+            @foreach (var group in _filteredTree)
             {
                 <div class="country-group">
                     <div class="country-header" @onclick="() => group.IsExpanded = !group.IsExpanded">
-                        <span class="country-flag">@group.Flag</span>
-                        <span class="country-name">@group.Name</span>
+                        @if (!string.IsNullOrEmpty(group.FlagUrl))
+                        {
+                            <img src="@group.FlagUrl" alt="@group.CountryName" class="country-flag-img" width="14" height="10" style="object-fit:cover;border-radius:1px;" />
+                        }
+                        else
+                        {
+                            <span class="country-flag">🌐</span>
+                        }
+                        <span class="country-name">@group.CountryName</span>
                         <svg class="chevron @(group.IsExpanded ? "" : "rotated")" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path d="m6 9 6 6 6-6" />
                         </svg>
@@ -48,7 +57,14 @@
                         <div class="sub-leagues">
                             @foreach (var league in group.Leagues)
                             {
-                                <a class="league-item" href="/league/@league.Slug">@league.Name</a>
+                                <a class="league-item @(IsActiveLeague(league.Id) ? "active" : "")"
+                                   href="@LeagueHref(league.Id)">
+                                    @if (!string.IsNullOrEmpty(league.LogoUrl))
+                                    {
+                                        <img src="@league.LogoUrl" alt="@league.Name" width="14" height="14" style="object-fit:contain;flex-shrink:0;" />
+                                    }
+                                    <span>@league.Name</span>
+                                </a>
                             }
                         </div>
                     }
@@ -97,25 +113,74 @@
     private string _email = "";
     private string _initials = "A";
     private string _searchQuery = "";
+    private bool _loading = true;
+
+    private List<CountryGroup> _leagueTree = [];
+
+    private IEnumerable<CountryGroup> _filteredTree => string.IsNullOrWhiteSpace(_searchQuery)
+        ? _leagueTree
+        : _leagueTree
+            .Select(g => new CountryGroup
+            {
+                CountryName = g.CountryName,
+                FlagUrl = g.FlagUrl,
+                IsExpanded = true,
+                Leagues = g.Leagues
+                    .Where(l => l.Name.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase))
+                    .ToList()
+            })
+            .Where(g => g.Leagues.Count > 0);
 
     protected override async Task OnInitializedAsync()
     {
-        if (AuthState is not null)
+        var authTask = AuthState is not null ? AuthState : Task.FromResult<AuthenticationState>(null!);
+        var leaguesTask = FixtureClient.GetLeaguesAsync();
+
+        await Task.WhenAll(authTask, leaguesTask);
+
+        // Auth
+        var state = authTask.Result;
+        if (state?.User.Identity?.IsAuthenticated == true)
         {
-            var state = await AuthState;
-            _isAuthenticated = state.User.Identity?.IsAuthenticated == true;
-            if (_isAuthenticated)
-            {
-                _displayName = state.User.Identity?.Name ?? "Admin";
-                _email = state.User.FindFirst(ClaimTypes.Email)?.Value ?? "";
-                _initials = _displayName.Length > 0
-                    ? _displayName[0].ToString().ToUpper() : "A";
-            }
+            _isAuthenticated = true;
+            _displayName = state.User.Identity.Name ?? "Admin";
+            _email = state.User.FindFirst(ClaimTypes.Email)?.Value ?? "";
+            _initials = _displayName.Length > 0 ? _displayName[0].ToString().ToUpper() : "A";
         }
+
+        // League tree
+        var leagues = leaguesTask.Result ?? [];
+        _leagueTree = leagues
+            .GroupBy(l => l.CountryName)
+            .OrderBy(g => g.Key)
+            .Select(g => new CountryGroup
+            {
+                CountryName = g.Key,
+                FlagUrl = g.First().CountryFlag,
+                IsExpanded = true,
+                Leagues = g.Select(l => new LeagueItem
+                {
+                    Id = l.Id,
+                    Name = l.Name,
+                    LogoUrl = l.LogoUrl
+                }).ToList()
+            })
+            .ToList();
+
+        _loading = false;
     }
 
-    // Phase 4 sẽ replace bằng dữ liệu thật từ Football API
-    private List<CountryGroup> _leagueTree = [];
+    private string LeagueHref(int leagueId)
+    {
+        var path = new Uri(Nav.Uri).AbsolutePath.TrimEnd('/');
+        return path is "" or "/" ? $"#league-{leagueId}" : $"/league/{leagueId}";
+    }
+
+    private bool IsActiveLeague(int leagueId)
+    {
+        var path = new Uri(Nav.Uri).AbsolutePath.TrimEnd('/');
+        return path.EndsWith($"/league/{leagueId}");
+    }
 
     private void OnSearchKeyDown(KeyboardEventArgs e)
     {
@@ -125,15 +190,16 @@
 
     private class CountryGroup
     {
-        public string Name { get; set; } = "";
-        public string Flag { get; set; } = "";
+        public string CountryName { get; set; } = "";
+        public string? FlagUrl { get; set; }
         public bool IsExpanded { get; set; } = true;
         public List<LeagueItem> Leagues { get; set; } = [];
     }
 
     private class LeagueItem
     {
+        public int Id { get; set; }
         public string Name { get; set; } = "";
-        public string Slug { get; set; } = "";
+        public string? LogoUrl { get; set; }
     }
 }

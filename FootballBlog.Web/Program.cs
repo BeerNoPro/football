@@ -53,6 +53,9 @@ try
     builder.Services.AddHttpClient<ILiveScoreApiClient, LiveScoreApiClient>(client =>
         client.BaseAddress = new Uri(apiBaseUrl));
 
+    builder.Services.AddHttpClient<IFixtureApiClient, FixtureApiClient>(client =>
+        client.BaseAddress = new Uri(apiBaseUrl));
+
     // Admin API client — handlers chain:
     // 1. JwtAuthHandler — thêm Bearer token vào request
     // 2. ApiUnauthorizedHandler — catch 401 → redirect tới login

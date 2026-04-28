@@ -529,7 +529,7 @@ a.post-item {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: clip;
   height: 100vh;
 }
 .main-scroll {
@@ -538,6 +538,7 @@ a.post-item {
   display: flex;
   flex-direction: column;
 }
+.match-panel { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .matches-list { flex: 1; min-height: 0; overflow-y: auto; }
 
 /* Match toolbar */
@@ -769,6 +770,13 @@ a.post-item {
   font-weight: 600;
 }
 .section-hd-more:hover { opacity: 0.8; }
+.section-separator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px 6px;
+  border-top: 1px solid var(--border);
+}
 
 /* =========================================
    NEWS GRID (Home / News / Category / Tag / Search)
@@ -833,7 +841,6 @@ a.post-item {
   color: var(--text);
   margin-bottom: 8px;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -969,7 +976,6 @@ a.post-item {
   line-height: 1.3;
   margin-bottom: 8px;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -978,7 +984,6 @@ a.post-item {
   color: rgba(255,255,255,0.5);
   line-height: 1.5;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   margin-bottom: 10px;
@@ -1283,7 +1288,6 @@ a.post-item {
   color: var(--text);
   margin-bottom: 6px;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1293,7 +1297,6 @@ a.post-item {
   line-height: 1.5;
   margin-bottom: 8px;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1734,6 +1737,7 @@ a.post-item {
 .standings-table .rank { font-weight: 700; color: var(--muted2); min-width: 24px; }
 .standings-table .rank.cl-zone { color: var(--accent); }
 .standings-table .rank.el-zone { color: #60a5fa; }
+.standings-table .rank.conf-zone { color: #34d399; }
 .standings-table .rank.rel-zone { color: #f87171; }
 .team-cell { display: flex; align-items: center; gap: 8px; }
 .team-cell-logo {

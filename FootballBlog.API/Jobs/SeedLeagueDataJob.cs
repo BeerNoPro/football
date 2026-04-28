@@ -19,7 +19,7 @@ public class SeedLeagueDataJob(
     IOptions<FootballApiOptions> options,
     ILogger<SeedLeagueDataJob> logger)
 {
-    public async Task ExecuteAsync()
+    public async Task ExecuteAsync(CancellationToken ct = default)
     {
         var sw = Stopwatch.StartNew();
         FootballApiOptions opts = options.Value;
@@ -57,10 +57,12 @@ public class SeedLeagueDataJob(
             }
             else
             {
-                IEnumerable<TeamRawDto>? teams = await apiClient.GetTeamsByLeagueAsync(leagueId, season);
+                IEnumerable<TeamRawDto>? teams = await FetchWithRetryAsync(
+                    () => apiClient.GetTeamsByLeagueAsync(leagueId, season),
+                    $"GetTeamsByLeague({leagueId})", ct);
                 if (teams is null)
                 {
-                    logger.LogWarning("Skipping league {LeagueId} — null response from GetTeamsByLeague", leagueId);
+                    logger.LogWarning("Skipping league {LeagueId} — null response from GetTeamsByLeague after retries", leagueId);
                     continue;
                 }
 
@@ -91,14 +93,13 @@ public class SeedLeagueDataJob(
             {
                 DateOnly seasonStart = new DateOnly(season, 7, 1);
                 DateOnly seasonEnd = new DateOnly(season + 1, 7, 1);
-                IEnumerable<FixtureRawDto>? fixtures = await apiClient.GetFixturesByRangeAsync(
-                    leagueId, season,
-                    from: seasonStart,
-                    to: seasonEnd);
+                IEnumerable<FixtureRawDto>? fixtures = await FetchWithRetryAsync(
+                    () => apiClient.GetFixturesByRangeAsync(leagueId, season, from: seasonStart, to: seasonEnd),
+                    $"GetFixturesByRange({leagueId})", ct);
 
                 if (fixtures is null)
                 {
-                    logger.LogWarning("Skipping league {LeagueId} — null response from GetFixturesByRange", leagueId);
+                    logger.LogWarning("Skipping league {LeagueId} — null response from GetFixturesByRange after retries", leagueId);
                     continue;
                 }
 
@@ -134,10 +135,12 @@ public class SeedLeagueDataJob(
             }
             else
             {
-                IEnumerable<StandingRawDto>? standings = await apiClient.GetStandingsAsync(leagueId, season);
+                IEnumerable<StandingRawDto>? standings = await FetchWithRetryAsync(
+                    () => apiClient.GetStandingsAsync(leagueId, season),
+                    $"GetStandings({leagueId})", ct);
                 if (standings is null)
                 {
-                    logger.LogWarning("Skipping league {LeagueId} standings — null response", leagueId);
+                    logger.LogWarning("Skipping league {LeagueId} standings — null response after retries", leagueId);
                 }
                 else
                 {
@@ -408,6 +411,66 @@ public class SeedLeagueDataJob(
 
         cache[externalId] = league.Id;
         return league.Id;
+    }
+
+    private const int MaxRetries = 3;
+    private const int RateLimitDelaySec = 65;
+    private const int NetworkBaseDelaySec = 5;
+    private const int NetworkMaxDelaySec = 120;
+    private static readonly TimeSpan NetworkDeadline = TimeSpan.FromMinutes(10);
+
+    // Network error: exponential backoff (5s→10s→20s→...→120s) trong deadline 10 phút.
+    // Rate limit null: retry tối đa MaxRetries lần, mỗi lần đợi 65s.
+    private async Task<T?> FetchWithRetryAsync<T>(Func<Task<T?>> apiCall, string label, CancellationToken ct = default) where T : class
+    {
+        DateTime? networkDeadline = null;
+        int networkDelaySec = NetworkBaseDelaySec;
+
+        for (int attempt = 1; attempt <= MaxRetries; attempt++)
+        {
+            T? result;
+
+            while (true)
+            {
+                try
+                {
+                    result = await apiCall();
+                    networkDeadline = null;
+                    networkDelaySec = NetworkBaseDelaySec;
+                    break;
+                }
+                catch (HttpRequestException ex)
+                {
+                    networkDeadline ??= DateTime.UtcNow.Add(NetworkDeadline);
+
+                    if (DateTime.UtcNow >= networkDeadline)
+                    {
+                        logger.LogError(ex, "{Label} network error — deadline exceeded ({Minutes} min), skipping",
+                            label, (int)NetworkDeadline.TotalMinutes);
+                        return null;
+                    }
+
+                    int delay = Math.Min(networkDelaySec, NetworkMaxDelaySec);
+                    logger.LogWarning(ex, "{Label} network error — retrying in {Delay}s (deadline in {Remaining:0}s)",
+                        label, delay, (networkDeadline.Value - DateTime.UtcNow).TotalSeconds);
+                    await Task.Delay(TimeSpan.FromSeconds(delay), ct);
+                    networkDelaySec = Math.Min(networkDelaySec * 2, NetworkMaxDelaySec);
+                }
+            }
+
+            if (result is not null)
+            {
+                return result;
+            }
+
+            if (attempt < MaxRetries)
+            {
+                logger.LogWarning("{Label} returned null (attempt {Attempt}/{Max}) — waiting {Delay}s for rate limit reset",
+                    label, attempt, MaxRetries, RateLimitDelaySec);
+                await Task.Delay(TimeSpan.FromSeconds(RateLimitDelaySec), ct);
+            }
+        }
+        return null;
     }
 
     private static int CurrentSeason(FootballApiOptions opts) =>

@@ -105,7 +105,7 @@ public class AdminMatchesController(
     [HttpPost("seed-leagues")]
     public IActionResult TriggerSeedLeagueData()
     {
-        jobClient.Enqueue<SeedLeagueDataJob>(j => j.ExecuteAsync());
+        jobClient.Enqueue<SeedLeagueDataJob>(j => j.ExecuteAsync(CancellationToken.None));
         logger.LogInformation("Admin triggered SeedLeagueDataJob");
         return Ok(ApiResponse<bool>.Ok(true));
     }

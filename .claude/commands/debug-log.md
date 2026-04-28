@@ -100,7 +100,25 @@ rtk grep "SLOW|ERR|Exception" logs/database/db-2026-04-26.log
 
 ---
 
-## Bước 6 — Map sang skill để fix
+## Bước 6 — Dọn Hangfire stale jobs (nếu lỗi là Hangfire signature mismatch)
+
+Khi log chứa `does not contain a method with signature` → job cũ trong DB không khớp method hiện tại.
+**Xóa trước khi trigger lại** — không chờ retry tự hết (mỗi retry chiếm worker slot):
+
+```bash
+# Tìm container postgres đang chạy
+docker ps --format "{{.Names}}\t{{.Image}}"
+
+# Xóa stale jobs theo id (lấy id từ log: "Failed to process the job '371'")
+docker exec -i <container-name> psql -U <db-user> -d footballblog \
+  -c "DELETE FROM hangfire.job WHERE id IN (371, 372) RETURNING id, statename;"
+```
+
+Sau khi xóa → rebuild app → trigger lại từ Admin UI.
+
+---
+
+## Bước 7 — Map sang skill để fix
 
 | Loại lỗi | Skill gợi ý |
 |----------|-------------|

@@ -29,7 +29,7 @@ public class FootballApiClient(
 
         if (!await rateLimiter.TryConsumeAsync())
         {
-            logger.LogWarning("GetUpcomingFixtures blocked by daily rate limit — league {LeagueId}", leagueId);
+            logger.LogWarning("GetUpcomingFixtures blocked by rate limit — league {LeagueId}", leagueId);
             return null;
         }
 
@@ -66,7 +66,7 @@ public class FootballApiClient(
             logger.LogInformation("Fetched {Count} upcoming fixtures for league {LeagueId}", fixtures.Count(), leagueId);
             return fixtures;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not HttpRequestException)
         {
             logger.LogError(ex, "Failed to fetch upcoming fixtures for league {LeagueId}", leagueId);
             return null;
@@ -83,7 +83,7 @@ public class FootballApiClient(
 
         if (!await rateLimiter.TryConsumeAsync())
         {
-            logger.LogWarning("GetAllLiveFixtures blocked by daily rate limit");
+            logger.LogWarning("GetAllLiveFixtures blocked by rate limit");
             return null;
         }
 
@@ -114,7 +114,7 @@ public class FootballApiClient(
             logger.LogInformation("Fetched {Count} live fixtures", liveMatches.Count());
             return liveMatches;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not HttpRequestException)
         {
             logger.LogError(ex, "Failed to fetch live fixtures");
             return null;
@@ -131,7 +131,7 @@ public class FootballApiClient(
 
         if (!await rateLimiter.TryConsumeAsync())
         {
-            logger.LogWarning("GetHeadToHead blocked by daily rate limit — {HomeId} vs {AwayId}", homeTeamExternalId, awayTeamExternalId);
+            logger.LogWarning("GetHeadToHead blocked by rate limit — {HomeId} vs {AwayId}", homeTeamExternalId, awayTeamExternalId);
             return null;
         }
 
@@ -163,7 +163,7 @@ public class FootballApiClient(
             logger.LogInformation("Fetched {Count} H2H matches for {Home} vs {Away}", fixtures.Count(), homeTeamExternalId, awayTeamExternalId);
             return fixtures;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not HttpRequestException)
         {
             logger.LogError(ex, "Failed to fetch H2H for {Home} vs {Away}", homeTeamExternalId, awayTeamExternalId);
             return null;
@@ -180,7 +180,7 @@ public class FootballApiClient(
 
         if (!await rateLimiter.TryConsumeAsync())
         {
-            logger.LogWarning("GetLineupsRaw blocked by daily rate limit — fixture {FixtureId}", fixtureId);
+            logger.LogWarning("GetLineupsRaw blocked by rate limit — fixture {FixtureId}", fixtureId);
             return null;
         }
 
@@ -204,7 +204,7 @@ public class FootballApiClient(
             logger.LogInformation("Fetched lineups for fixture {FixtureId}", fixtureId);
             return json;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not HttpRequestException)
         {
             logger.LogError(ex, "Failed to fetch lineups for fixture {FixtureId}", fixtureId);
             return null;
@@ -221,7 +221,7 @@ public class FootballApiClient(
 
         if (!await rateLimiter.TryConsumeAsync())
         {
-            logger.LogWarning("GetTeamsByLeague blocked by daily rate limit — league {LeagueId}", leagueId);
+            logger.LogWarning("GetTeamsByLeague blocked by rate limit — league {LeagueId}", leagueId);
             return null;
         }
 
@@ -268,7 +268,7 @@ public class FootballApiClient(
             logger.LogInformation("Fetched {Count} teams for league {LeagueId}", teams.Count(), leagueId);
             return teams;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not HttpRequestException)
         {
             logger.LogError(ex, "Failed to fetch teams for league {LeagueId}", leagueId);
             return null;
@@ -285,7 +285,7 @@ public class FootballApiClient(
 
         if (!await rateLimiter.TryConsumeAsync())
         {
-            logger.LogWarning("GetStandings blocked by daily rate limit — league {LeagueId}", leagueId);
+            logger.LogWarning("GetStandings blocked by rate limit — league {LeagueId}", leagueId);
             return null;
         }
 
@@ -345,7 +345,7 @@ public class FootballApiClient(
             logger.LogInformation("Fetched {Count} standing entries for league {LeagueId}", standings.Count(), leagueId);
             return standings;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not HttpRequestException)
         {
             logger.LogError(ex, "Failed to fetch standings for league {LeagueId}", leagueId);
             return null;
@@ -362,7 +362,7 @@ public class FootballApiClient(
 
         if (!await rateLimiter.TryConsumeAsync())
         {
-            logger.LogWarning("GetFixturesByRange blocked by daily rate limit — league {LeagueId}", leagueId);
+            logger.LogWarning("GetFixturesByRange blocked by rate limit — league {LeagueId}", leagueId);
             return null;
         }
 
@@ -402,7 +402,7 @@ public class FootballApiClient(
                 fixtures.Count(), leagueId, fromStr, toStr);
             return fixtures;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not HttpRequestException)
         {
             logger.LogError(ex, "Failed to fetch fixtures for league {LeagueId}", leagueId);
             return null;

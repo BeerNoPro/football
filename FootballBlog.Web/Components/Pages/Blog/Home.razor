@@ -1,138 +1,167 @@
 @page "/"
 @layout PublicLayout3Col
+@rendermode InteractiveServer
 @using FootballBlog.Core.DTOs
+@using FootballBlog.Core.Models
 @inject IPostApiClient PostClient
+@inject IFixtureApiClient FixtureClient
+@inject NavigationManager Nav
 
 <SeoHead Title="FootballBlog — Kết quả & Nhận định bóng đá"
-         Description="Kết quả, lịch thi đấu và nhận định bóng đá từ AI. Cập nhật trực tiếp V.League, Premier League, Champions League."
+         Description="Kết quả, lịch thi đấu và nhận định bóng đá từ AI. Cập nhật trực tiếp Premier League, Champions League, La Liga."
          CanonicalUrl="@_baseUrl" />
 
 <!-- Hero banner -->
 <div class="hero">
-    <div class="hero-bg">
-        <div class="hero-number">2025</div>
-    </div>
+    <div class="hero-bg"><div class="hero-number">2025</div></div>
     <div class="hero-content">
-        <div class="hero-tag">
-            <span class="live-dot"></span> V.League 1 — Mùa giải 2025
-        </div>
+        <div class="hero-tag"><span class="live-dot"></span> Season 2024/2025 — Kết quả & Lịch thi đấu</div>
         <div class="hero-title">Kết quả & Lịch thi đấu</div>
-        <div class="hero-sub">
-            Cập nhật trực tiếp · Nhận định AI · Dự đoán tỷ số
-        </div>
+        <div class="hero-sub">Dữ liệu thực · Nhận định AI · Dự đoán tỷ số</div>
     </div>
     <div class="hero-dots">
-        <div class="hero-dot active"></div>
-        <div class="hero-dot"></div>
-        <div class="hero-dot"></div>
+        <div class="hero-dot active"></div><div class="hero-dot"></div><div class="hero-dot"></div>
     </div>
 </div>
 
-<!-- Match panel (Phase 4: dữ liệu thật từ Football API — hiện mock) -->
+<!-- Match panel -->
 <div class="match-panel">
     <!-- Toolbar -->
     <div class="match-toolbar">
-        <div class="live-pill">
-            <span class="live-dot"></span> LIVE · 2
-        </div>
+        @if (_liveCount > 0)
+        {
+            <div class="live-pill"><span class="live-dot"></span> LIVE · @_liveCount</div>
+        }
+        else
+        {
+            <div class="live-pill" style="color:var(--muted);">Không có trận live</div>
+        }
         <div class="match-search-bar">
             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
             </svg>
-            <input type="text" placeholder="Tìm đội bóng, giải đấu..." disabled />
+            <input type="text" placeholder="Tìm đội bóng..."
+                   @bind="_teamSearch" @bind:event="oninput"
+                   @onkeydown="OnSearchKeyDown" />
         </div>
-        <button class="filter-btn">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-            </svg>
-            Tất cả giải
-        </button>
+        <div style="font-size:10px; color:var(--muted);">@_totalCount trận</div>
     </div>
 
-    <!-- Tab + Date bar -->
+    <!-- Tab nav -->
     <div class="tab-date-row">
         <div class="tabs">
             <a href="/" class="tab-btn active">📅 Lịch thi đấu</a>
             <a href="/predictions" class="tab-btn">🤖 Dự đoán AI</a>
             <a href="/news" class="tab-btn">📰 Tin tức</a>
         </div>
-        <div class="date-bar">
-            <button class="date-nav">‹</button>
-            @foreach (var d in _dates)
-            {
-                <button class="date-btn2 @(d.IsToday ? "active" : "")">
-                    <span class="dn">@d.DayName</span>
-                    <span class="dd">@d.Day</span>
-                </button>
-            }
-            <button class="date-nav">›</button>
-        </div>
     </div>
 
-    <!-- Match list (mock data — Phase 4 thay bằng API) -->
+    <!-- Match list -->
     <div class="matches-list">
-        @foreach (var league in _mockLeagues)
+        @if (_fixturesLoading)
         {
-            <div class="lg @(league.IsExpanded ? "" : "collapsed")">
-                <div class="lg-header" @onclick="() => league.IsExpanded = !league.IsExpanded">
-                    <div class="lg-icon">@league.Flag</div>
-                    <a class="lg-name lg-name-link" href="/league/@league.Slug" @onclick:stopPropagation>@league.Name</a>
-                    <span class="lg-round">Vòng @league.Round</span>
-                    <span class="lg-chevron">▾</span>
-                </div>
-                @if (league.IsExpanded)
-                {
-                    <div class="lg-matches">
-                        @foreach (var m in league.Matches)
-                        {
-                            <div class="match-row" style="cursor:pointer;" @onclick='() => Nav.NavigateTo($"/match/{m.Id}")'>
-                                <div class="mr-time @(m.IsLive ? "is-live" : "")">
-                                    @if (m.IsLive) { <span>@m.Minute'</span> }
-                                    else { <span>@m.Time</span> }
-                                </div>
-                                <div class="mr-home @(m.IsLive && m.HomeScore > m.AwayScore ? "live-team" : "")">
-                                    <a class="tn" href="/team/@m.HomeSlug" @onclick:stopPropagation>@m.Home</a>
-                                    <div class="tl">@m.HomeEmoji</div>
-                                </div>
-                                <div class="score-c @(m.IsLive ? "is-live-score" : m.IsFinished ? "has-score" : "no-score")">
-                                    @if (m.IsLive || m.IsFinished) { <span>@m.HomeScore – @m.AwayScore</span> }
-                                    else { <span>–</span> }
-                                </div>
-                                <div class="mr-away @(m.IsLive && m.AwayScore > m.HomeScore ? "live-team" : "")">
-                                    <div class="tl">@m.AwayEmoji</div>
-                                    <a class="tn" href="/team/@m.AwaySlug" @onclick:stopPropagation>@m.Away</a>
-                                </div>
-                                <div class="mr-status">
-                                    @if (m.IsLive)
-                                    {
-                                        <span class="badge-live"><span class="live-dot"></span> LIVE</span>
-                                    }
-                                    else if (m.IsFinished)
-                                    {
-                                        <span class="badge-ft">KT</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge-sch">@m.Time</span>
-                                    }
-                                </div>
-                            </div>
-                        }
-                    </div>
-                }
+            <div style="padding:24px 16px; color:var(--muted); font-size:12px; text-align:center;">Đang tải...</div>
+        }
+        else if (_sections.Count == 0 || _sections.All(s => s.Groups.Count == 0))
+        {
+            <div style="padding:32px 16px; color:var(--muted); font-size:12px; text-align:center;">
+                Không có dữ liệu trận đấu. Vui lòng seed dữ liệu từ Admin.
             </div>
+        }
+        else
+        {
+            @foreach (var section in _sections)
+            {
+                @if (section.Groups.Count > 0)
+                {
+                    <div class="section-separator">
+                        <span style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:@(section.Color);">
+                            @(section.Title)
+                        </span>
+                    </div>
+                    @foreach (var group in section.Groups)
+                    {
+                        var isExpanded = _expandedLeagues.Contains(group.LeagueId);
+                        <div id="league-@group.LeagueId" class="lg @(isExpanded ? "" : "collapsed")">
+                            <div class="lg-header" @onclick="() => ToggleLeague(group.LeagueId)">
+                                @if (!string.IsNullOrEmpty(group.CountryFlag))
+                                {
+                                    <img src="@group.CountryFlag" alt="@group.CountryName" width="14" height="10"
+                                         style="object-fit:cover;border-radius:1px;flex-shrink:0;" />
+                                }
+                                else
+                                {
+                                    <div class="lg-icon">⚽</div>
+                                }
+                                <a class="lg-name lg-name-link" href="/league/@group.LeagueId" @onclick:stopPropagation>
+                                    @group.LeagueName
+                                </a>
+                                @if (!string.IsNullOrEmpty(group.Round))
+                                {
+                                    <span class="lg-round">@group.Round</span>
+                                }
+                                <span class="lg-chevron">▾</span>
+                            </div>
+                            @if (isExpanded)
+                            {
+                                <div class="lg-matches">
+                                    @foreach (var m in group.Fixtures)
+                                    {
+                                        <div class="match-row" style="cursor:pointer;"
+                                             @onclick='() => Nav.NavigateTo($"/match/{m.Id}")'>
+                                            <div class="mr-time @(m.Status == MatchStatus.Live ? "is-live" : "")">
+                                                <span>@m.KickoffUtc.ToLocalTime().ToString("HH:mm")</span>
+                                            </div>
+                                            <div class="mr-home">
+                                                <span class="tn">@m.HomeTeamName</span>
+                                                @if (!string.IsNullOrEmpty(m.HomeTeamLogo))
+                                                {
+                                                    <img src="@m.HomeTeamLogo" alt="@m.HomeTeamName" width="18" height="18"
+                                                         class="tl" style="object-fit:contain;" />
+                                                }
+                                                else { <div class="tl">⚽</div> }
+                                            </div>
+                                            <div class="score-c @ScoreClass(m.Status)">
+                                                @if (m.Status == MatchStatus.Live || m.Status == MatchStatus.Finished)
+                                                { <span>@m.HomeScore – @m.AwayScore</span> }
+                                                else { <span>–</span> }
+                                            </div>
+                                            <div class="mr-away">
+                                                @if (!string.IsNullOrEmpty(m.AwayTeamLogo))
+                                                {
+                                                    <img src="@m.AwayTeamLogo" alt="@m.AwayTeamName" width="18" height="18"
+                                                         class="tl" style="object-fit:contain;" />
+                                                }
+                                                else { <div class="tl">⚽</div> }
+                                                <span class="tn">@m.AwayTeamName</span>
+                                            </div>
+                                            <div class="mr-status">
+                                                @if (m.Status == MatchStatus.Live)
+                                                { <span class="badge-live"><span class="live-dot"></span> LIVE</span> }
+                                                else if (m.Status == MatchStatus.Finished)
+                                                { <span class="badge-ft">KT</span> }
+                                                else
+                                                { <span class="badge-sch">@m.KickoffUtc.ToLocalTime().ToString("HH:mm")</span> }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+            }
         }
     </div>
 </div>
 
-<!-- Latest news section -->
+<!-- Latest news -->
 <div style="padding-bottom:24px;">
     <div class="section-hd">
         <span class="section-hd-title">Bài viết mới nhất</span>
         <a href="/news" class="section-hd-more">Xem tất cả →</a>
     </div>
-
-    @if (_loading)
+    @if (_postsLoading)
     {
         <div style="color:var(--muted); font-size:12px; padding:12px 16px;">Đang tải...</div>
     }
@@ -143,90 +172,116 @@
     else
     {
         <div class="news-grid">
-            @foreach (var post in _posts)
-            {
-                <PostCard Post="post" />
-            }
+            @foreach (var post in _posts) { <PostCard Post="post" /> }
         </div>
-
-        <Pagination CurrentPage="_page"
-                    TotalPages="_totalPages"
-                    OnPageChange="ChangePage" />
+        <Pagination CurrentPage="_page" TotalPages="_totalPages" OnPageChange="ChangePage" />
     }
 </div>
 
 @code {
-    [Inject] private NavigationManager Nav { get; set; } = null!;
     [Inject] private IConfiguration Config { get; set; } = null!;
 
+    // Posts
     private List<PostSummaryDto> _posts = [];
-    private bool _loading = true;
+    private bool _postsLoading = true;
     private int _page = 1;
     private int _totalPages = 1;
     private const int PageSize = 9;
     private string _baseUrl = "";
 
-    // Date bar mock
-    private List<DateItem> _dates = [];
-
-    // Mock league data (Phase 4: thay bằng Football API)
-    private List<MockLeague> _mockLeagues =
-    [
-        new MockLeague
-        {
-            Name = "V.League 1 — 2025", Flag = "🇻🇳", Round = 18, Slug = "vleague-1", IsExpanded = true,
-            Matches =
-            [
-                new MockMatch { Id = 101, Home = "Hà Nội FC", Away = "HAGL", HomeSlug = "ha-noi-fc", AwaySlug = "hagl", Time = "18:00", HomeEmoji = "🔵", AwayEmoji = "🟡", IsLive = true, Minute = 67, HomeScore = 2, AwayScore = 1 },
-                new MockMatch { Id = 102, Home = "SHB Đà Nẵng", Away = "Becamex Bình Dương", HomeSlug = "shb-da-nang", AwaySlug = "becamex-binh-duong", Time = "18:00", HomeEmoji = "🔴", AwayEmoji = "🟢", IsLive = true, Minute = 55, HomeScore = 0, AwayScore = 0 },
-                new MockMatch { Id = 103, Home = "Viettel FC", Away = "Hải Phòng FC", HomeSlug = "viettel-fc", AwaySlug = "hai-phong-fc", Time = "20:00", HomeEmoji = "🔴", AwayEmoji = "⚫", IsFinished = false },
-            ]
-        },
-        new MockLeague
-        {
-            Name = "Premier League", Flag = "🏴󠁧󠁢󠁥󠁮󠁧󠁿", Round = 36, Slug = "premier-league", IsExpanded = true,
-            Matches =
-            [
-                new MockMatch { Id = 201, Home = "Arsenal", Away = "Chelsea", HomeSlug = "arsenal", AwaySlug = "chelsea", Time = "21:00", HomeEmoji = "🔴", AwayEmoji = "🔵", IsFinished = true, HomeScore = 2, AwayScore = 2 },
-                new MockMatch { Id = 202, Home = "Man City", Away = "Liverpool", HomeSlug = "manchester-city", AwaySlug = "liverpool", Time = "23:30", HomeEmoji = "🔵", AwayEmoji = "🔴", IsFinished = false },
-                new MockMatch { Id = 203, Home = "Tottenham", Away = "Man United", HomeSlug = "tottenham", AwaySlug = "manchester-united", Time = "02:00", HomeEmoji = "⚪", AwayEmoji = "🔴", IsFinished = false },
-            ]
-        }
-    ];
+    // Fixtures
+    private bool _fixturesLoading = true;
+    private string _teamSearch = "";
+    private List<FixtureSection> _sections = [];
+    private HashSet<int> _expandedLeagues = [];
+    private int _liveCount;
+    private int _totalCount;
 
     protected override async Task OnInitializedAsync()
     {
         _baseUrl = Nav.BaseUri.TrimEnd('/');
-        BuildDates();
-        await LoadPosts();
+        await Task.WhenAll(LoadFixtures(), LoadPosts());
     }
 
-    private void BuildDates()
+    private async Task LoadFixtures()
     {
-        var today = DateTime.Today;
-        var dayNames = new[] { "CN", "T2", "T3", "T4", "T5", "T6", "T7" };
-        for (int i = -3; i <= 3; i++)
-        {
-            var d = today.AddDays(i);
-            _dates.Add(new DateItem
+        _fixturesLoading = true;
+
+        // 3 calls song song — không filter theo ngày, chỉ filter theo status
+        var liveTask     = FixtureClient.GetFixturesAsync(status: "Live",      sortAsc: true,  pageSize: 50);
+        var upcomingTask = FixtureClient.GetFixturesAsync(status: "Scheduled", sortAsc: true,  pageSize: 100);
+        var resultsTask  = FixtureClient.GetFixturesAsync(status: "Finished",  sortAsc: false, pageSize: 50);
+
+        await Task.WhenAll(liveTask, upcomingTask, resultsTask);
+
+        var live     = Filter(liveTask.Result?.Items     ?? []);
+        var upcoming = Filter(upcomingTask.Result?.Items ?? []);
+        var results  = Filter(resultsTask.Result?.Items  ?? []);
+
+        _liveCount  = live.Count;
+        _totalCount = (liveTask.Result?.TotalCount ?? 0)
+                    + (upcomingTask.Result?.TotalCount ?? 0)
+                    + (resultsTask.Result?.TotalCount ?? 0);
+
+        _sections =
+        [
+            new("ĐANG LIVE",         "var(--live)",   Group(live)),
+            new("Sắp diễn ra",       "var(--accent)", Group(upcoming)),
+            new("Kết quả gần đây",   "var(--muted2)", Group(results)),
+        ];
+
+        _expandedLeagues = _sections
+            .SelectMany(s => s.Groups.Select(g => g.LeagueId))
+            .ToHashSet();
+
+        _fixturesLoading = false;
+    }
+
+    private List<FixtureDto> Filter(IEnumerable<FixtureDto> src)
+    {
+        if (string.IsNullOrWhiteSpace(_teamSearch)) return src.ToList();
+        var q = _teamSearch.Trim();
+        return src.Where(f =>
+            f.HomeTeamName.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+            f.AwayTeamName.Contains(q, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+
+    private static List<LeagueGroup> Group(List<FixtureDto> fixtures) =>
+        fixtures
+            .GroupBy(f => f.LeagueId)
+            .Select(g => new LeagueGroup
             {
-                DayName = dayNames[(int)d.DayOfWeek],
-                Day = d.Day.ToString("D2"),
-                IsToday = i == 0
-            });
-        }
+                LeagueId    = g.Key,
+                LeagueName  = g.First().LeagueName,
+                CountryName = g.First().CountryName,
+                CountryFlag = g.First().CountryFlag,
+                Round       = g.First().Round,
+                Fixtures    = g.ToList()
+            })
+            .OrderBy(g => g.LeagueName)
+            .ToList();
+
+    private void ToggleLeague(int leagueId)
+    {
+        if (!_expandedLeagues.Remove(leagueId))
+            _expandedLeagues.Add(leagueId);
+    }
+
+    private async Task OnSearchKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await LoadFixtures();
     }
 
     private async Task LoadPosts()
     {
-        _loading = true;
+        _postsLoading = true;
         var result = await PostClient.GetPublishedAsync(_page, PageSize);
         if (result != null)
         {
             _posts = result.Items.ToList();
             _totalPages = result.TotalPages;
         }
-        _loading = false;
+        _postsLoading = false;
     }
 
     private async Task ChangePage(int page)
@@ -235,32 +290,22 @@
         await LoadPosts();
     }
 
-    private record DateItem { public string DayName { get; init; } = ""; public string Day { get; init; } = ""; public bool IsToday { get; init; } }
-
-    private class MockLeague
+    private static string ScoreClass(MatchStatus status) => status switch
     {
-        public string Name { get; set; } = "";
-        public string Flag { get; set; } = "";
-        public string Slug { get; set; } = "";
-        public int Round { get; set; }
-        public bool IsExpanded { get; set; } = true;
-        public List<MockMatch> Matches { get; set; } = [];
-    }
+        MatchStatus.Live     => "is-live-score",
+        MatchStatus.Finished => "has-score",
+        _                    => "no-score"
+    };
 
-    private class MockMatch
+    private record FixtureSection(string Title, string Color, List<LeagueGroup> Groups);
+
+    private class LeagueGroup
     {
-        public int Id { get; set; }
-        public string Home { get; set; } = "";
-        public string Away { get; set; } = "";
-        public string HomeSlug { get; set; } = "";
-        public string AwaySlug { get; set; } = "";
-        public string HomeEmoji { get; set; } = "⚽";
-        public string AwayEmoji { get; set; } = "⚽";
-        public string Time { get; set; } = "";
-        public bool IsLive { get; set; }
-        public bool IsFinished { get; set; }
-        public int Minute { get; set; }
-        public int HomeScore { get; set; }
-        public int AwayScore { get; set; }
+        public int LeagueId { get; set; }
+        public string LeagueName { get; set; } = "";
+        public string CountryName { get; set; } = "";
+        public string? CountryFlag { get; set; }
+        public string? Round { get; set; }
+        public List<FixtureDto> Fixtures { get; set; } = [];
     }
 }

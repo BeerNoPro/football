@@ -37,7 +37,7 @@ Dùng RTK Bash commands — RTK hook tự intercept, filter output, tiết kiệ
 - **Xem cấu trúc file**: `rtk read file.cs -l aggressive` — chỉ signatures, không load body
 - **Tóm tắt nhanh**: `rtk smart file.cs` — 2-line heuristic summary
 - **Xem thư mục**: `rtk ls path/` — token-optimized directory listing
-- **Đọc log**: `rtk log logs/file.log` — filter + deduplicate tự động
+- **Đọc log**: `rtk log logs/**/*.log` — filter + deduplicate tự động
 - **HTML prototype**: chỉ đọc đến `<!-- STYLES -->` — bỏ qua `<style>` block
 - **Context limit**: đóng conversation lúc 15-20 messages → `/cleanup` → tab mới
 
