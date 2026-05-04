@@ -20,6 +20,8 @@ appsettings.Development.json
 appsettings.Staging.json
 appsettings.Production.json
 secrets.json
+.env
+.env.*
 
 ## EF Core Migrations temp
 *.Designer.cs.bak

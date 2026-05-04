@@ -1,0 +1,19 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+COPY FootballBlog.Core/FootballBlog.Core.csproj FootballBlog.Core/
+COPY FootballBlog.Infrastructure/FootballBlog.Infrastructure.csproj FootballBlog.Infrastructure/
+COPY FootballBlog.API/FootballBlog.API.csproj FootballBlog.API/
+RUN dotnet restore FootballBlog.API/FootballBlog.API.csproj
+
+COPY FootballBlog.Core/ FootballBlog.Core/
+COPY FootballBlog.Infrastructure/ FootballBlog.Infrastructure/
+COPY FootballBlog.API/ FootballBlog.API/
+RUN dotnet publish FootballBlog.API/FootballBlog.API.csproj -c Release -o /app --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build /app .
+ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "FootballBlog.API.dll"]
