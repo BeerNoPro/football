@@ -1,15 +1,17 @@
 using FootballBlog.API.Common;
 using FootballBlog.Core.DTOs;
 using FootballBlog.Core.Models;
+using FootballBlog.Core.Options;
 using FootballBlog.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace FootballBlog.API.Controllers;
 
 [ApiController]
 [Route("api/fixtures")]
-public class FixturesController(ApplicationDbContext dbContext) : ControllerBase
+public class FixturesController(ApplicationDbContext dbContext, IOptions<FootballApiOptions> footballOptions) : ControllerBase
 {
     // GET /api/fixtures?leagueId=1&date=2024-12-01&fromDate=2024-12-01&toDate=2024-12-07&status=Finished&sortAsc=true&page=1&pageSize=20
     [HttpGet]
@@ -25,12 +27,16 @@ public class FixturesController(ApplicationDbContext dbContext) : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
+        // Default về mùa giải hiện tại nếu không truyền season (tránh trả data cũ lẫn lộn)
+        string effectiveSeason = season ?? CurrentSeason();
+
         var query = dbContext.Matches
             .AsNoTracking()
             .Include(m => m.HomeTeam)
             .Include(m => m.AwayTeam)
             .Include(m => m.League).ThenInclude(l => l.Country)
             .Include(m => m.Prediction)
+            .Where(m => m.Season == effectiveSeason)
             .AsQueryable();
 
         if (leagueId.HasValue)
@@ -61,11 +67,6 @@ public class FixturesController(ApplicationDbContext dbContext) : ControllerBase
         if (!string.IsNullOrEmpty(status) && Enum.TryParse<MatchStatus>(status, true, out var matchStatus))
         {
             query = query.Where(m => m.Status == matchStatus);
-        }
-
-        if (!string.IsNullOrEmpty(season))
-        {
-            query = query.Where(m => m.Season == season);
         }
 
         if (!string.IsNullOrWhiteSpace(search))
@@ -108,6 +109,39 @@ public class FixturesController(ApplicationDbContext dbContext) : ControllerBase
 
         return Ok(ApiResponse<PagedResult<FixtureDto>>.Ok(
             new PagedResult<FixtureDto>(items, page, pageSize, total)));
+    }
+
+    // GET /api/fixtures/suggest?q=man&limit=6
+    [HttpGet("suggest")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<FixtureSuggestDto>>>> Suggest(
+        [FromQuery] string q = "",
+        [FromQuery] int limit = 6)
+    {
+        if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
+        {
+            return Ok(ApiResponse<IEnumerable<FixtureSuggestDto>>.Ok([]));
+        }
+
+        var lower = q.ToLower();
+        string season = CurrentSeason();
+
+        var matches = await dbContext.Matches
+            .AsNoTracking()
+            .Include(m => m.HomeTeam)
+            .Include(m => m.AwayTeam)
+            .Where(m => m.Season == season &&
+                        (m.HomeTeam.Name.ToLower().Contains(lower) ||
+                         m.AwayTeam.Name.ToLower().Contains(lower)))
+            .Select(m => new { m.Id, Home = m.HomeTeam.Name, Away = m.AwayTeam.Name })
+            .ToListAsync();
+
+        var ranked = matches
+            .OrderByDescending(m => m.Home.ToLower().StartsWith(lower) || m.Away.ToLower().StartsWith(lower))
+            .ThenBy(m => m.Home)
+            .Take(limit)
+            .Select(m => new FixtureSuggestDto(m.Id, m.Home, m.Away));
+
+        return Ok(ApiResponse<IEnumerable<FixtureSuggestDto>>.Ok(ranked));
     }
 
     // GET /api/fixtures/{id}
@@ -195,5 +229,12 @@ public class FixturesController(ApplicationDbContext dbContext) : ControllerBase
         }
 
         return Ok(ApiResponse<IEnumerable<StandingDto>>.Ok(standings));
+    }
+
+    private string CurrentSeason()
+    {
+        FootballApiOptions opts = footballOptions.Value;
+        int season = opts.SeasonOverride ?? (DateTime.UtcNow.Month >= 7 ? DateTime.UtcNow.Year : DateTime.UtcNow.Year - 1);
+        return season.ToString();
     }
 }

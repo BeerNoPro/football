@@ -82,6 +82,21 @@ public class FixtureApiClient(HttpClient httpClient, ILogger<FixtureApiClient> l
         }
     }
 
+    public async Task<IEnumerable<FixtureSuggestDto>> SearchSuggestionsAsync(string q)
+    {
+        try
+        {
+            var response = await httpClient.GetFromJsonAsync<ApiResponse<IEnumerable<FixtureSuggestDto>>>(
+                $"api/fixtures/suggest?q={Uri.EscapeDataString(q)}");
+            return response?.Data ?? [];
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to fetch fixture suggestions q={Q}", q);
+            return [];
+        }
+    }
+
     public async Task<IEnumerable<StandingDto>?> GetStandingsAsync(int leagueId, int? season = null)
     {
         try

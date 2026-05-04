@@ -25,3 +25,5 @@ public record FixtureDto(
     string? VenueName,
     bool HasPrediction
 );
+
+public record FixtureSuggestDto(int Id, string HomeTeam, string AwayTeam);

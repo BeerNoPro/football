@@ -16,4 +16,5 @@ public interface IFixtureApiClient
         int page = 1,
         int pageSize = 100);
     Task<IEnumerable<StandingDto>?> GetStandingsAsync(int leagueId, int? season = null);
+    Task<IEnumerable<FixtureSuggestDto>> SearchSuggestionsAsync(string q);
 }
