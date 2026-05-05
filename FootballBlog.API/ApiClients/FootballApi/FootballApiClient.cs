@@ -409,6 +409,61 @@ public class FootballApiClient(
         }
     }
 
+    public async Task<IEnumerable<FixtureRawDto>?> GetFixturesByDateAsync(int leagueId, DateOnly date)
+    {
+        string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+        if (key is null)
+        {
+            return null;
+        }
+
+        if (!await rateLimiter.TryConsumeAsync())
+        {
+            logger.LogWarning("GetFixturesByDate blocked by rate limit — league {LeagueId} date {Date}", leagueId, date);
+            return null;
+        }
+
+        try
+        {
+            string dateStr = date.ToString("yyyy-MM-dd");
+            logger.LogDebug("Fetching fixtures for league {LeagueId} date {Date}", leagueId, dateStr);
+
+            var request = new HttpRequestMessage(HttpMethod.Get,
+                $"fixtures?league={leagueId}&date={dateStr}");
+            request.Headers.Add("x-apisports-key", key);
+
+            var response = await httpClient.SendAsync(request);
+
+            if (await HandleRateLimitAsync(response, key, $"fixtures?league={leagueId}&date={dateStr}"))
+            {
+                return null;
+            }
+
+            response.EnsureSuccessStatusCode();
+
+            var envelope = await response.Content.ReadFromJsonAsync<FootballApiEnvelope<FixtureResponse>>(JsonOptions);
+            if (HasApiErrors($"fixtures?league={leagueId}&date={dateStr}", envelope?.Errors ?? default))
+            {
+                return null;
+            }
+
+            if (envelope?.Response is null)
+            {
+                return [];
+            }
+
+            IEnumerable<FixtureRawDto> fixtures = envelope.Response.Select(MapToFixtureDto);
+            logger.LogInformation("Fetched {Count} fixtures for league {LeagueId} on {Date}",
+                fixtures.Count(), leagueId, dateStr);
+            return fixtures;
+        }
+        catch (Exception ex) when (ex is not HttpRequestException)
+        {
+            logger.LogError(ex, "Failed to fetch fixtures for league {LeagueId} date {Date}", leagueId, date);
+            return null;
+        }
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /// <summary>

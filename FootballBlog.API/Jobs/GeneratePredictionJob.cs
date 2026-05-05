@@ -109,7 +109,7 @@ public class GeneratePredictionJob(
             await uow.MatchPredictions.AddAsync(prediction);
             await uow.CommitAsync();
 
-            BackgroundJob.Enqueue<PublishPredictionJob>(j => j.ExecuteAsync(prediction.Id));
+            BackgroundJob.Enqueue<TelegramNotificationJob>(j => j.SendPredictionAsync(prediction.Id));
 
             generated++;
             logger.LogInformation(

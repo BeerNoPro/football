@@ -28,4 +28,7 @@ public interface IMatchRepository : IRepository<Match>
 
     /// <summary>Kiểm tra DB đã có fixtures cho league+season chưa — dùng bởi SeedLeagueDataJob.</summary>
     Task<bool> HasFixturesForLeagueAsync(int leagueId, string season);
+
+    /// <summary>Trả tập các ngày đã có fixture trong DB (từ hôm nay trở đi) — dùng để skip API call cho ngày đã fetch.</summary>
+    Task<HashSet<DateOnly>> GetFetchedDatesAsync();
 }

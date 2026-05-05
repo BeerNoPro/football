@@ -89,4 +89,17 @@ public class MatchRepository(ApplicationDbContext dbContext) : BaseRepository<Ma
         await _dbSet.AsNoTracking()
             .TagWithCaller()
             .AnyAsync(m => m.LeagueId == leagueId && m.Season == season);
+
+    public async Task<HashSet<DateOnly>> GetFetchedDatesAsync()
+    {
+        DateTime today = DateTime.UtcNow.Date;
+        List<DateOnly> dates = await _dbSet
+            .AsNoTracking()
+            .Where(m => m.KickoffUtc >= today)
+            .Select(m => DateOnly.FromDateTime(m.KickoffUtc))
+            .Distinct()
+            .TagWithCaller()
+            .ToListAsync();
+        return [.. dates];
+    }
 }

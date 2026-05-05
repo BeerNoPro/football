@@ -19,98 +19,138 @@ public class FetchUpcomingMatchesJob(
     {
         var sw = Stopwatch.StartNew();
         FootballApiOptions opts = options.Value;
-        logger.LogInformation("FetchUpcomingMatchesJob started. Leagues={LeagueCount}, FixturesPerLeague={FixturesPerLeague}",
-            opts.LeagueIds.Length, opts.FixturesPerLeague);
+
+        // 1. Lấy các ngày đã có data trong DB (từ hôm nay trở đi)
+        HashSet<DateOnly> fetchedDates = await uow.Matches.GetFetchedDatesAsync();
+
+        // 2. Tính window [today, tomorrow] và lọc ngày chưa có data
+        DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+        List<DateOnly> datesToFetch = Enumerable.Range(0, 2)
+            .Select(i => today.AddDays(i))
+            .Where(d => !fetchedDates.Contains(d))
+            .ToList();
+
+        logger.LogInformation(
+            "FetchUpcomingMatchesJob started. Leagues={LeagueCount}, DatesToFetch={Count} [{Dates}]",
+            opts.LeagueIds.Length, datesToFetch.Count, string.Join(", ", datesToFetch));
+
+        if (datesToFetch.Count == 0)
+        {
+            logger.LogInformation("Tất cả ngày trong window đã có data, skip. Duration={DurationMs}ms", sw.ElapsedMilliseconds);
+            return;
+        }
 
         int newMatches = 0;
         int updatedMatches = 0;
         DateTime now = DateTime.UtcNow;
 
         // Cache trong 1 run để tránh lookup DB lặp lại cho cùng country/league/team
-        var countryCache = new Dictionary<string, int>();    // code → internal id
-        var leagueCache = new Dictionary<int, int>();        // externalId → internal id
-        var teamCache = new Dictionary<int, int>();          // externalId → internal id
+        var countryCache = new Dictionary<string, int>();
+        var leagueCache = new Dictionary<int, int>();
+        var teamCache = new Dictionary<int, int>();
 
-        foreach (int configLeagueId in opts.LeagueIds)
+        // 3. Fetch từng ngày × từng league — commit sau mỗi ngày hoàn thành
+        foreach (DateOnly date in datesToFetch)
         {
-            IEnumerable<FixtureRawDto>? fixtures = await apiClient.GetUpcomingFixturesAsync(configLeagueId, opts.FixturesPerLeague);
-            if (fixtures is null)
+            bool dateAborted = false;
+            int dateNew = 0;
+            int dateUpdated = 0;
+
+            foreach (int configLeagueId in opts.LeagueIds)
             {
-                logger.LogWarning("FetchUpcomingMatchesJob aborted at league {LeagueId} — null response (rate limit or HTTP error)", configLeagueId);
-                return;
+                IEnumerable<FixtureRawDto>? fixtures = await apiClient.GetFixturesByDateAsync(configLeagueId, date);
+                if (fixtures is null)
+                {
+                    logger.LogWarning(
+                        "FetchUpcomingMatchesJob aborted at league {LeagueId} date {Date} — null response (rate limit or HTTP error)",
+                        configLeagueId, date);
+                    dateAborted = true;
+                    break;
+                }
+
+                foreach (FixtureRawDto fixture in fixtures)
+                {
+                    // Thứ tự upsert bắt buộc do FK dependency
+                    int countryId = await UpsertCountryAsync(fixture, countryCache);
+                    int leagueId = await UpsertLeagueAsync(fixture, countryId, leagueCache);
+                    int homeTeamId = await UpsertTeamAsync(fixture.HomeTeamExternalId, fixture.HomeTeamName, fixture.HomeTeamLogo, countryId, teamCache);
+                    int awayTeamId = await UpsertTeamAsync(fixture.AwayTeamExternalId, fixture.AwayTeamName, fixture.AwayTeamLogo, countryId, teamCache);
+
+                    Match? existing = await uow.Matches.GetByExternalIdAsync(fixture.ExternalId);
+
+                    if (existing is null)
+                    {
+                        Match newMatch = new()
+                        {
+                            ExternalId = fixture.ExternalId,
+                            HomeTeamId = homeTeamId,
+                            AwayTeamId = awayTeamId,
+                            LeagueId = leagueId,
+                            Season = fixture.Season,
+                            Round = fixture.Round,
+                            KickoffUtc = fixture.KickoffUtc,
+                            Status = MapStatus(fixture.StatusShort),
+                            HomeScore = fixture.HomeScore,
+                            AwayScore = fixture.AwayScore,
+                            VenueName = fixture.VenueName,
+                            RefereeName = fixture.RefereeName,
+                            FetchedAt = now
+                        };
+                        await uow.Matches.AddAsync(newMatch);
+                        newMatches++;
+                        dateNew++;
+
+                        // Schedule pre-match data jobs — chỉ khi thời gian còn trong tương lai
+                        DateTime h2hTime = fixture.KickoffUtc.AddHours(-5);
+                        DateTime lineupTime = fixture.KickoffUtc.AddMinutes(-15);
+
+                        if (h2hTime > now)
+                        {
+                            BackgroundJob.Schedule<PreMatchDataJob>(
+                                j => j.FetchH2HAsync(fixture.ExternalId, fixture.HomeTeamExternalId, fixture.AwayTeamExternalId),
+                                h2hTime);
+
+                            logger.LogDebug("Scheduled H2H fetch for fixture {FixtureId} at {Time}",
+                                fixture.ExternalId, h2hTime);
+                        }
+
+                        if (lineupTime > now)
+                        {
+                            BackgroundJob.Schedule<PreMatchDataJob>(
+                                j => j.FetchLineupsAsync(fixture.ExternalId),
+                                lineupTime);
+
+                            logger.LogDebug("Scheduled lineup fetch for fixture {FixtureId} at {Time}",
+                                fixture.ExternalId, lineupTime);
+                        }
+                    }
+                    else
+                    {
+                        // Idempotent update — chỉ cập nhật status + score + fetchedAt
+                        existing.Status = MapStatus(fixture.StatusShort);
+                        existing.HomeScore = fixture.HomeScore;
+                        existing.AwayScore = fixture.AwayScore;
+                        existing.FetchedAt = now;
+                        await uow.Matches.UpdateAsync(existing);
+                        updatedMatches++;
+                        dateUpdated++;
+                    }
+                }
             }
 
-            foreach (FixtureRawDto fixture in fixtures)
+            // Commit sau mỗi ngày hoàn thành — nếu abort thì không commit, ngày đó sẽ retry lần sau
+            if (!dateAborted)
             {
-                // Thứ tự upsert bắt buộc do FK dependency
-                int countryId = await UpsertCountryAsync(fixture, countryCache);
-                int leagueId = await UpsertLeagueAsync(fixture, countryId, leagueCache);
-                int homeTeamId = await UpsertTeamAsync(fixture.HomeTeamExternalId, fixture.HomeTeamName, fixture.HomeTeamLogo, countryId, teamCache);
-                int awayTeamId = await UpsertTeamAsync(fixture.AwayTeamExternalId, fixture.AwayTeamName, fixture.AwayTeamLogo, countryId, teamCache);
-
-                Match? existing = await uow.Matches.GetByExternalIdAsync(fixture.ExternalId);
-
-                if (existing is null)
-                {
-                    Match newMatch = new()
-                    {
-                        ExternalId = fixture.ExternalId,
-                        HomeTeamId = homeTeamId,
-                        AwayTeamId = awayTeamId,
-                        LeagueId = leagueId,
-                        Season = fixture.Season,
-                        Round = fixture.Round,
-                        KickoffUtc = fixture.KickoffUtc,
-                        Status = MapStatus(fixture.StatusShort),
-                        HomeScore = fixture.HomeScore,
-                        AwayScore = fixture.AwayScore,
-                        VenueName = fixture.VenueName,
-                        RefereeName = fixture.RefereeName,
-                        FetchedAt = now
-                    };
-                    await uow.Matches.AddAsync(newMatch);
-                    newMatches++;
-
-                    // Schedule pre-match data jobs — chỉ khi thời gian còn trong tương lai
-                    DateTime h2hTime = fixture.KickoffUtc.AddHours(-5);
-                    DateTime lineupTime = fixture.KickoffUtc.AddMinutes(-15);
-
-                    if (h2hTime > now)
-                    {
-                        BackgroundJob.Schedule<PreMatchDataJob>(
-                            j => j.FetchH2HAsync(fixture.ExternalId, fixture.HomeTeamExternalId, fixture.AwayTeamExternalId),
-                            h2hTime);
-
-                        logger.LogDebug(
-                            "Scheduled H2H fetch for fixture {FixtureId} at {Time}",
-                            fixture.ExternalId, h2hTime);
-                    }
-
-                    if (lineupTime > now)
-                    {
-                        BackgroundJob.Schedule<PreMatchDataJob>(
-                            j => j.FetchLineupsAsync(fixture.ExternalId),
-                            lineupTime);
-
-                        logger.LogDebug(
-                            "Scheduled lineup fetch for fixture {FixtureId} at {Time}",
-                            fixture.ExternalId, lineupTime);
-                    }
-                }
-                else
-                {
-                    // Idempotent update — chỉ cập nhật status + score + fetchedAt
-                    existing.Status = MapStatus(fixture.StatusShort);
-                    existing.HomeScore = fixture.HomeScore;
-                    existing.AwayScore = fixture.AwayScore;
-                    existing.FetchedAt = now;
-                    await uow.Matches.UpdateAsync(existing);
-                    updatedMatches++;
-                }
+                await uow.CommitAsync();
+                logger.LogInformation("Committed fixtures for {Date}. New={New}, Updated={Updated}",
+                    date, dateNew, dateUpdated);
+            }
+            else
+            {
+                // Rate limit hoặc HTTP error — dừng toàn bộ, không thử các ngày còn lại
+                break;
             }
         }
-
-        await uow.CommitAsync();
 
         sw.Stop();
         logger.LogInformation(

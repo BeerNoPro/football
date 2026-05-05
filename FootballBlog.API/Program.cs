@@ -266,7 +266,7 @@ try
         RecurringJob.AddOrUpdate<FetchUpcomingMatchesJob>(
             "fetch-upcoming-matches",
             j => j.ExecuteAsync(),
-            "0 */6 * * *",
+            "0 6 * * *",
             new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
     }
     else

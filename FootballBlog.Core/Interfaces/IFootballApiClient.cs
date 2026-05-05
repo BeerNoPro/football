@@ -25,4 +25,7 @@ public interface IFootballApiClient
 
     /// <summary>Lấy fixtures trong khoảng ngày. GET /fixtures?league=X&amp;season=Y&amp;from=...&amp;to=...</summary>
     Task<IEnumerable<FixtureRawDto>?> GetFixturesByRangeAsync(int leagueId, int season, DateOnly from, DateOnly to);
+
+    /// <summary>Lấy fixtures theo ngày cụ thể — GET /fixtures?league=X&amp;date=yyyy-MM-dd. Dùng cho free plan (không cần season).</summary>
+    Task<IEnumerable<FixtureRawDto>?> GetFixturesByDateAsync(int leagueId, DateOnly date);
 }
