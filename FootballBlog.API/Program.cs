@@ -352,6 +352,10 @@ try
     Log.Information("FootballBlog API starting up");
     app.Run();
 }
+catch (HostAbortedException)
+{
+    // EF Core design-time tools abort the host intentionally — không phải lỗi
+}
 catch (Exception ex)
 {
     Log.Fatal(ex, "Application terminated unexpectedly");

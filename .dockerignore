@@ -1,0 +1,51 @@
+# flyctl launch added from .gitignore
+## .NET / C#
+**/*.user
+**/*.suo
+**/*.userosscache
+**/*.sln.docstates
+**/.vs
+**/bin
+**/obj
+**/*.nupkg
+**/*.snupkg
+**/**/launchSettings.json
+
+## Logs (Serilog output)
+**/logs
+**/*.log
+**/demo.md
+
+## Secrets & Config local
+**/appsettings.Development.json
+**/appsettings.Staging.json
+**/appsettings.Production.json
+**/secrets.json
+**/.env
+**/.env.*
+
+## EF Core Migrations temp
+**/*.Designer.cs.bak
+
+## Node / Tailwind
+**/node_modules
+**/npm-debug.log*
+**/**/wwwroot/app.css        # Build artifact — generate bằng `npm run build:css`
+
+## OS
+**/.DS_Store
+**/Thumbs.db
+**/desktop.ini
+
+## IDE
+**/.idea
+**/*.iml
+**/.vscode/settings.json
+
+## Docker volumes
+**/postgres_data
+**/redis_data
+
+## Uploads local
+**/**/wwwroot/uploads
+fly.toml
