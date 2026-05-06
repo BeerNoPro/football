@@ -12,66 +12,13 @@ public class FootballApiClient(
     HttpClient httpClient,
     IFootballApiRateLimiter rateLimiter,
     IApiKeyRotator keyRotator,
+    IApiUsageTracker usageTracker,
     ILogger<FootballApiClient> logger) : IFootballApiClient
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };
-
-    public async Task<IEnumerable<FixtureRawDto>?> GetUpcomingFixturesAsync(int leagueId, int next = 20)
-    {
-        string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
-        if (key is null)
-        {
-            return null;
-        }
-
-        if (!await rateLimiter.TryConsumeAsync())
-        {
-            logger.LogWarning("GetUpcomingFixtures blocked by rate limit — league {LeagueId}", leagueId);
-            return null;
-        }
-
-        try
-        {
-            string season = DateTime.UtcNow.Month >= 7
-                ? DateTime.UtcNow.Year.ToString()
-                : (DateTime.UtcNow.Year - 1).ToString();
-
-            logger.LogDebug("Fetching upcoming fixtures for league {LeagueId}, next={Next}", leagueId, next);
-
-            var request = new HttpRequestMessage(HttpMethod.Get,
-                $"fixtures?league={leagueId}&season={season}&next={next}");
-            request.Headers.Add("x-apisports-key", key);
-
-            var response = await httpClient.SendAsync(request);
-
-            if (await HandleRateLimitAsync(response, key, $"fixtures?league={leagueId}&season={season}&next={next}"))
-            {
-                return null;
-            }
-
-            response.EnsureSuccessStatusCode();
-
-            var envelope = await response.Content.ReadFromJsonAsync<FootballApiEnvelope<FixtureResponse>>(JsonOptions);
-
-            if (envelope?.Response is null)
-            {
-                logger.LogWarning("Empty response for league {LeagueId}", leagueId);
-                return null;
-            }
-
-            IEnumerable<FixtureRawDto> fixtures = envelope.Response.Select(MapToFixtureDto);
-            logger.LogInformation("Fetched {Count} upcoming fixtures for league {LeagueId}", fixtures.Count(), leagueId);
-            return fixtures;
-        }
-        catch (Exception ex) when (ex is not HttpRequestException)
-        {
-            logger.LogError(ex, "Failed to fetch upcoming fixtures for league {LeagueId}", leagueId);
-            return null;
-        }
-    }
 
     public async Task<IEnumerable<LiveMatch>?> GetAllLiveFixturesAsync()
     {
@@ -135,6 +82,12 @@ public class FootballApiClient(
             return null;
         }
 
+        if (!await usageTracker.CanCallAsync("FootballAPI"))
+        {
+            logger.LogWarning("GetHeadToHead blocked by daily quota — {HomeId} vs {AwayId}", homeTeamExternalId, awayTeamExternalId);
+            return null;
+        }
+
         try
         {
             logger.LogDebug("Fetching H2H for {Home} vs {Away}", homeTeamExternalId, awayTeamExternalId);
@@ -159,6 +112,7 @@ public class FootballApiClient(
                 return [];
             }
 
+            await usageTracker.IncrementAsync("FootballAPI");
             IEnumerable<FixtureRawDto> fixtures = envelope.Response.Select(MapToFixtureDto);
             logger.LogInformation("Fetched {Count} H2H matches for {Home} vs {Away}", fixtures.Count(), homeTeamExternalId, awayTeamExternalId);
             return fixtures;
@@ -409,7 +363,7 @@ public class FootballApiClient(
         }
     }
 
-    public async Task<IEnumerable<FixtureRawDto>?> GetFixturesByDateAsync(int leagueId, DateOnly date)
+    public async Task<IEnumerable<FixtureRawDto>?> GetFixturesByDateAsync(DateOnly date)
     {
         string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
         if (key is null)
@@ -419,22 +373,27 @@ public class FootballApiClient(
 
         if (!await rateLimiter.TryConsumeAsync())
         {
-            logger.LogWarning("GetFixturesByDate blocked by rate limit — league {LeagueId} date {Date}", leagueId, date);
+            logger.LogWarning("GetFixturesByDate blocked by rate limit — date {Date}", date);
+            return null;
+        }
+
+        if (!await usageTracker.CanCallAsync("FootballAPI"))
+        {
+            logger.LogWarning("GetFixturesByDate blocked by daily quota — date {Date}", date);
             return null;
         }
 
         try
         {
             string dateStr = date.ToString("yyyy-MM-dd");
-            logger.LogDebug("Fetching fixtures for league {LeagueId} date {Date}", leagueId, dateStr);
+            string endpoint = $"fixtures?date={dateStr}&timezone=Asia/Ho_Chi_Minh";
 
-            var request = new HttpRequestMessage(HttpMethod.Get,
-                $"fixtures?league={leagueId}&date={dateStr}");
+            var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
             request.Headers.Add("x-apisports-key", key);
 
             var response = await httpClient.SendAsync(request);
 
-            if (await HandleRateLimitAsync(response, key, $"fixtures?league={leagueId}&date={dateStr}"))
+            if (await HandleRateLimitAsync(response, key, endpoint))
             {
                 return null;
             }
@@ -442,7 +401,7 @@ public class FootballApiClient(
             response.EnsureSuccessStatusCode();
 
             var envelope = await response.Content.ReadFromJsonAsync<FootballApiEnvelope<FixtureResponse>>(JsonOptions);
-            if (HasApiErrors($"fixtures?league={leagueId}&date={dateStr}", envelope?.Errors ?? default))
+            if (HasApiErrors(endpoint, envelope?.Errors ?? default))
             {
                 return null;
             }
@@ -452,14 +411,12 @@ public class FootballApiClient(
                 return [];
             }
 
-            IEnumerable<FixtureRawDto> fixtures = envelope.Response.Select(MapToFixtureDto);
-            logger.LogInformation("Fetched {Count} fixtures for league {LeagueId} on {Date}",
-                fixtures.Count(), leagueId, dateStr);
-            return fixtures;
+            await usageTracker.IncrementAsync("FootballAPI");
+            return envelope.Response.Select(MapToFixtureDto);
         }
         catch (Exception ex) when (ex is not HttpRequestException)
         {
-            logger.LogError(ex, "Failed to fetch fixtures for league {LeagueId} date {Date}", leagueId, date);
+            logger.LogError(ex, "Failed to fetch fixtures for date {Date}", date);
             return null;
         }
     }

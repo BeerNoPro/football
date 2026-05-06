@@ -1,162 +1,84 @@
 # League IDs — api-football.com
 
-Danh sách 30 giải đấu dự kiến fetch. ✅ = đang có trong config | ⬜ = chưa thêm
+Danh sách 30 giải đấu đang fetch. Tất cả đã được cấu hình trong `appsettings.json > FootballApi.LeagueIds`.
 
 ---
 
 ## UEFA / FIFA
-- Champions League: 2 ✅
-- Europa League: 3 ✅
-- Conference League: 848 ✅
-- Nations League: 531 ✅
-- World Cup: 1 ✅
+- Champions League: 2
+- Europa League: 3
+- Conference League: 848
+- Nations League: 531
+- World Cup: 1
 
 ## Anh
-- Premier League: 39 ✅
-- FA Cup: 45 ✅
-- EFL Cup (Carabao): 48 ✅
+- Premier League: 39
+- FA Cup: 45
+- EFL Cup (Carabao): 48
 
 ## Tây Ban Nha
-- La Liga: 140 ✅
+- La Liga: 140
 
 ## Ý
-- Serie A: 135 ✅
+- Serie A: 135
 
 ## Đức
-- Bundesliga: 78 ✅
+- Bundesliga: 78
 
 ## Pháp
-- Ligue 1: 61 ✅
+- Ligue 1: 61
 
 ## Bồ Đào Nha
-- Primeira Liga: 94 ✅
+- Primeira Liga: 94
 
 ## Saudi Arabia
-- Pro League: 307 ✅
+- Pro League: 307
 
 ## Mỹ
-- MLS: 253 ✅
+- MLS: 253
 
 ## Việt Nam
-- V.League 1: 340 ⬜
-- V.League 2: 637 ⬜
-- Cup: 341 ⬜
-- Super Cup: 831 ⬜
-
----
+- V.League 1: 340
+- V.League 2: 637
+- Cup: 341
+- Super Cup: 831
 
 ## Hà Lan
-- Eredivisie: 88 ⬜
+- Eredivisie: 88
 
 ## Bỉ
-- Pro League: 144 ⬜
+- Pro League: 144
 
 ## Scotland
-- Premiership: 179 ⬜
+- Premiership: 179
 
 ## Thổ Nhĩ Kỳ
-- Süper Lig: 203 ⬜
+- Süper Lig: 203
 
 ## Mexico
-- Liga MX: 262 ⬜
+- Liga MX: 262
 
 ## Brazil
-- Série A: 71 ⬜
+- Série A: 71
 
 ## Argentina
-- Liga Profesional: 128 ⬜
+- Liga Profesional: 128
 
 ## Nhật Bản
-- J1 League: 98 ⬜
+- J1 League: 98
 
 ## Hàn Quốc
-- K League 1: 292 ⬜
+- K League 1: 292
 
 ## Úc
-- A-League: 188 ⬜
+- A-League: 188
 
 ## Nga
-- Premier League: 235 ⬜
+- Premier League: 235
 
 ---
 
-## Tổng: 30 giải | Request/ngày: 30 req (trong giới hạn free 100 req/ngày)
-
----
-
-# TODO — Triển khai session mới
-
-## 1. Fix FootballApiClient.cs — query theo date + skip ngày đã có trong DB
-
-**File:** `FootballBlog.API/ApiClients/FootballApi/FootballApiClient.cs`
-**Vấn đề:** Free plan không hỗ trợ param `next` và `season` mới hơn 2024.
-
-### Logic tối ưu request
-
-```
-Ngày 1 (DB trống):  fetch today, +1  → 60 req (30 leagues × 2 ngày)
-Ngày 2:             today đã có → chỉ fetch +1 (ngày mới) → 30 req
-Ngày 3:             chỉ fetch ngày mới → 30 req
-Còn dư:             40 req/ngày cho mục đích khác
-```
-
-Job cần làm trước khi gọi API:
-1. Query DB lấy danh sách các ngày đã có data: `SELECT DISTINCT DATE(kickoff_utc) FROM matches`
-2. So sánh với window [today, today+1]
-3. Chỉ gọi API cho các ngày **chưa có trong DB**
-
-### Thay đổi cần làm
-
-**`IFootballApiClient`** — thêm method mới:
-```csharp
-Task<IEnumerable<FixtureRawDto>?> GetFixturesByDateAsync(int leagueId, DateOnly date);
-```
-
-**`FootballApiClient`** — implement method mới:
-```csharp
-// fixtures?league={leagueId}&date=2026-05-05
-```
-
-**`FetchUpcomingMatchesJob`** — sửa logic chính:
-```csharp
-// 1. Lấy các ngày đã có data trong DB
-var fetchedDates = await uow.Matches.GetFetchedDatesAsync(); // trả Set<DateOnly>
-
-// 2. Tính các ngày cần fetch
-var today = DateOnly.FromDateTime(DateTime.UtcNow);
-var datesToFetch = Enumerable.Range(0, 2)  // today + tomorrow only
-    .Select(i => today.AddDays(i))
-    .Where(d => !fetchedDates.Contains(d))
-    .ToList();
-
-if (!datesToFetch.Any())
-{
-    logger.LogInformation("Tất cả ngày trong window đã có data, skip.");
-    return;
-}
-
-// 3. Fetch từng ngày × từng league
-foreach (var date in datesToFetch)
-    foreach (var leagueId in opts.LeagueIds)
-        await FetchAndUpsertAsync(leagueId, date);
-```
-
-**`IMatchRepository`** — thêm method:
-```csharp
-Task<HashSet<DateOnly>> GetFetchedDatesAsync();
-```
-
-**Lưu ý:** `GetFetchedDatesAsync` chỉ cần query đơn giản:
-```sql
-SELECT DISTINCT DATE(kickoff_utc) FROM matches WHERE kickoff_utc >= today
-```
-
----
-
-## 2. Update LeagueIds trong appsettings.json
-
-**File:** `FootballBlog.API/appsettings.json`
-**Sửa** `FootballApi.LeagueIds` thành đủ 30 giải (bỏ các ID cũ, thêm mới):
+## appsettings.json
 
 ```json
 "LeagueIds": [ 2, 3, 848, 531, 1, 39, 45, 48, 140, 135, 78, 61, 94, 307, 253, 340, 637, 341, 831, 88, 144, 179, 203, 262, 71, 128, 98, 292, 188, 235 ]
@@ -164,103 +86,123 @@ SELECT DISTINCT DATE(kickoff_utc) FROM matches WHERE kickoff_utc >= today
 
 ---
 
-## 3. Set Football API key lên Fly.io
+# Flow hàng ngày
 
-**Key:** `55559dd1d3600c15def362616f1e53ab`
-```powershell
-fly secrets set --app footballblog-api "FootballApi__ApiKey=55559dd1d3600c15def362616f1e53ab"
 ```
-Sau đó cũng lưu vào `appsettings.Development.json` > `FootballApi.ApiKey` để test local.
+05:00 VN  FetchUpcomingMatchesJob (cron "0 5 * * *", timezone Asia/Ho_Chi_Minh)
+           GET /fixtures?date=yyyy-MM-dd&timezone=Asia/Ho_Chi_Minh  ← 1 request/ngày (tất cả giải)
+           Fetch 3 ngày: hôm qua / hôm nay / ngày mai
+           Filter kết quả theo LeagueIds trong config (client-side)
+           → hôm qua: UPDATE status + score (FT/AET/PEN)
+           → hôm nay: UPSERT live/kết quả
+           → ngày mai: INSERT mới → Schedule FetchH2HAsync tại KickoffUtc − 5h
+           Commit sau mỗi ngày (granularity: nếu ngày 2 lỗi, ngày 1 vẫn lưu)
+
+KO − 5h   PreMatchDataJob.FetchH2HAsync  [1 API req/trận]
+           ├─ H2H 10 trận gần nhất → API
+           ├─ HomeForm + AwayForm (5 trận) → DB, 0 req
+           ├─ Fatigue (ngày nghỉ) → DB, 0 req
+           ├─ Referee → Match.RefereeName, 0 req
+           ├─ Save MatchContextData
+           └─ Enqueue GeneratePredictionJob.ExecuteForMatchAsync
+
+~ngay sau  GeneratePredictionJob.ExecuteForMatchAsync  (Cron.Hourly quét match chưa có prediction)
+           Claude primary → Gemini fallback
+           → Save MatchPrediction
+           → Enqueue TelegramNotificationJob.SendPredictionAsync
+
+06:00 VN  TelegramNotificationJob gửi prediction lên channel
+```
+
+**Timezone:** Toàn bộ dùng VN timezone (`SE Asia Standard Time` Windows / `Asia/Ho_Chi_Minh` Linux). `KickoffUtc` trong DB vẫn lưu UTC — chỉ convert khi hiển thị UI.
+
+**`FetchLineupsAsync`** — giữ trong `PreMatchDataJob` nhưng **không tự động schedule**. Có thể trigger thủ công từ Hangfire dashboard nếu cần. Bỏ qua để tiết kiệm quota.
 
 ---
 
-## 4. Kiểm tra schedule job đã đúng chưa
+# Rate Limit & Quota Tracking
 
-**File:** `FootballBlog.API/Program.cs` dòng ~269
-Schedule hiện tại đã sửa thành `"0 6 * * *"` (6h UTC = 13h Việt Nam) — chạy 1 lần/ngày.
-Verify lại đúng chưa trước khi deploy.
+**Giới hạn Football API:** Daily 100 req, per-minute 10 req.
 
----
+## Hai lớp bảo vệ
 
-## 5. Deploy lên server + test flow hoàn chỉnh
+| Lớp | Impl | Scope | Mục đích |
+|-----|------|-------|---------|
+| Per-minute | `RedisFootballApiRateLimiter` | Redis, in-memory TTL | Chặn burst > 10 req/phút |
+| Daily | `ApiUsageTracker` + bảng `ApiUsageDaily` | PostgreSQL | Enforce hard limit 100 req/ngày |
 
-```powershell
-git add .
-git commit -m "fix: fetch fixtures by date for free plan, add 30 leagues"
-git push origin master
+## Flow trong `FootballApiClient`
+
+```
+1. keyRotator.GetAvailableKeyAsync()     → null nếu không có key
+2. rateLimiter.TryConsumeAsync()         → false nếu > 10 req/phút (Redis)
+3. usageTracker.CanCallAsync("FootballAPI") → false nếu đã đủ 100 req hôm nay (DB)
+4. Gọi API
+5. HandleRateLimitAsync()                → parse 429/403, block key trong Redis
+6. usageTracker.IncrementAsync("FootballAPI") → ghi +1 vào DB
 ```
 
-Sau khi GitHub Actions deploy xong (~5 phút), verify trên Fly.io:
-```powershell
-fly logs --app footballblog-api   # xem job chạy lúc 6h UTC
-```
+`CanCallAsync` + `IncrementAsync` áp dụng cho: `GetFixturesByDateAsync`, `GetHeadToHeadAsync`.
 
-Trigger job thủ công để test ngay (không cần đợi 6h sáng):
-```
-Vào https://footballblog-api.fly.dev/hangfire
-→ Recurring Jobs → fetch-upcoming-matches → Trigger now
-```
+**`ApiUsageTracker` dùng `IDbContextFactory`** — tạo `DbContext` riêng biệt, không share với UoW của job → `SaveChangesAsync` chỉ commit đúng record usage, không flush ChangeTracker của business transaction.
 
-Nếu job chạy thành công → kiểm tra Neon DB có data trận đấu không.
+## `ApiUsageDaily` — bảng DB
 
----
-
-## 6. Flow Telegram — Hướng B (bỏ bước đăng blog)
-
-**Mục tiêu:** Fetch trận → Gemini sinh nhận định → gửi thẳng Telegram, không đăng blog.
-
-### Flow mới
-```
-FetchUpcomingMatchesJob (6h UTC)
-        ↓
-  Lấy trận ngày mai từ DB
-        ↓
-  GeneratePredictionJob — gọi Gemini Free (2.0 Flash)
-        ↓
-  TelegramNotificationJob — gửi thẳng Telegram
-        ↗ (bỏ PublishPredictionJob)
-```
-
-### Thay đổi cần làm trong code
-
-**`GeneratePredictionJob`** — sau khi sinh prediction xong, trigger Telegram trực tiếp:
-```csharp
-// Thay vì:
-BackgroundJob.Enqueue<PublishPredictionJob>(j => j.ExecuteAsync(predictionId));
-
-// Đổi thành:
-BackgroundJob.Enqueue<TelegramNotificationJob>(j => j.SendPredictionAsync(predictionId));
-```
-
-**`appsettings.json`** — cập nhật Jobs:
+Limits cấu hình tại `appsettings.json > ApiLimits`:
 ```json
-"Jobs": {
-  "FetchUpcomingMatches": true,
-  "LiveScorePolling": false,
-  "GeneratePrediction": true,
-  "PublishPrediction": false,
-  "TelegramNotification": true
+"ApiLimits": {
+  "FootballAPI": 100,
+  "Gemini": 1500,
+  "Telegram": 0
 }
 ```
+`DailyLimit = 0` = unlimited (Telegram không cần track).
 
-**Gemini API key** — lấy tại https://aistudio.google.com/apikey (free, không cần thẻ)
+## Budget thực tế
+
+| Nguồn | Req/ngày |
+|-------|---------|
+| Date fetch (3 ngày × 1 req) | 3 (cố định) |
+| H2H | ~5–15 (1 req × trận mới có H2H time > now) |
+| **Tổng** | **~8–18 / 100** |
+
+---
+
+## Status mapping
+
+| API short | MatchStatus |
+|-----------|-------------|
+| NS | Scheduled |
+| 1H, 2H, HT, ET, P, LIVE, BT | Live |
+| FT, AET, PEN | Finished |
+| PST | Postponed |
+| SUSP, CANC, ABD, WO | Cancelled |
+
+---
+
+# TODO còn lại
+
+## 1. Test Football API local (làm trước)
+Trigger thủ công qua Hangfire dashboard (`/hangfire`):
+- `fetch-upcoming-matches` → Trigger now → kiểm tra log + DB có fixtures không
+- `generate-predictions` → Trigger now → kiểm tra MatchPrediction được tạo không
+- Xem bảng `ApiUsageDaily` có tăng đúng không
+
+## 2. Nâng cấp AI Prediction (sau khi test API xong)
+- Nâng Gemini prompt ngang Claude (thêm H2H detail, Form detail, Fatigue, Referee)
+- Extract `ParseResult` ra shared helper (duplicate giữa Claude + Gemini)
+- Thêm `IApiUsageTracker` vào `GeminiAIPredictionProvider` (track Gemini quota)
+- Tăng Claude `max_tokens` từ 1024 → 2048
+
+## 3. Set secrets lên Fly.io
 ```powershell
+fly secrets set --app footballblog-api "FootballApi__ApiKey=<key>"
 fly secrets set --app footballblog-api "AI__Gemini__ApiKey=<key>"
 ```
-Đảm bảo `AI.DefaultProvider = "Gemini"` trong appsettings để ưu tiên dùng Gemini thay Claude.
 
-### Req/ngày ước tính
-| Nguồn | Req/ngày | Limit free |
-|-------|---------|-----------|
-| Football API | ~30 req | 100 req ✅ |
-| Gemini 2.0 Flash | ~30 req (1 req/trận) | 1,500 req ✅ |
-| Telegram Bot | ~30 req | Không giới hạn ✅ |
-
-### Jobs trạng thái sau khi áp dụng
-| Job | Schedule | Trạng thái | Ghi chú |
-|-----|----------|-----------|---------|
-| FetchUpcomingMatches | 6h UTC hàng ngày | ✅ bật | Cần fix date query (TODO #1) |
-| LiveScorePolling | mỗi phút | ⏸ tắt | Chờ API key live data |
-| GeneratePrediction | theo trigger sau fetch | ✅ bật | Cần Gemini API key |
-| PublishPrediction | — | ⏸ tắt | Bỏ qua, không dùng |
-| TelegramNotification | theo trigger sau Gemini | ✅ bật | Cần Telegram BotToken + ChannelId |
+## 4. Deploy + verify
+```powershell
+git push origin master
+fly logs --app footballblog-api
+```
+Trigger thủ công: `/hangfire` → Recurring Jobs → `fetch-upcoming-matches` → Trigger now.

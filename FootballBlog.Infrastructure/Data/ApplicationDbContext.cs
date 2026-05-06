@@ -26,6 +26,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Standing> Standings => Set<Standing>();
     public DbSet<Player> Players => Set<Player>();
     public DbSet<SquadMember> SquadMembers => Set<SquadMember>();
+    public DbSet<ApiUsageDaily> ApiUsageDaily => Set<ApiUsageDaily>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -265,6 +266,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                   .WithMany(p => p.SquadMembers)
                   .HasForeignKey(s => s.PlayerId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ApiUsageDaily — unique per (Date, Service) để tránh duplicate khi concurrent insert
+        modelBuilder.Entity<ApiUsageDaily>(entity =>
+        {
+            entity.HasIndex(a => new { a.Date, a.Service }).IsUnique();
+            entity.Property(a => a.Service).HasMaxLength(50).IsRequired();
         });
     }
 }
