@@ -6,6 +6,8 @@ public interface IMatchPredictionRepository : IRepository<MatchPrediction>
 {
     Task<MatchPrediction?> GetByMatchIdAsync(int matchId);
 
+    Task<MatchPrediction?> GetByMatchAndPhaseAsync(int matchId, PredictionPhase phase);
+
     /// <summary>Trả các prediction đã generate nhưng chưa publish thành blog post.</summary>
     Task<IEnumerable<MatchPrediction>> GetUnpublishedAsync();
 

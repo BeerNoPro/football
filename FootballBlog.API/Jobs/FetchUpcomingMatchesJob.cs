@@ -120,6 +120,20 @@ public class FetchUpcomingMatchesJob(
                     await uow.Matches.UpdateAsync(existing);
                     updatedMatches++;
                     dateUpdated++;
+
+                    // Seed League Data có thể đã insert match trước → H2H chưa được schedule.
+                    // Nếu h2hTime còn trong tương lai và chưa có ContextData → schedule lại.
+                    DateTime h2hTime = fixture.KickoffUtc.AddHours(-5);
+                    bool hasContext = await uow.MatchContexts.GetByMatchIdAsync(existing.Id) is not null;
+                    if (h2hTime > now && !hasContext)
+                    {
+                        BackgroundJob.Schedule<PreMatchDataJob>(
+                            j => j.FetchH2HAsync(fixture.ExternalId, fixture.HomeTeamExternalId, fixture.AwayTeamExternalId),
+                            h2hTime);
+
+                        logger.LogDebug("Re-scheduled H2H for existing fixture {FixtureId} at {Time} (no ContextData yet)",
+                            fixture.ExternalId, h2hTime);
+                    }
                 }
             }
 
@@ -243,7 +257,8 @@ public class FetchUpcomingMatchesJob(
     private static MatchStatus MapStatus(string s) => s switch
     {
         "NS" => MatchStatus.Scheduled,
-        "1H" or "2H" or "HT" or "ET" or "P" or "LIVE" or "BT" => MatchStatus.Live,
+        "1H" or "2H" or "ET" or "P" or "LIVE" or "BT" => MatchStatus.Live,
+        "HT" => MatchStatus.HalfTime,
         "FT" or "AET" or "PEN" => MatchStatus.Finished,
         "PST" => MatchStatus.Postponed,
         "SUSP" or "CANC" or "ABD" or "WO" => MatchStatus.Cancelled,

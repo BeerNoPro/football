@@ -82,15 +82,20 @@
                    Style="background:#c8f04d;color:#0d0d0d;font-weight:600;" Disabled="_triggering">
             Fetch Matches
         </MudButton>
+        <MudButton OnClick="TriggerH2HAsync" Variant="Variant.Outlined" Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.CompareArrows"
+                   Style="color:#999;border-color:#333;" Disabled="_triggering">
+            H2H
+        </MudButton>
         <MudButton OnClick="TriggerPredictAllAsync" Variant="Variant.Outlined" Size="Size.Small"
                    StartIcon="@Icons.Material.Filled.Psychology"
                    Style="color:#999;border-color:#333;" Disabled="_triggering">
-            Run Predictions
+            Gemini
         </MudButton>
-        <MudButton OnClick="TriggerSeedLeagueDataAsync" Variant="Variant.Outlined" Size="Size.Small"
-                   StartIcon="@Icons.Material.Filled.Download"
+        <MudButton OnClick="TriggerTelegramAsync" Variant="Variant.Outlined" Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.Send"
                    Style="color:#999;border-color:#333;" Disabled="_triggering">
-            Seed League Data
+            Telegram
         </MudButton>
     </div>
     @if (_lastTriggerMsg != null)
@@ -187,6 +192,30 @@
             ? "SeedLeagueDataJob đã được đưa vào queue — theo dõi tại Hangfire Dashboard."
             : "Không thể trigger job. Kiểm tra logs.";
         Snackbar.Add(ok ? "Job đã enqueue!" : "Trigger thất bại", ok ? Severity.Success : Severity.Error);
+        _triggering = false;
+    }
+
+    private async Task TriggerH2HAsync()
+    {
+        _triggering = true;
+        _lastTriggerMsg = null;
+        bool ok = await AdminClient.TriggerH2HAsync();
+        _lastTriggerMsg = ok
+            ? "H2H jobs đã được đưa vào queue cho các trận chưa có context — theo dõi tại Hangfire Dashboard."
+            : "Không thể trigger H2H. Kiểm tra logs.";
+        Snackbar.Add(ok ? "H2H jobs đã enqueue!" : "Trigger thất bại", ok ? Severity.Success : Severity.Error);
+        _triggering = false;
+    }
+
+    private async Task TriggerTelegramAsync()
+    {
+        _triggering = true;
+        _lastTriggerMsg = null;
+        bool ok = await AdminClient.TriggerTelegramAsync();
+        _lastTriggerMsg = ok
+            ? "Telegram jobs đã được đưa vào queue cho các prediction chưa gửi — theo dõi tại Hangfire Dashboard."
+            : "Không thể trigger Telegram. Kiểm tra logs.";
+        Snackbar.Add(ok ? "Telegram jobs đã enqueue!" : "Trigger thất bại", ok ? Severity.Success : Severity.Error);
         _triggering = false;
     }
 

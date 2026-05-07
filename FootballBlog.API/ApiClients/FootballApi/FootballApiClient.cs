@@ -421,6 +421,114 @@ public class FootballApiClient(
         }
     }
 
+    public async Task<HalfTimeContext?> GetFixtureHalfTimeDataAsync(int fixtureExternalId, int htHomeScore, int htAwayScore, int homeTeamExternalId, int awayTeamExternalId)
+    {
+        string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+        if (key is null)
+        {
+            return null;
+        }
+
+        // ── Statistics ────────────────────────────────────────────────────────
+        if (!await rateLimiter.TryConsumeAsync()) { logger.LogWarning("GetFixtureHalfTimeData stats blocked by rate limit"); return null; }
+        if (!await usageTracker.CanCallAsync("FootballAPI")) { logger.LogWarning("GetFixtureHalfTimeData stats blocked by daily quota"); return null; }
+
+        List<FixtureStatisticsTeam>? statTeams = null;
+        try
+        {
+            var statsEndpoint = $"fixtures/statistics?fixture={fixtureExternalId}";
+            var req = new HttpRequestMessage(HttpMethod.Get, statsEndpoint);
+            req.Headers.Add("x-apisports-key", key);
+            var res = await httpClient.SendAsync(req);
+            if (!await HandleRateLimitAsync(res, key, statsEndpoint))
+            {
+                res.EnsureSuccessStatusCode();
+                var envelope = await res.Content.ReadFromJsonAsync<FootballApiEnvelope<FixtureStatisticsTeam>>(JsonOptions);
+                statTeams = envelope?.Response?.ToList();
+                await usageTracker.IncrementAsync("FootballAPI");
+            }
+        }
+        catch (Exception ex) when (ex is not HttpRequestException)
+        {
+            logger.LogError(ex, "Failed to fetch fixture statistics for {FixtureId}", fixtureExternalId);
+        }
+
+        // ── Events ────────────────────────────────────────────────────────────
+        key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+        if (key is null)
+        {
+            return null;
+        }
+
+        if (!await rateLimiter.TryConsumeAsync()) { logger.LogWarning("GetFixtureHalfTimeData events blocked by rate limit"); return null; }
+        if (!await usageTracker.CanCallAsync("FootballAPI")) { logger.LogWarning("GetFixtureHalfTimeData events blocked by daily quota"); return null; }
+
+        List<FixtureEvent>? h1Events = null;
+        try
+        {
+            var eventsEndpoint = $"fixtures/events?fixture={fixtureExternalId}";
+            var req = new HttpRequestMessage(HttpMethod.Get, eventsEndpoint);
+            req.Headers.Add("x-apisports-key", key);
+            var res = await httpClient.SendAsync(req);
+            if (!await HandleRateLimitAsync(res, key, eventsEndpoint))
+            {
+                res.EnsureSuccessStatusCode();
+                var envelope = await res.Content.ReadFromJsonAsync<FootballApiEnvelope<FixtureEvent>>(JsonOptions);
+                // Chỉ lấy events trong H1 (elapsed <= 45)
+                h1Events = envelope?.Response?.Where(e => e.Time.Elapsed <= 45).ToList();
+                await usageTracker.IncrementAsync("FootballAPI");
+            }
+        }
+        catch (Exception ex) when (ex is not HttpRequestException)
+        {
+            logger.LogError(ex, "Failed to fetch fixture events for {FixtureId}", fixtureExternalId);
+        }
+
+        // ── Build HalfTimeContext ─────────────────────────────────────────────
+        string? GetStat(List<FixtureStatisticsTeam>? teams, int teamExternalId, string statType)
+        {
+            var team = teams?.FirstOrDefault(t => t.Team.Id == teamExternalId);
+            if (team is null)
+            {
+                return null;
+            }
+
+            var item = team.Statistics.FirstOrDefault(s => s.Type == statType);
+            if (item is null)
+            {
+                return null;
+            }
+
+            return item.Value.ValueKind == System.Text.Json.JsonValueKind.Null ? null : item.Value.ToString();
+        }
+
+        int? ParseStatInt(string? raw) => int.TryParse(raw?.TrimEnd('%'), out var v) ? v : null;
+
+        var halfTimeEvents = h1Events?.Select(e => new HalfTimeEvent(
+            e.Time.Elapsed,
+            e.Type,
+            e.Team.Name,
+            e.Player?.Name
+        )).ToList() ?? [];
+
+        logger.LogInformation("Fetched HT data for fixture {FixtureId}: stats={HasStats}, events={EventCount}",
+            fixtureExternalId, statTeams is not null, halfTimeEvents.Count);
+
+        return new HalfTimeContext(
+            HtHomeScore: htHomeScore,
+            HtAwayScore: htAwayScore,
+            HomePossession: GetStat(statTeams, homeTeamExternalId, "Ball Possession"),
+            AwayPossession: GetStat(statTeams, awayTeamExternalId, "Ball Possession"),
+            HomeShotsOnTarget: ParseStatInt(GetStat(statTeams, homeTeamExternalId, "Shots on Goal")),
+            AwayShotsOnTarget: ParseStatInt(GetStat(statTeams, awayTeamExternalId, "Shots on Goal")),
+            HomeCorners: ParseStatInt(GetStat(statTeams, homeTeamExternalId, "Corner Kicks")),
+            AwayCorners: ParseStatInt(GetStat(statTeams, awayTeamExternalId, "Corner Kicks")),
+            HomeYellowCards: ParseStatInt(GetStat(statTeams, homeTeamExternalId, "Yellow Cards")),
+            AwayYellowCards: ParseStatInt(GetStat(statTeams, awayTeamExternalId, "Yellow Cards")),
+            H1Events: halfTimeEvents
+        );
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /// <summary>
@@ -523,7 +631,8 @@ public class FootballApiClient(
     private static MatchStatus MapStatus(string s) => s switch
     {
         "NS" => MatchStatus.Scheduled,
-        "1H" or "2H" or "HT" or "ET" or "P" or "LIVE" or "BT" => MatchStatus.Live,
+        "1H" or "2H" or "ET" or "P" or "LIVE" or "BT" => MatchStatus.Live,
+        "HT" => MatchStatus.HalfTime,
         "FT" or "AET" or "PEN" => MatchStatus.Finished,
         "PST" => MatchStatus.Postponed,
         "SUSP" or "CANC" or "ABD" or "WO" => MatchStatus.Cancelled,

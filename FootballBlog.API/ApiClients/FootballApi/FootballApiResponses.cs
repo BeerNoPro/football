@@ -101,3 +101,29 @@ internal record StandingStats(
 internal record StandingGoals(
     [property: JsonPropertyName("for")] int For,
     [property: JsonPropertyName("against")] int Against);
+
+// ── GET /fixtures/statistics?fixture=X ──────────────────────────────────────
+
+internal record FixtureStatisticsTeam(
+    [property: JsonPropertyName("team")] TeamInfo Team,
+    [property: JsonPropertyName("statistics")] List<StatisticItem> Statistics);
+
+internal record StatisticItem(
+    [property: JsonPropertyName("type")] string Type,
+    [property: JsonPropertyName("value")] JsonElement Value);
+
+// ── GET /fixtures/events?fixture=X ──────────────────────────────────────────
+
+internal record FixtureEvent(
+    [property: JsonPropertyName("time")] EventTime Time,
+    [property: JsonPropertyName("team")] TeamInfo Team,
+    [property: JsonPropertyName("player")] EventPlayer? Player,
+    [property: JsonPropertyName("type")] string Type,
+    [property: JsonPropertyName("detail")] string? Detail);
+
+internal record EventTime(
+    [property: JsonPropertyName("elapsed")] int Elapsed,
+    [property: JsonPropertyName("extra")] int? Extra);
+
+internal record EventPlayer(
+    [property: JsonPropertyName("name")] string? Name);

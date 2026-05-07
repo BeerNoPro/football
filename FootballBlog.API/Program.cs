@@ -173,6 +173,9 @@ try
     builder.Services.AddScoped<FetchUpcomingMatchesJob>();
     builder.Services.AddScoped<PreMatchDataJob>();
     builder.Services.AddScoped<GeneratePredictionJob>();
+    builder.Services.AddScoped<HalfTimePredictionJob>();
+    builder.Services.AddScoped<TelegramNotificationJob>();
+    builder.Services.AddScoped<LiveScorePollingJob>();
 
     // Output Cache — cache GET blog endpoints 5 phút, invalidate khi có write
     builder.Services.AddOutputCache(options =>

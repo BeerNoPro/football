@@ -174,18 +174,18 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.HasIndex(m => new { m.LeagueId, m.Season });
         });
 
-        // MatchPrediction — 1-to-1 với Match
+        // MatchPrediction — 1-to-many với Match (PreMatch + HalfTime per match)
         modelBuilder.Entity<MatchPrediction>(entity =>
         {
-            entity.HasIndex(p => p.MatchId).IsUnique();
+            entity.HasIndex(p => new { p.MatchId, p.Phase }).IsUnique();
             entity.Property(p => p.AIProvider).HasMaxLength(50).IsRequired();
             entity.Property(p => p.AIModel).HasMaxLength(100).IsRequired();
             entity.Property(p => p.PredictedOutcome).HasMaxLength(20).IsRequired();
             entity.Property(p => p.ConfidenceScore).HasPrecision(5, 2);
 
             entity.HasOne(p => p.Match)
-                  .WithOne(m => m.Prediction)
-                  .HasForeignKey<MatchPrediction>(p => p.MatchId);
+                  .WithMany(m => m.Predictions)
+                  .HasForeignKey(p => p.MatchId);
 
             entity.HasOne(p => p.BlogPost)
                   .WithMany()

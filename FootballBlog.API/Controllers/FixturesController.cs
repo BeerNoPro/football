@@ -35,7 +35,7 @@ public class FixturesController(ApplicationDbContext dbContext, IOptions<Footbal
             .Include(m => m.HomeTeam)
             .Include(m => m.AwayTeam)
             .Include(m => m.League).ThenInclude(l => l.Country)
-            .Include(m => m.Prediction)
+            .Include(m => m.Predictions)
             .Where(m => m.Season == effectiveSeason)
             .AsQueryable();
 
@@ -103,7 +103,7 @@ public class FixturesController(ApplicationDbContext dbContext, IOptions<Footbal
                 m.AwayTeam.Name,
                 m.AwayTeam.LogoUrl,
                 m.VenueName,
-                m.Prediction != null
+                m.Predictions.Any(p => p.Phase == PredictionPhase.PreMatch)
             ))
             .ToListAsync();
 
@@ -153,7 +153,7 @@ public class FixturesController(ApplicationDbContext dbContext, IOptions<Footbal
             .Include(m => m.HomeTeam)
             .Include(m => m.AwayTeam)
             .Include(m => m.League).ThenInclude(l => l.Country)
-            .Include(m => m.Prediction)
+            .Include(m => m.Predictions)
             .Where(m => m.Id == id)
             .Select(m => new FixtureDto(
                 m.Id,
@@ -176,7 +176,7 @@ public class FixturesController(ApplicationDbContext dbContext, IOptions<Footbal
                 m.AwayTeam.Name,
                 m.AwayTeam.LogoUrl,
                 m.VenueName,
-                m.Prediction != null
+                m.Predictions.Any(p => p.Phase == PredictionPhase.PreMatch)
             ))
             .FirstOrDefaultAsync();
 

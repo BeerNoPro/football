@@ -9,7 +9,8 @@ public record AIPredictionResult(
     decimal ConfidenceScore,
     string AnalysisSummary,
     int PromptTokens,
-    int CompletionTokens
+    int CompletionTokens,
+    string? RawResponse = null
 );
 
 public interface IAIPredictionProvider
@@ -17,4 +18,5 @@ public interface IAIPredictionProvider
     string ProviderName { get; }
     string ModelName { get; }
     Task<AIPredictionResult> PredictAsync(Match match, MatchContext context, CancellationToken ct = default);
+    Task<AIPredictionResult> PredictHalfTimeAsync(Match match, MatchContext preMatchContext, HalfTimeContext htContext, CancellationToken ct = default);
 }

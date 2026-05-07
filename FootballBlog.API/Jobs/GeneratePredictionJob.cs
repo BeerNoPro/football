@@ -31,9 +31,9 @@ public class GeneratePredictionJob(
             return;
         }
 
-        if (match.Prediction is not null)
+        if (match.Predictions.Any(p => p.Phase == PredictionPhase.PreMatch))
         {
-            logger.LogDebug("GeneratePredictionJob: match {MatchId} already has prediction, skip", matchId);
+            logger.LogDebug("GeneratePredictionJob: match {MatchId} already has PreMatch prediction, skip", matchId);
             return;
         }
 
@@ -165,6 +165,7 @@ public class GeneratePredictionJob(
         MatchPrediction prediction = new()
         {
             MatchId = match.Id,
+            Phase = PredictionPhase.PreMatch,
             AIProvider = usedProvider,
             AIModel = usedModel,
             PredictedOutcome = result.PredictedOutcome,
@@ -172,6 +173,7 @@ public class GeneratePredictionJob(
             PredictedAwayScore = result.PredictedAwayScore,
             ConfidenceScore = result.ConfidenceScore,
             AnalysisSummary = result.AnalysisSummary,
+            RawResponse = result.RawResponse,
             PromptTokens = result.PromptTokens,
             CompletionTokens = result.CompletionTokens,
             GeneratedAt = DateTime.UtcNow,

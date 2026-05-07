@@ -25,4 +25,7 @@ public interface IFootballApiClient
 
     /// <summary>Lấy TẤT CẢ fixtures theo ngày — GET /fixtures?date=yyyy-MM-dd. 1 request/ngày, không giới hạn league.</summary>
     Task<IEnumerable<FixtureRawDto>?> GetFixturesByDateAsync(DateOnly date);
+
+    /// <summary>Lấy dữ liệu HT: statistics + events H1. 2 API req. Dùng cho HalfTimePredictionJob.</summary>
+    Task<HalfTimeContext?> GetFixtureHalfTimeDataAsync(int fixtureExternalId, int htHomeScore, int htAwayScore, int homeTeamExternalId, int awayTeamExternalId);
 }

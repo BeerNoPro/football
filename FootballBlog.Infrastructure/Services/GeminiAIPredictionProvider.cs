@@ -13,10 +13,11 @@ namespace FootballBlog.Infrastructure.Services;
 public class GeminiAIPredictionProvider(
     IHttpClientFactory httpClientFactory,
     IApiKeyRotator keyRotator,
+    IApiUsageTracker usageTracker,
     ILogger<GeminiAIPredictionProvider> logger) : IAIPredictionProvider
 {
     public string ProviderName => "Gemini";
-    public string ModelName => "gemini-2.0-flash";
+    public string ModelName => "gemini-2.5-flash";
 
     public async Task<AIPredictionResult> PredictAsync(Match match, MatchContext context, CancellationToken ct = default)
     {
@@ -31,6 +32,11 @@ public class GeminiAIPredictionProvider(
             contents = new[] { new { role = "user", parts = new[] { new { text = prompt } } } }
         };
 
+        if (!await usageTracker.CanCallAsync("Gemini"))
+        {
+            throw new InvalidOperationException("Gemini daily quota exhausted");
+        }
+
         using var client = httpClientFactory.CreateClient();
 
         logger.LogDebug("Calling Gemini API for match {MatchId}", match.Id);
@@ -43,6 +49,7 @@ public class GeminiAIPredictionProvider(
         }
 
         response.EnsureSuccessStatusCode();
+        await usageTracker.IncrementAsync("Gemini");
 
         var raw = await response.Content.ReadFromJsonAsync<GeminiResponse>(cancellationToken: ct)
             ?? throw new InvalidOperationException("Gemini trả về null response");
@@ -54,6 +61,45 @@ public class GeminiAIPredictionProvider(
         var completionTokens = raw.UsageMetadata?.CandidatesTokenCount ?? 0;
 
         return ParseResult(text, promptTokens, completionTokens);
+    }
+
+    public async Task<AIPredictionResult> PredictHalfTimeAsync(Match match, MatchContext preMatchContext, HalfTimeContext htContext, CancellationToken ct = default)
+    {
+        var apiKey = await keyRotator.GetAvailableKeyAsync("Gemini")
+            ?? throw new InvalidOperationException("Không có Gemini API key khả dụng");
+
+        var url = $"https://generativelanguage.googleapis.com/v1beta/models/{ModelName}:generateContent?key={apiKey}";
+        var prompt = BuildHalfTimePrompt(match, preMatchContext, htContext);
+        var requestBody = new
+        {
+            contents = new[] { new { role = "user", parts = new[] { new { text = prompt } } } }
+        };
+
+        if (!await usageTracker.CanCallAsync("Gemini"))
+        {
+            throw new InvalidOperationException("Gemini daily quota exhausted");
+        }
+
+        using var client = httpClientFactory.CreateClient();
+        logger.LogDebug("Calling Gemini API for HT prediction match {MatchId}", match.Id);
+
+        var response = await client.PostAsJsonAsync(url, requestBody, ct);
+
+        if (response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.Forbidden)
+        {
+            await keyRotator.MarkExhaustedAsync("Gemini", apiKey);
+        }
+
+        response.EnsureSuccessStatusCode();
+        await usageTracker.IncrementAsync("Gemini");
+
+        var raw = await response.Content.ReadFromJsonAsync<GeminiResponse>(cancellationToken: ct)
+            ?? throw new InvalidOperationException("Gemini trả về null response");
+
+        var text = raw.Candidates.FirstOrDefault()?.Content.Parts.FirstOrDefault()?.Text
+            ?? throw new InvalidOperationException("Gemini trả về content rỗng");
+
+        return ParseResult(text, raw.UsageMetadata?.PromptTokenCount ?? 0, raw.UsageMetadata?.CandidatesTokenCount ?? 0);
     }
 
     private static string BuildPrompt(Match match, MatchContext context)
@@ -83,6 +129,30 @@ public class GeminiAIPredictionProvider(
         return sb.ToString();
     }
 
+    private static string BuildHalfTimePrompt(Match match, MatchContext preMatch, HalfTimeContext ht)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine($"Phân tích hiệp 2: {match.HomeTeam.Name} vs {match.AwayTeam.Name} | {match.League.Name}");
+        sb.AppendLine($"Tỷ số HT: {ht.HtHomeScore}-{ht.HtAwayScore}");
+        sb.AppendLine($"Kiểm soát bóng: Nhà {ht.HomePossession ?? "?"} | Khách {ht.AwayPossession ?? "?"}");
+        sb.AppendLine($"Sút trúng đích: Nhà {ht.HomeShotsOnTarget ?? 0} | Khách {ht.AwayShotsOnTarget ?? 0}");
+        sb.AppendLine($"Phạt góc: Nhà {ht.HomeCorners ?? 0} | Khách {ht.AwayCorners ?? 0}");
+        sb.AppendLine($"Thẻ vàng: Nhà {ht.HomeYellowCards ?? 0} | Khách {ht.AwayYellowCards ?? 0}");
+
+        if (ht.H1Events.Count > 0)
+        {
+            sb.AppendLine("Sự kiện H1: " + string.Join(", ", ht.H1Events.Select(e => $"{e.Minute}'{e.Type}({e.Team})")));
+        }
+
+        sb.AppendLine($"H2H: Nhà {preMatch.H2H.HomeWins}W-{preMatch.H2H.Draws}D-{preMatch.H2H.AwayWins}W Khách");
+        sb.AppendLine($"Phong độ nhà: {preMatch.HomeForm.FormString} | Khách: {preMatch.AwayForm.FormString}");
+        sb.AppendLine();
+        sb.AppendLine("Phân tích và dự đoán hiệp 2. Trả về JSON hợp lệ (không markdown fence):");
+        sb.AppendLine(@"{""predictedOutcome"":""HomeWin|Draw|AwayWin"",""predictedHomeScore"":0,""predictedAwayScore"":0,""confidenceScore"":0,""analysisSummary"":""...""}");
+
+        return sb.ToString();
+    }
+
     private static AIPredictionResult ParseResult(string text, int promptTokens, int completionTokens)
     {
         var json = text.Trim();
@@ -106,7 +176,8 @@ public class GeminiAIPredictionProvider(
             ConfidenceScore: root.TryGetProperty("confidenceScore", out var c) ? c.GetDecimal() : 50m,
             AnalysisSummary: root.GetProperty("analysisSummary").GetString() ?? string.Empty,
             PromptTokens: promptTokens,
-            CompletionTokens: completionTokens
+            CompletionTokens: completionTokens,
+            RawResponse: text
         );
     }
 

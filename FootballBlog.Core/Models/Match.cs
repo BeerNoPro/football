@@ -33,7 +33,7 @@ public class Match
     public Team HomeTeam { get; set; } = null!;
     public Team AwayTeam { get; set; } = null!;
     public League League { get; set; } = null!;
-    public MatchPrediction? Prediction { get; set; }
+    public ICollection<MatchPrediction> Predictions { get; set; } = [];
     public MatchContextData? ContextData { get; set; }  // AI input — lazy loaded
 
     /// <summary>LiveMatch tương ứng khi trận đang diễn ra. Null nếu chưa live.</summary>

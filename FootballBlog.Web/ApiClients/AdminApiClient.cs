@@ -345,6 +345,34 @@ public class AdminApiClient(HttpClient httpClient, ILogger<AdminApiClient> logge
         }
     }
 
+    public async Task<bool> TriggerH2HAsync()
+    {
+        try
+        {
+            var response = await httpClient.PostAsync("api/admin/matches/trigger-h2h", null);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to trigger H2H");
+            return false;
+        }
+    }
+
+    public async Task<bool> TriggerTelegramAsync()
+    {
+        try
+        {
+            var response = await httpClient.PostAsync("api/admin/matches/trigger-telegram", null);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to trigger Telegram");
+            return false;
+        }
+    }
+
     public async Task<PagedResult<MatchPredictionDto>?> GetPredictionsAsync(int page = 1, int pageSize = 20, bool? isPublished = null)
     {
         try

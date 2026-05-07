@@ -28,7 +28,7 @@ public class MatchRepository(ApplicationDbContext dbContext) : BaseRepository<Ma
         => await _dbSet
             .AsNoTracking()
             .Include(m => m.HomeTeam).Include(m => m.AwayTeam).Include(m => m.League)
-            .Where(m => m.Status == MatchStatus.Scheduled && m.Prediction == null)
+            .Where(m => m.Status == MatchStatus.Scheduled && !m.Predictions.Any(p => p.Phase == PredictionPhase.PreMatch))
             .OrderBy(m => m.KickoffUtc)
             .TagWithCaller()
             .ToListAsync();
@@ -45,7 +45,7 @@ public class MatchRepository(ApplicationDbContext dbContext) : BaseRepository<Ma
     public async Task<Match?> GetWithPredictionAsync(int id)
         => await _dbSet
             .Include(m => m.HomeTeam).Include(m => m.AwayTeam).Include(m => m.League)
-            .Include(m => m.Prediction)
+            .Include(m => m.Predictions)
             .TagWithCaller()
             .FirstOrDefaultAsync(m => m.Id == id);
 
