@@ -122,8 +122,7 @@ public class HalfTimePredictionJob(
             RawResponse = result.RawResponse,
             PromptTokens = result.PromptTokens,
             CompletionTokens = result.CompletionTokens,
-            GeneratedAt = DateTime.UtcNow,
-            IsPublished = false
+            GeneratedAt = DateTime.UtcNow
         };
 
         await uow.MatchPredictions.AddAsync(htPrediction);

@@ -21,15 +21,6 @@ public class MatchPredictionRepository(ApplicationDbContext dbContext)
             .TagWithCaller()
             .FirstOrDefaultAsync(p => p.MatchId == matchId && p.Phase == phase);
 
-    public async Task<IEnumerable<MatchPrediction>> GetUnpublishedAsync()
-        => await _dbSet
-            .AsNoTracking()
-            .Include(p => p.Match)
-            .Where(p => !p.IsPublished)
-            .OrderBy(p => p.Match.KickoffUtc)
-            .TagWithCaller()
-            .ToListAsync();
-
     public async Task<MatchPrediction?> GetByTelegramMessageIdAsync(long messageId)
         => await _dbSet
             .AsNoTracking()

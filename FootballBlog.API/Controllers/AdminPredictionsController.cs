@@ -19,7 +19,7 @@ public class AdminPredictionsController(
     public async Task<ActionResult<ApiResponse<PagedResult<MatchPredictionDto>>>> GetAll(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
-        [FromQuery] bool? isPublished = null)
+        [FromQuery] string? phase = null)
     {
         var query = dbContext.MatchPredictions
             .AsNoTracking()
@@ -28,9 +28,13 @@ public class AdminPredictionsController(
             .Include(p => p.Match).ThenInclude(m => m.League)
             .AsQueryable();
 
-        if (isPublished.HasValue)
+        if (phase == "prematch")
         {
-            query = query.Where(p => p.IsPublished == isPublished.Value);
+            query = query.Where(p => p.Phase == PredictionPhase.PreMatch);
+        }
+        else if (phase == "halftime")
+        {
+            query = query.Where(p => p.Phase == PredictionPhase.HalfTime);
         }
 
         var total = await query.CountAsync();
@@ -53,8 +57,8 @@ public class AdminPredictionsController(
                 p.ConfidenceScore,
                 p.AnalysisSummary,
                 p.GeneratedAt,
-                p.IsPublished,
-                p.BlogPostId
+                p.Phase.ToString(),
+                p.TelegramMessageId != null
             ))
             .ToListAsync();
 
@@ -64,16 +68,20 @@ public class AdminPredictionsController(
     [HttpGet("stats")]
     public async Task<ActionResult<ApiResponse<PredictionStatsDto>>> GetStats()
     {
-        var total = await dbContext.MatchPredictions.CountAsync();
-        var published = await dbContext.MatchPredictions.CountAsync(p => p.IsPublished);
-        var pending = await dbContext.MatchPredictions.CountAsync(p => !p.IsPublished);
+        var total = await dbContext.MatchPredictions.TagWithCaller().CountAsync();
+        var telegramSent = await dbContext.MatchPredictions
+            .TagWithCaller()
+            .CountAsync(p => p.Phase == PredictionPhase.PreMatch && p.TelegramMessageId != null);
         var todayUtc = DateTime.UtcNow.Date;
-        var todayCount = await dbContext.MatchPredictions.CountAsync(p => p.GeneratedAt >= todayUtc);
+        var todayCount = await dbContext.MatchPredictions
+            .TagWithCaller()
+            .CountAsync(p => p.GeneratedAt >= todayUtc);
 
-        // Tính accuracy: so sánh PredictedOutcome với kết quả thực (match đã kết thúc)
         var finishedWithPrediction = await dbContext.MatchPredictions
+            .AsNoTracking()
             .Include(p => p.Match)
-            .Where(p => p.Match.Status == MatchStatus.Finished
+            .Where(p => p.Phase == PredictionPhase.PreMatch
+                     && p.Match.Status == MatchStatus.Finished
                      && p.Match.HomeScore.HasValue
                      && p.Match.AwayScore.HasValue)
             .Select(p => new
@@ -83,6 +91,7 @@ public class AdminPredictionsController(
                               : p.Match.HomeScore < p.Match.AwayScore ? "AwayWin"
                               : "Draw"
             })
+            .TagWithCaller()
             .ToListAsync();
 
         decimal accuracy = finishedWithPrediction.Count > 0
@@ -90,7 +99,7 @@ public class AdminPredictionsController(
                 / finishedWithPrediction.Count * 100, 1)
             : 0;
 
-        logger.LogDebug("PredictionStats: total={Total}, accuracy={Accuracy}%", total, accuracy);
-        return Ok(ApiResponse<PredictionStatsDto>.Ok(new PredictionStatsDto(total, published, pending, todayCount, accuracy)));
+        logger.LogDebug("PredictionStats: total={Total}, telegramSent={TelegramSent}, accuracy={Accuracy}%", total, telegramSent, accuracy);
+        return Ok(ApiResponse<PredictionStatsDto>.Ok(new PredictionStatsDto(total, telegramSent, todayCount, accuracy)));
     }
 }

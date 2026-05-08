@@ -36,12 +36,6 @@ public class MatchPrediction
     /// <summary>Message ID trên Telegram — PreMatch dùng để edit khi HT.</summary>
     public long? TelegramMessageId { get; set; }
 
-    /// <summary>Blog post được tạo tự động từ prediction này (nullable).</summary>
-    public int? BlogPostId { get; set; }
-
-    public bool IsPublished { get; set; }
-
     // Navigation
     public Match Match { get; set; } = null!;
-    public Post? BlogPost { get; set; }
 }

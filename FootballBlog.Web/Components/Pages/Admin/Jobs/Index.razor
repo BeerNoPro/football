@@ -58,7 +58,7 @@
         <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:20px;border-radius:10px;">
             <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Predictions</MudText>
             <MudText Typo="Typo.h4" Style="color:#efefef;font-weight:700;margin:8px 0 4px;">@(_predStats?.Total ?? 0)</MudText>
-            <MudText Typo="Typo.caption" Style="color:#555;">@(_predStats?.Published ?? 0) đã publish</MudText>
+            <MudText Typo="Typo.caption" Style="color:#555;">@(_predStats?.TelegramSent ?? 0) đã gửi Telegram</MudText>
         </MudPaper>
     </MudItem>
     <MudItem xs="6" sm="3">

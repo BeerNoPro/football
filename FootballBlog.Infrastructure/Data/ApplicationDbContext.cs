@@ -187,11 +187,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                   .WithMany(m => m.Predictions)
                   .HasForeignKey(p => p.MatchId);
 
-            entity.HasOne(p => p.BlogPost)
-                  .WithMany()
-                  .HasForeignKey(p => p.BlogPostId)
-                  .IsRequired(false)
-                  .OnDelete(DeleteBehavior.SetNull);
         });
 
         // MatchContextData — 1-to-1 với Match, lazy loaded

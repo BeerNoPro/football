@@ -373,14 +373,14 @@ public class AdminApiClient(HttpClient httpClient, ILogger<AdminApiClient> logge
         }
     }
 
-    public async Task<PagedResult<MatchPredictionDto>?> GetPredictionsAsync(int page = 1, int pageSize = 20, bool? isPublished = null)
+    public async Task<PagedResult<MatchPredictionDto>?> GetPredictionsAsync(int page = 1, int pageSize = 20, string? phase = null)
     {
         try
         {
             var url = $"api/admin/predictions?page={page}&pageSize={pageSize}";
-            if (isPublished.HasValue)
+            if (!string.IsNullOrEmpty(phase))
             {
-                url += $"&isPublished={isPublished.Value}";
+                url += $"&phase={phase}";
             }
 
             var response = await httpClient.GetFromJsonAsync<ApiResponse<PagedResult<MatchPredictionDto>>>(url);

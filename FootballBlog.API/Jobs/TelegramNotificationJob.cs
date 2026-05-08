@@ -11,7 +11,7 @@ public class TelegramNotificationJob(
     ITelegramService telegramService,
     ILogger<TelegramNotificationJob> logger)
 {
-    /// <summary>Gửi prediction mới lên Telegram (gọi sau PublishPredictionJob).</summary>
+    /// <summary>Gửi prediction mới lên Telegram lúc 06:00 VN (schedule từ GeneratePredictionJob).</summary>
     public async Task SendPredictionAsync(int predictionId)
     {
         var sw = Stopwatch.StartNew();

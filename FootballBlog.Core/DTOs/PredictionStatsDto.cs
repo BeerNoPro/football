@@ -2,8 +2,7 @@ namespace FootballBlog.Core.DTOs;
 
 public record PredictionStatsDto(
     int Total,
-    int Published,
-    int Pending,
+    int TelegramSent,
     int TodayCount,
     decimal AccuracyPercent
 );

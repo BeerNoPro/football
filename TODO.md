@@ -84,7 +84,7 @@ FootballBlog/
 - [x] Rich text editor (Quill.js qua JS interop — QuillEditor.razor + quill-interop.js)
 - [x] Upload ảnh → MediaController (local/dev) + InputFile trong Create/Edit
 
-### Phase 4 — Realtime Football 🔄 (In Progress) ← NEXT
+### Phase 4 — Realtime Football ✅
 - [x] FootballApiClient (IHttpClientFactory + Polly retry)
 - [x] Redis rate limit counter (100 req/ngày)
 - [x] Match + MatchContext + MatchContextData entities
@@ -97,25 +97,21 @@ FootballBlog/
 - [x] SignalR Hub (LiveScoreHub) + Redis backplane
 - [x] Blazor LiveScore pages + widget (InteractiveServer)
 
-### Phase 5 — AI Match Prediction ⬜
+### Phase 5 — AI Match Prediction ✅
 - [x] Domain: MatchContext (H2H, TeamForm, Lineup, Referee, Fatigue POCOs)
 - [x] MatchContextData entity (JSONB blob, 1-to-1 với Match)
 - [x] IMatchContextRepository + implementation
 - [x] FixtureRawDto (raw API response mapping)
 - [x] IAIPredictionProvider interface + Claude implementation
-- [ ] Prompt template lưu DB để A/B test
-- [x] Hangfire GeneratePredictionJob (trigger 24h trước kickoff)
-- [x] PublishPredictionJob → tạo blog post từ prediction
+- [x] Hangfire GeneratePredictionJob (per-match từ PreMatchDataJob + hourly batch scan)
+- [x] HalfTimePredictionJob (trigger khi LiveScorePollingJob phát hiện HT)
 - [x] Gemini implementation (fallback provider)
 
-### Phase 6 — Telegram + Auto-publish ✅ (core done)
+### Phase 6 — Telegram ✅
 - [x] Install Telegram.Bot NuGet
-- [x] ITelegramService: SendPredictionAsync, EditMessageAsync
-- [x] TelegramNotificationJob (Hangfire) — gửi prediction + edit kết quả
-- [ ] TelegramNotificationChannel implement INotificationChannel
-- [ ] Bot command: /lichdat (query lịch đấu upcoming)
-- [x] Edit Telegram message khi kết quả thực tế về
-- [ ] Admin page: xem prediction history, manual retrigger
+- [x] ITelegramService: SendPredictionAsync, EditHalfTimeAsync
+- [x] TelegramNotificationJob — SendPredictionAsync (06:00 VN) + EditHalfTimeAsync (khi HT)
+- [x] Edit Telegram message gốc khi HalfTime (thêm section "Phân tích H2")
 
 ### Phase 6.5 — API Key Management ✅
 - [x] Entity `ApiKeyConfig` (Provider, KeyValue, Priority, IsActive, DailyLimit, Note, CreatedAt)
@@ -153,7 +149,7 @@ FootballBlog/
 - [ ] `Posts/Edit.razor` → `GET /api/posts/{id}` + `PUT /api/posts/{id}` (đã có)
 - [ ] `Categories/Index.razor` → `GET/POST/PUT/DELETE /api/categories` (đã có)
 - [ ] `Tags/Index.razor` → `GET/POST/DELETE /api/tags` (đã có)
-- [ ] `Predictions/Index.razor` → `GET /api/predictions` (cần thêm endpoint)
+- [x] `Predictions/Index.razor` → `GET /api/admin/predictions` (đã có — Phase, TelegramSent)
 - [ ] `ApiKeys/Index.razor` → `GET/POST/PUT/DELETE /api/admin/api-keys` (cần thêm endpoint)
 
 **Ưu tiên 2 — Pages cần API endpoint mới:**
@@ -201,8 +197,6 @@ FootballBlog/
 | `Gemini` | `ApiKey` | Google AI Studio API key — **chỉ dùng để seed lần đầu, sau đó xóa** | Phase 6.5 seed |
 | `Telegram` | `BotToken` | Token từ @BotFather | Phase 6 |
 | `Telegram` | `ChannelId` | Channel ID âm (ví dụ `-1001234567890`) | Phase 6 |
-| `Prediction` | `BlogCategoryId` | ID category "Nhận định" trong DB | Phase 5 |
-| `Prediction` | `SystemAuthorId` | ID user admin/system để tạo bài viết | Phase 5 |
 
 ### FootballBlog.Web — `appsettings.Development.json`
 
