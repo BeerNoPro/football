@@ -125,6 +125,7 @@
                                              @onclick='() => Nav.NavigateTo($"/match/{m.Id}")'>
                                             <div class="mr-time @(m.Status == MatchStatus.Live ? "is-live" : "")">
                                                 <span>@m.KickoffUtc.ToLocalTime().ToString("HH:mm")</span>
+                                                <span style="font-size:9px; color:var(--muted); display:block; line-height:1.2;">@m.KickoffUtc.ToLocalTime().ToString("dd/MM")</span>
                                             </div>
                                             <div class="mr-home">
                                                 <span class="tn">@m.HomeTeamName</span>
@@ -165,6 +166,35 @@
                     }
                 }
             }
+
+            @if (_emptyLeagues.Any())
+            {
+                <div class="section-separator">
+                    <span style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted);">
+                        Chưa có trận đấu
+                    </span>
+                </div>
+                @foreach (var league in _emptyLeagues)
+                {
+                    <div id="league-@league.Id" class="lg collapsed">
+                        <div class="lg-header">
+                            @if (!string.IsNullOrEmpty(league.CountryFlag))
+                            {
+                                <img src="@league.CountryFlag" alt="@league.CountryName" width="14" height="10"
+                                     style="object-fit:cover;border-radius:1px;flex-shrink:0;" />
+                            }
+                            else
+                            {
+                                <div class="lg-icon">⚽</div>
+                            }
+                            <a class="lg-name lg-name-link" href="/league/@league.Id" @onclick:stopPropagation>
+                                @league.Name
+                            </a>
+                            <span style="color:var(--muted); font-size:10px; margin-left:auto;">—</span>
+                        </div>
+                    </div>
+                }
+            }
         }
     </div>
 </div>
@@ -175,7 +205,10 @@
     private bool _fixturesLoading = true;
     private string _teamSearch = "";
     private List<FixtureSection> _sections = [];
+    private List<LeagueDto> _allLeagues = [];
+    private HashSet<int> _leaguesWithMatches = [];
     private HashSet<int> _expandedLeagues = [];
+    private IEnumerable<LeagueDto> _emptyLeagues => _allLeagues.Where(l => !_leaguesWithMatches.Contains(l.Id));
     private int _liveCount;
     private int _totalCount;
 
@@ -193,12 +226,14 @@
     {
         _fixturesLoading = true;
 
-        // 3 calls song song — không filter theo ngày, chỉ filter theo status
+        var leaguesTask  = FixtureClient.GetLeaguesAsync();
         var liveTask     = FixtureClient.GetFixturesAsync(status: "Live",      sortAsc: true,  pageSize: 50);
-        var upcomingTask = FixtureClient.GetFixturesAsync(status: "Scheduled", sortAsc: true,  pageSize: 100);
+        var upcomingTask = FixtureClient.GetFixturesAsync(status: "Scheduled", sortAsc: true,  pageSize: 200);
         var resultsTask  = FixtureClient.GetFixturesAsync(status: "Finished",  sortAsc: false, pageSize: 50);
 
-        await Task.WhenAll(liveTask, upcomingTask, resultsTask);
+        await Task.WhenAll(leaguesTask, liveTask, upcomingTask, resultsTask);
+
+        _allLeagues = (leaguesTask.Result ?? []).OrderBy(l => l.CountryName).ThenBy(l => l.Name).ToList();
 
         var live     = Filter(liveTask.Result?.Items     ?? []);
         var upcoming = Filter(upcomingTask.Result?.Items ?? []);
@@ -216,9 +251,11 @@
             new("Kết quả gần đây",   "var(--muted2)", Group(results)),
         ];
 
-        _expandedLeagues = _sections
+        _leaguesWithMatches = _sections
             .SelectMany(s => s.Groups.Select(g => g.LeagueId))
             .ToHashSet();
+
+        _expandedLeagues = [.._leaguesWithMatches];
 
         _fixturesLoading = false;
     }

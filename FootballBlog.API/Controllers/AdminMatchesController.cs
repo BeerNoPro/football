@@ -131,6 +131,22 @@ public class AdminMatchesController(
         return Ok(ApiResponse<bool>.Ok(true));
     }
 
+    [HttpPost("fetch-squads")]
+    public IActionResult TriggerFetchSquads()
+    {
+        jobClient.Enqueue<FetchSquadJob>(j => j.ExecuteAsync());
+        logger.LogInformation("Admin triggered FetchSquadJob");
+        return Ok(ApiResponse<bool>.Ok(true));
+    }
+
+    [HttpPost("fetch-post-match")]
+    public IActionResult TriggerFetchPostMatch()
+    {
+        jobClient.Enqueue<FetchPostMatchDataJob>(j => j.ExecuteAsync());
+        logger.LogInformation("Admin triggered FetchPostMatchDataJob");
+        return Ok(ApiResponse<bool>.Ok(true));
+    }
+
     [HttpPost("trigger-telegram")]
     public async Task<IActionResult> TriggerTelegram()
     {

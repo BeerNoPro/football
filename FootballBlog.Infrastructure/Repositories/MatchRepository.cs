@@ -90,4 +90,13 @@ public class MatchRepository(ApplicationDbContext dbContext) : BaseRepository<Ma
             .TagWithCaller()
             .AnyAsync(m => m.LeagueId == leagueId && m.Season == season);
 
+    public async Task<IEnumerable<Match>> GetFinishedWithoutStatsAsync(int limit = 15)
+        => await _dbSet
+            .AsNoTracking()
+            .Include(m => m.League)
+            .Where(m => m.Status == MatchStatus.Finished && m.StatsJson == null)
+            .OrderByDescending(m => m.KickoffUtc)
+            .Take(limit)
+            .TagWithCaller()
+            .ToListAsync();
 }

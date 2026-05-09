@@ -97,6 +97,16 @@
                    Style="color:#999;border-color:#333;" Disabled="_triggering">
             Telegram
         </MudButton>
+        <MudButton OnClick="TriggerFetchSquadsAsync" Variant="Variant.Outlined" Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.People"
+                   Style="color:#999;border-color:#333;" Disabled="_triggering">
+            Fetch Squads
+        </MudButton>
+        <MudButton OnClick="TriggerFetchPostMatchAsync" Variant="Variant.Outlined" Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.BarChart"
+                   Style="color:#999;border-color:#333;" Disabled="_triggering">
+            Post-Match Stats
+        </MudButton>
     </div>
     @if (_lastTriggerMsg != null)
     {
@@ -216,6 +226,30 @@
             ? "Telegram jobs đã được đưa vào queue cho các prediction chưa gửi — theo dõi tại Hangfire Dashboard."
             : "Không thể trigger Telegram. Kiểm tra logs.";
         Snackbar.Add(ok ? "Telegram jobs đã enqueue!" : "Trigger thất bại", ok ? Severity.Success : Severity.Error);
+        _triggering = false;
+    }
+
+    private async Task TriggerFetchSquadsAsync()
+    {
+        _triggering = true;
+        _lastTriggerMsg = null;
+        bool ok = await AdminClient.TriggerFetchSquadsAsync();
+        _lastTriggerMsg = ok
+            ? "FetchSquadJob đã được đưa vào queue — chỉ fetch đội có trận 7 ngày tới, theo dõi tại Hangfire Dashboard."
+            : "Không thể trigger job. Kiểm tra logs.";
+        Snackbar.Add(ok ? "Fetch Squads đã enqueue!" : "Trigger thất bại", ok ? Severity.Success : Severity.Error);
+        _triggering = false;
+    }
+
+    private async Task TriggerFetchPostMatchAsync()
+    {
+        _triggering = true;
+        _lastTriggerMsg = null;
+        bool ok = await AdminClient.TriggerFetchPostMatchAsync();
+        _lastTriggerMsg = ok
+            ? "FetchPostMatchDataJob đã được đưa vào queue — fetch statistics + events cho tối đa 15 trận đã kết thúc (premium leagues)."
+            : "Không thể trigger job. Kiểm tra logs.";
+        Snackbar.Add(ok ? "Post-Match Stats đã enqueue!" : "Trigger thất bại", ok ? Severity.Success : Severity.Error);
         _triggering = false;
     }
 

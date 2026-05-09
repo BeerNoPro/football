@@ -102,6 +102,12 @@ public class LiveScorePollingJob(
             BackgroundJob.Enqueue<HalfTimePredictionJob>(j => j.ExecuteAsync(matchId));
         }
 
+        // Enqueue post-match data fetch nếu có trận vừa kết thúc trong run này
+        if (liveInDbList.Any(m => !apiExternalIds.Contains(m.ExternalId)))
+        {
+            BackgroundJob.Enqueue<FetchPostMatchDataJob>(j => j.ExecuteAsync());
+        }
+
         // Broadcast mỗi live match đã update tới subscribers
         foreach (LiveMatch fixture in liveFromApiList.Where(m => m.MatchId.HasValue))
         {

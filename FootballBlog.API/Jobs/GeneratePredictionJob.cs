@@ -3,14 +3,17 @@ using System.Text.Json;
 using FootballBlog.Core.Interfaces;
 using FootballBlog.Core.Interfaces.Services;
 using FootballBlog.Core.Models;
+using FootballBlog.Core.Options;
 using Hangfire;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace FootballBlog.API.Jobs;
 
 public class GeneratePredictionJob(
     IUnitOfWork uow,
     IEnumerable<IAIPredictionProvider> providers,
+    IOptions<FootballApiOptions> options,
     ILogger<GeneratePredictionJob> logger)
 {
     private static readonly TimeZoneInfo VnZone = TimeZoneInfo.FindSystemTimeZoneById(
@@ -73,9 +76,11 @@ public class GeneratePredictionJob(
         var sw = Stopwatch.StartNew();
         logger.LogInformation("GeneratePredictionJob batch started at {StartTime}", DateTime.UtcNow);
 
+        var premiumLeagues = new HashSet<int>(options.Value.PremiumLeagueIds);
         IEnumerable<Match> matches = await uow.Matches.GetWithoutPredictionAsync();
         List<Match> candidates = matches
-            .Where(m => m.KickoffUtc > DateTime.UtcNow)
+            .Where(m => m.KickoffUtc > DateTime.UtcNow
+                     && premiumLeagues.Contains(m.League.ExternalId))
             .ToList();
 
         if (candidates.Count == 0)
@@ -121,8 +126,8 @@ public class GeneratePredictionJob(
 
     private async Task<bool> RunAndScheduleAsync(Match match, MatchContext context)
     {
-        IAIPredictionProvider? primary = providers.FirstOrDefault(p => p.ProviderName == "Claude");
-        IAIPredictionProvider? fallback = providers.FirstOrDefault(p => p.ProviderName == "Gemini");
+        IAIPredictionProvider? primary = providers.FirstOrDefault(p => p.ProviderName == "Gemini");
+        IAIPredictionProvider? fallback = providers.FirstOrDefault(p => p.ProviderName == "Claude");
 
         AIPredictionResult? result = null;
         string usedProvider = string.Empty;
@@ -138,7 +143,7 @@ public class GeneratePredictionJob(
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex, "Claude failed for match {MatchId}, trying Gemini", match.Id);
+                logger.LogWarning(ex, "Gemini failed for match {MatchId}, trying Claude", match.Id);
             }
         }
 
@@ -153,13 +158,13 @@ public class GeneratePredictionJob(
             catch (Exception ex)
             {
                 logger.LogError(ex, "Both providers failed for match {MatchId}", match.Id);
-                return false;
+                throw new InvalidOperationException($"All AI providers failed for match {match.Id}. No key or quota exhausted.", ex);
             }
         }
 
         if (result is null)
         {
-            return false;
+            throw new InvalidOperationException($"All AI providers failed for match {match.Id} — no provider configured.");
         }
 
         MatchPrediction prediction = new()

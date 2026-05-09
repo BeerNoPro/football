@@ -66,9 +66,9 @@ public class HalfTimePredictionJob(
             return;
         }
 
-        // Gọi AI — Claude primary → Gemini fallback
-        IAIPredictionProvider? primary = providers.FirstOrDefault(p => p.ProviderName == "Claude");
-        IAIPredictionProvider? fallback = providers.FirstOrDefault(p => p.ProviderName == "Gemini");
+        // Gọi AI — Gemini primary (free) → Claude fallback
+        IAIPredictionProvider? primary = providers.FirstOrDefault(p => p.ProviderName == "Gemini");
+        IAIPredictionProvider? fallback = providers.FirstOrDefault(p => p.ProviderName == "Claude");
 
         AIPredictionResult? result = null;
         string usedProvider = string.Empty;
@@ -84,7 +84,7 @@ public class HalfTimePredictionJob(
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex, "Claude HT failed for match {MatchId}, trying Gemini", matchId);
+                logger.LogWarning(ex, "Gemini HT failed for match {MatchId}, trying Claude", matchId);
             }
         }
 

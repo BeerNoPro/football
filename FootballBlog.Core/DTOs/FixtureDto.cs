@@ -16,6 +16,12 @@ public record FixtureDto(
     MatchStatus Status,
     int? HomeScore,
     int? AwayScore,
+    int? HtHomeScore,
+    int? HtAwayScore,
+    int? EtHomeScore,
+    int? EtAwayScore,
+    int? PenHomeScore,
+    int? PenAwayScore,
     int HomeTeamId,
     string HomeTeamName,
     string? HomeTeamLogo,
@@ -23,6 +29,7 @@ public record FixtureDto(
     string AwayTeamName,
     string? AwayTeamLogo,
     string? VenueName,
+    string? RefereeName,
     bool HasPrediction
 );
 

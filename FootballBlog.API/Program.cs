@@ -154,9 +154,9 @@ try
     builder.Services.AddScoped<ICategoryService, CategoryService>();
     builder.Services.AddScoped<ILiveScoreService, LiveScoreService>();
 
-    // AI Prediction providers — Claude (primary) + Gemini (fallback)
-    builder.Services.AddScoped<IAIPredictionProvider, ClaudeAIPredictionProvider>();
+    // AI Prediction providers — Gemini (primary, free) + Claude (fallback)
     builder.Services.AddScoped<IAIPredictionProvider, GeminiAIPredictionProvider>();
+    builder.Services.AddScoped<IAIPredictionProvider, ClaudeAIPredictionProvider>();
 
     // API Key rotation
     builder.Services.AddScoped<IApiKeyRotator, ApiKeyRotator>();
@@ -171,6 +171,8 @@ try
     // Hangfire jobs (phải đăng ký tường minh để DI resolve được)
     builder.Services.AddScoped<SeedLeagueDataJob>();
     builder.Services.AddScoped<FetchUpcomingMatchesJob>();
+    builder.Services.AddScoped<FetchSquadJob>();
+    builder.Services.AddScoped<FetchPostMatchDataJob>();
     builder.Services.AddScoped<PreMatchDataJob>();
     builder.Services.AddScoped<GeneratePredictionJob>();
     builder.Services.AddScoped<HalfTimePredictionJob>();

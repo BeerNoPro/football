@@ -43,6 +43,7 @@ public class FetchUpcomingMatchesJob(
         var teamCache = new Dictionary<int, int>();
 
         var allowedLeagues = new HashSet<int>(opts.LeagueIds);
+        var premiumLeagues = new HashSet<int>(opts.PremiumLeagueIds);
 
         // 3. Fetch 1 request/ngày — trả về tất cả giải, lọc theo LeagueIds trong config
         foreach (DateOnly date in datesToFetch)
@@ -89,6 +90,12 @@ public class FetchUpcomingMatchesJob(
                         Status = MapStatus(fixture.StatusShort),
                         HomeScore = fixture.HomeScore,
                         AwayScore = fixture.AwayScore,
+                        HtHomeScore = fixture.HtHomeScore,
+                        HtAwayScore = fixture.HtAwayScore,
+                        EtHomeScore = fixture.EtHomeScore,
+                        EtAwayScore = fixture.EtAwayScore,
+                        PenHomeScore = fixture.PenHomeScore,
+                        PenAwayScore = fixture.PenAwayScore,
                         VenueName = fixture.VenueName,
                         RefereeName = fixture.RefereeName,
                         FetchedAt = now
@@ -97,42 +104,93 @@ public class FetchUpcomingMatchesJob(
                     newMatches++;
                     dateNew++;
 
-                    // Schedule H2H fetch 5h trước kickoff
-                    DateTime h2hTime = fixture.KickoffUtc.AddHours(-5);
-
-                    if (h2hTime > now)
+                    // Schedule H2H fetch 5h trước kickoff — chỉ cho premium leagues
+                    if (premiumLeagues.Contains(fixture.LeagueExternalId))
                     {
-                        BackgroundJob.Schedule<PreMatchDataJob>(
-                            j => j.FetchH2HAsync(fixture.ExternalId, fixture.HomeTeamExternalId, fixture.AwayTeamExternalId),
-                            h2hTime);
+                        DateTime h2hTime = fixture.KickoffUtc.AddHours(-5);
+                        if (h2hTime > now)
+                        {
+                            BackgroundJob.Schedule<PreMatchDataJob>(
+                                j => j.FetchH2HAsync(fixture.ExternalId, fixture.HomeTeamExternalId, fixture.AwayTeamExternalId),
+                                h2hTime);
 
-                        logger.LogDebug("Scheduled H2H fetch for fixture {FixtureId} at {Time}",
-                            fixture.ExternalId, h2hTime);
+                            logger.LogDebug("Scheduled H2H fetch for fixture {FixtureId} at {Time}",
+                                fixture.ExternalId, h2hTime);
+                        }
                     }
                 }
                 else
                 {
-                    // Idempotent update — chỉ cập nhật status + score + fetchedAt
+                    // Idempotent update — cập nhật mọi field có thể thay đổi sau lần fetch đầu
                     existing.Status = MapStatus(fixture.StatusShort);
                     existing.HomeScore = fixture.HomeScore;
                     existing.AwayScore = fixture.AwayScore;
+                    // HT/ET/Pen score chỉ ghi đè khi API trả về — tránh xóa data đã có
+                    if (fixture.HtHomeScore.HasValue)
+                    {
+                        existing.HtHomeScore = fixture.HtHomeScore;
+                    }
+
+                    if (fixture.HtAwayScore.HasValue)
+                    {
+                        existing.HtAwayScore = fixture.HtAwayScore;
+                    }
+
+                    if (fixture.EtHomeScore.HasValue)
+                    {
+                        existing.EtHomeScore = fixture.EtHomeScore;
+                    }
+
+                    if (fixture.EtAwayScore.HasValue)
+                    {
+                        existing.EtAwayScore = fixture.EtAwayScore;
+                    }
+
+                    if (fixture.PenHomeScore.HasValue)
+                    {
+                        existing.PenHomeScore = fixture.PenHomeScore;
+                    }
+
+                    if (fixture.PenAwayScore.HasValue)
+                    {
+                        existing.PenAwayScore = fixture.PenAwayScore;
+                    }
+                    // Referee thường null lúc fetch sớm, API bổ sung sau khi trận bắt đầu
+                    if (!string.IsNullOrEmpty(fixture.RefereeName))
+                    {
+                        existing.RefereeName = fixture.RefereeName;
+                    }
+
+                    if (!string.IsNullOrEmpty(fixture.Round))
+                    {
+                        existing.Round = fixture.Round;
+                    }
+
+                    if (!string.IsNullOrEmpty(fixture.VenueName))
+                    {
+                        existing.VenueName = fixture.VenueName;
+                    }
+
                     existing.FetchedAt = now;
                     await uow.Matches.UpdateAsync(existing);
                     updatedMatches++;
                     dateUpdated++;
 
                     // Seed League Data có thể đã insert match trước → H2H chưa được schedule.
-                    // Nếu h2hTime còn trong tương lai và chưa có ContextData → schedule lại.
-                    DateTime h2hTime = fixture.KickoffUtc.AddHours(-5);
-                    bool hasContext = await uow.MatchContexts.GetByMatchIdAsync(existing.Id) is not null;
-                    if (h2hTime > now && !hasContext)
+                    // Re-schedule H2H nếu chưa có ContextData — chỉ cho premium leagues
+                    if (premiumLeagues.Contains(fixture.LeagueExternalId))
                     {
-                        BackgroundJob.Schedule<PreMatchDataJob>(
-                            j => j.FetchH2HAsync(fixture.ExternalId, fixture.HomeTeamExternalId, fixture.AwayTeamExternalId),
-                            h2hTime);
+                        DateTime h2hTime = fixture.KickoffUtc.AddHours(-5);
+                        bool hasContext = await uow.MatchContexts.GetByMatchIdAsync(existing.Id) is not null;
+                        if (h2hTime > now && !hasContext)
+                        {
+                            BackgroundJob.Schedule<PreMatchDataJob>(
+                                j => j.FetchH2HAsync(fixture.ExternalId, fixture.HomeTeamExternalId, fixture.AwayTeamExternalId),
+                                h2hTime);
 
-                        logger.LogDebug("Re-scheduled H2H for existing fixture {FixtureId} at {Time} (no ContextData yet)",
-                            fixture.ExternalId, h2hTime);
+                            logger.LogDebug("Re-scheduled H2H for existing fixture {FixtureId} at {Time} (no ContextData yet)",
+                                fixture.ExternalId, h2hTime);
+                        }
                     }
                 }
             }
@@ -141,6 +199,9 @@ public class FetchUpcomingMatchesJob(
             logger.LogInformation("Committed fixtures for {Date}. New={New}, Updated={Updated}",
                 date, dateNew, dateUpdated);
         }
+
+        // Enqueue post-match fetch cho các trận đã kết thúc chưa có stats — batch daily
+        BackgroundJob.Enqueue<FetchPostMatchDataJob>(j => j.ExecuteAsync());
 
         sw.Stop();
         int finalUsage = await rateLimiter.GetTodayUsageAsync();

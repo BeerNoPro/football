@@ -373,6 +373,34 @@ public class AdminApiClient(HttpClient httpClient, ILogger<AdminApiClient> logge
         }
     }
 
+    public async Task<bool> TriggerFetchSquadsAsync()
+    {
+        try
+        {
+            var response = await httpClient.PostAsync("api/admin/matches/fetch-squads", null);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to trigger fetch squads");
+            return false;
+        }
+    }
+
+    public async Task<bool> TriggerFetchPostMatchAsync()
+    {
+        try
+        {
+            var response = await httpClient.PostAsync("api/admin/matches/fetch-post-match", null);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to trigger fetch post-match data");
+            return false;
+        }
+    }
+
     public async Task<PagedResult<MatchPredictionDto>?> GetPredictionsAsync(int page = 1, int pageSize = 20, string? phase = null)
     {
         try

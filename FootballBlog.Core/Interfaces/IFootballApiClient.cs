@@ -28,4 +28,10 @@ public interface IFootballApiClient
 
     /// <summary>Lấy dữ liệu HT: statistics + events H1. 2 API req. Dùng cho HalfTimePredictionJob.</summary>
     Task<HalfTimeContext?> GetFixtureHalfTimeDataAsync(int fixtureExternalId, int htHomeScore, int htAwayScore, int homeTeamExternalId, int awayTeamExternalId);
+
+    /// <summary>Lấy squad (danh sách cầu thủ) của 1 đội. GET /players/squads?team={teamExternalId}.</summary>
+    Task<IEnumerable<SquadPlayerDto>?> GetSquadByTeamAsync(int teamExternalId);
+
+    /// <summary>Fetch toàn bộ statistics + events sau FT. 2 API req. Trả raw JSON để lưu vào Match.StatsJson / EventsJson.</summary>
+    Task<(string? StatsJson, string? EventsJson)> GetFixturePostMatchDataAsync(int fixtureExternalId);
 }

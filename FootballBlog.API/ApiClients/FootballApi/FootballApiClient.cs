@@ -529,6 +529,156 @@ public class FootballApiClient(
         );
     }
 
+    public async Task<IEnumerable<SquadPlayerDto>?> GetSquadByTeamAsync(int teamExternalId)
+    {
+        string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+        if (key is null)
+        {
+            return null;
+        }
+
+        if (!await rateLimiter.TryConsumeAsync())
+        {
+            logger.LogWarning("GetSquadByTeam blocked by rate limit — team {TeamId}", teamExternalId);
+            return null;
+        }
+
+        if (!await usageTracker.CanCallAsync("FootballAPI"))
+        {
+            logger.LogWarning("GetSquadByTeam blocked by daily quota — team {TeamId}", teamExternalId);
+            return null;
+        }
+
+        try
+        {
+            logger.LogDebug("Fetching squad for team {TeamId}", teamExternalId);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, $"players/squads?team={teamExternalId}");
+            request.Headers.Add("x-apisports-key", key);
+
+            var response = await httpClient.SendAsync(request);
+
+            if (await HandleRateLimitAsync(response, key, $"players/squads?team={teamExternalId}"))
+            {
+                return null;
+            }
+
+            response.EnsureSuccessStatusCode();
+
+            var envelope = await response.Content.ReadFromJsonAsync<FootballApiEnvelope<SquadResponse>>(JsonOptions);
+            if (envelope?.Response is null || envelope.Response.Length == 0)
+            {
+                return [];
+            }
+
+            if (HasApiErrors($"players/squads?team={teamExternalId}", envelope.Errors))
+            {
+                return null;
+            }
+
+            await usageTracker.IncrementAsync("FootballAPI");
+
+            IEnumerable<SquadPlayerDto> players = envelope.Response[0].Players.Select(p => new SquadPlayerDto(
+                ExternalId: p.Id,
+                Name: p.Name,
+                Age: p.Age,
+                Number: p.Number,
+                Position: p.Position,
+                Photo: p.Photo
+            ));
+
+            logger.LogInformation("Fetched {Count} players for team {TeamId}", players.Count(), teamExternalId);
+            return players;
+        }
+        catch (Exception ex) when (ex is not HttpRequestException)
+        {
+            logger.LogError(ex, "Failed to fetch squad for team {TeamId}", teamExternalId);
+            return null;
+        }
+    }
+
+    public async Task<(string? StatsJson, string? EventsJson)> GetFixturePostMatchDataAsync(int fixtureExternalId)
+    {
+        string? key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+        if (key is null)
+        {
+            return (null, null);
+        }
+
+        // ── Statistics ────────────────────────────────────────────────────────
+        string? statsJson = null;
+        if (await rateLimiter.TryConsumeAsync() && await usageTracker.CanCallAsync("FootballAPI"))
+        {
+            try
+            {
+                var statsEndpoint = $"fixtures/statistics?fixture={fixtureExternalId}";
+                var req = new HttpRequestMessage(HttpMethod.Get, statsEndpoint);
+                req.Headers.Add("x-apisports-key", key);
+                var res = await httpClient.SendAsync(req);
+                if (!await HandleRateLimitAsync(res, key, statsEndpoint))
+                {
+                    res.EnsureSuccessStatusCode();
+                    var envelope = await res.Content.ReadFromJsonAsync<FootballApiEnvelope<FixtureStatisticsTeam>>(JsonOptions);
+                    if (envelope?.Response is { Length: > 0 })
+                    {
+                        statsJson = JsonSerializer.Serialize(envelope.Response, JsonOptions);
+                        await usageTracker.IncrementAsync("FootballAPI");
+                    }
+                }
+            }
+            catch (Exception ex) when (ex is not HttpRequestException)
+            {
+                logger.LogError(ex, "PostMatch stats fetch failed for fixture {FixtureId}", fixtureExternalId);
+            }
+        }
+        else
+        {
+            logger.LogWarning("PostMatch stats blocked by rate/quota for fixture {FixtureId}", fixtureExternalId);
+            return (null, null);
+        }
+
+        // ── Events ────────────────────────────────────────────────────────────
+        key = await keyRotator.GetAvailableKeyAsync("FootballApi");
+        if (key is null)
+        {
+            return (statsJson, null);
+        }
+
+        string? eventsJson = null;
+        if (await rateLimiter.TryConsumeAsync() && await usageTracker.CanCallAsync("FootballAPI"))
+        {
+            try
+            {
+                var eventsEndpoint = $"fixtures/events?fixture={fixtureExternalId}";
+                var req = new HttpRequestMessage(HttpMethod.Get, eventsEndpoint);
+                req.Headers.Add("x-apisports-key", key);
+                var res = await httpClient.SendAsync(req);
+                if (!await HandleRateLimitAsync(res, key, eventsEndpoint))
+                {
+                    res.EnsureSuccessStatusCode();
+                    var envelope = await res.Content.ReadFromJsonAsync<FootballApiEnvelope<FixtureEvent>>(JsonOptions);
+                    if (envelope?.Response is { Length: > 0 })
+                    {
+                        eventsJson = JsonSerializer.Serialize(envelope.Response, JsonOptions);
+                        await usageTracker.IncrementAsync("FootballAPI");
+                    }
+                }
+            }
+            catch (Exception ex) when (ex is not HttpRequestException)
+            {
+                logger.LogError(ex, "PostMatch events fetch failed for fixture {FixtureId}", fixtureExternalId);
+            }
+        }
+        else
+        {
+            logger.LogWarning("PostMatch events blocked by rate/quota for fixture {FixtureId}", fixtureExternalId);
+        }
+
+        logger.LogDebug("PostMatchData fetched for fixture {FixtureId}: hasStats={HasStats}, hasEvents={HasEvents}",
+            fixtureExternalId, statsJson is not null, eventsJson is not null);
+        return (statsJson, eventsJson);
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /// <summary>
@@ -578,6 +728,12 @@ public class FootballApiClient(
         StatusShort: r.Fixture.Status.Short,
         HomeScore: r.Goals.Home,
         AwayScore: r.Goals.Away,
+        HtHomeScore: r.Score?.Halftime?.Home,
+        HtAwayScore: r.Score?.Halftime?.Away,
+        EtHomeScore: r.Score?.Extratime?.Home,
+        EtAwayScore: r.Score?.Extratime?.Away,
+        PenHomeScore: r.Score?.Penalty?.Home,
+        PenAwayScore: r.Score?.Penalty?.Away,
         VenueName: r.Fixture.Venue?.Name,
         RefereeName: r.Fixture.Referee,
 
@@ -615,16 +771,20 @@ public class FootballApiClient(
 
     private static string DeriveCountryCode(string countryName, string? flagUrl)
     {
+        // Ưu tiên lấy code từ flag URL: "flags/de.svg" → "DE"
+        // Ổn định hơn fallback tên vì API luôn gửi cùng 1 URL cho cùng 1 nước
         if (!string.IsNullOrEmpty(flagUrl))
         {
             string fileName = Path.GetFileNameWithoutExtension(flagUrl.Split('/').Last());
             if (!string.IsNullOrEmpty(fileName))
             {
-                return fileName.ToUpperInvariant()[..Math.Min(10, fileName.Length)];
+                string code = fileName.ToUpperInvariant();
+                return code[..Math.Min(10, code.Length)];
             }
         }
 
-        string normalized = countryName.ToUpperInvariant().Replace(" ", "");
+        // Fallback: country name — cap 10 để match MaxLength(10) DB constraint
+        string normalized = countryName.ToUpperInvariant().Replace(" ", "_");
         return normalized[..Math.Min(10, normalized.Length)];
     }
 

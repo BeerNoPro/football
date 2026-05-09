@@ -5,12 +5,12 @@
            GET /fixtures?date=yyyy-MM-dd  ← 1 request/ngày (tất cả giải)
            Fetch 3 ngày: hôm qua / hôm nay / ngày mai
            Filter kết quả theo LeagueIds trong config (client-side)
-           → hôm qua: UPDATE status + score (FT/AET/PEN)
+           → hôm qua: UPDATE status + score (FT/AET/PEN) + HT/ET/Pen score + Round/Venue/Referee
            → hôm nay: UPSERT live/kết quả
-           → ngày mai: INSERT mới → Schedule FetchH2HAsync tại KickoffUtc − 5h
+           → ngày mai: INSERT mới → Schedule FetchH2HAsync tại KickoffUtc − 5h (chỉ PremiumLeagues)
            Commit sau mỗi ngày (nếu ngày 2 lỗi, ngày 1 vẫn lưu)
 
-KO − 5h   PreMatchDataJob.FetchH2HAsync  [1 API req/trận]
+KO − 5h   PreMatchDataJob.FetchH2HAsync  [1 API req/trận — chỉ PremiumLeagues]
            ├─ H2H 10 trận gần nhất → API
            ├─ HomeForm + AwayForm (5 trận) → DB, 0 req
            ├─ Fatigue (ngày nghỉ) → DB, 0 req
@@ -19,9 +19,10 @@ KO − 5h   PreMatchDataJob.FetchH2HAsync  [1 API req/trận]
            └─ Enqueue GeneratePredictionJob.ExecuteForMatchAsync
 
 ~ngay sau  GeneratePredictionJob.ExecuteForMatchAsync  (+ Cron.Hourly quét match chưa có prediction)
-           Claude primary → Gemini fallback
+           Claude primary → Gemini fallback  [chỉ PremiumLeagues]
            → Save MatchPrediction (Phase=PreMatch, RawResponse)
            → Schedule TelegramNotificationJob.SendPredictionAsync lúc 06:00 VN
+           → Throw nếu cả 2 fail → Hangfire retry 3 lần, backoff 5 phút
 
 06:00 VN  TelegramNotificationJob.SendPredictionAsync
            Check TelegramMessageId == null (idempotent)
@@ -53,19 +54,22 @@ Khi FT    LiveScorePollingJob phát hiện match biến mất khỏi live feed
 
 **`FetchLineupsAsync`** — giữ trong `PreMatchDataJob` nhưng **không tự động schedule**. Trigger thủ công từ Hangfire dashboard nếu cần. Bỏ qua để tiết kiệm quota.
 
+**`FetchSquadJob`** — trigger thủ công từ Admin UI. Chỉ fetch đội có trận trong 7 ngày tới, chỉ premium leagues, bỏ qua đội đã có squad.
+
 ---
 
 # Flow test thủ công (Admin `/admin/jobs`)
 
-4 buttons để test từng bước độc lập. Bấm theo thứ tự khi cần debug:
+5 buttons để test từng bước độc lập. Bấm theo thứ tự khi cần debug:
 
 ```
-[Fetch Matches] → [H2H] → [Gemini] → [Telegram]
+[Fetch Matches] → [Fetch Squads] → [H2H] → [Gemini] → [Telegram]
 ```
 
 | Button | Endpoint | Logic |
 |--------|----------|-------|
 | **Fetch Matches** | `POST /api/admin/matches/fetch` | Enqueue `FetchUpcomingMatchesJob.ExecuteAsync()` |
+| **Fetch Squads** | `POST /api/admin/matches/fetch-squads` | Enqueue `FetchSquadJob.ExecuteAsync()` — đội có trận 7 ngày tới, premium leagues |
 | **H2H** | `POST /api/admin/matches/trigger-h2h` | Query matches `Scheduled + KickoffUtc > now + ContextData == null` → enqueue `PreMatchDataJob.FetchH2HAsync` cho từng match |
 | **Gemini** | `POST /api/admin/matches/predict-all` | Enqueue `GeneratePredictionJob.ExecuteAsync()` — batch scan PreMatch prediction chưa có |
 | **Telegram** | `POST /api/admin/matches/trigger-telegram` | Query PreMatch predictions có `TelegramMessageId == null` → enqueue `SendPredictionAsync` |
@@ -98,16 +102,17 @@ Khi FT    LiveScorePollingJob phát hiện match biến mất khỏi live feed
 6. usageTracker.IncrementAsync("FootballAPI") → ghi +1 vào DB
 ```
 
-Áp dụng cho: `GetFixturesByDateAsync`, `GetHeadToHeadAsync`, `GetFixtureHalfTimeDataAsync` (2 lần/trận).
+Áp dụng cho: `GetFixturesByDateAsync`, `GetHeadToHeadAsync`, `GetFixtureHalfTimeDataAsync` (2 lần/trận), `GetSquadByTeamAsync`.
 
 ## Budget thực tế
 
 | Nguồn | Req/ngày |
 |-------|---------|
 | Date fetch (3 ngày × 1 req) | 3 (cố định) |
-| H2H | ~5–15 (1 req × trận mới) |
+| H2H | ~5–15 (1 req × trận mới, premium only) |
 | HT statistics + events | ~10–30 (2 req × trận live) |
-| **Tổng** | **~18–48 / 100** |
+| Squad fetch | ~0–20 (thủ công, 1 req/đội chưa có squad) |
+| **Tổng** | **~18–68 / 100** |
 
 ---
 
@@ -134,19 +139,73 @@ Khi FT    LiveScorePollingJob phát hiện match biến mất khỏi live feed
 
 ---
 
-# TODO còn lại
+## Match score fields
 
-## 1. Nâng cấp AI Prediction
-- Nâng Gemini prompt PreMatch ngang Claude (thêm H2H detail, Form detail, Fatigue, Referee)
-- Extract `ParseResult` ra shared helper (duplicate giữa Claude + Gemini)
-- Thêm `IApiUsageTracker` vào `GeminiAIPredictionProvider` (track Gemini quota)
-- Tăng Claude `max_tokens` từ 1024 → 2048
+| Field | Điền khi nào |
+|-------|-------------|
+| `HomeScore` / `AwayScore` | Full-time (luôn có sau FT) |
+| `HtHomeScore` / `HtAwayScore` | Sau half-time (API điền lúc HT trở đi) |
+| `EtHomeScore` / `EtAwayScore` | Chỉ khi status = AET hoặc PEN |
+| `PenHomeScore` / `PenAwayScore` | Chỉ khi status = PEN |
 
-## 2. Deploy
+Tất cả nullable. Update logic dùng null-guard: chỉ ghi đè khi API trả về giá trị không null.
+
+---
+
+# Trạng Thái Thực Tế (2026-05-10)
+
+## Bugs đã fix (branch `fix-fetch-fixtures`)
+
+| Bug | File | Trạng thái |
+|-----|------|-----------|
+| `ApiKeySeeder` skip toàn bộ nếu table có ≥1 row | `Infrastructure/Services/ApiKeySeeder.cs` | ✅ Fixed — check per-provider |
+| `GeneratePredictionJob` silent fail, Hangfire không retry | `API/Jobs/GeneratePredictionJob.cs` | ✅ Fixed — throw thay vì return false |
+| `FetchSquadJob` thiếu đăng ký DI | `API/Program.cs` | ✅ Fixed — AddScoped<FetchSquadJob>() |
+| `FetchSquadJob` double-enumeration `.Count()` | `API/Jobs/FetchSquadJob.cs` | ✅ Fixed — ToList() trước foreach |
+| `FetchUpcomingMatchesJob` ghi đè Round/VenueName null | `API/Jobs/FetchUpcomingMatchesJob.cs` | ✅ Fixed — null-guard |
+| `Home.razor` _expandedLeagues dùng dual-purpose | `Web/Components/Pages/Blog/Home.razor` | ✅ Fixed — tách _leaguesWithMatches |
+
+## Checklist việc còn lại
+
+- [ ] **[P0]** Khởi động lại API để `ApiKeySeeder` seed Claude/Gemini keys vào DB
+- [ ] **[P0]** Trigger [Fetch Squads] từ Admin UI để seed squad data
+- [ ] **[P0]** Trigger [Gemini] từ Admin UI để gen prediction cho matches hôm nay
+- [ ] **[P1]** Đổi provider order: Gemini primary, Claude fallback (`Program.cs` + `GeneratePredictionJob` + `HalfTimePredictionJob`)
+- [ ] **[P1]** Nâng Gemini `BuildPrompt` ngang Claude (thêm H2H detail, form matches, fatigue, referee)
+- [ ] **[P1]** Extract `ParseResult` ra shared `AIPredictionResultParser` (bỏ duplicate giữa 2 providers)
+- [ ] **[P2]** Bổ sung Standing data vào `MatchContext` và AI prompt (rank, points — 0 API call)
+- [ ] **[P2]** Fix `BuildFatigue()`: tính `HomePlayingEurope`/`AwayPlayingEurope` từ DB thay vì hardcode false
+
+---
+
+# Hướng dẫn khởi động sau fix
+
+```powershell
+# Bước 1 — Đảm bảo user-secrets đã set
+dotnet user-secrets set "Gemini:ApiKey" "<your-gemini-key>" --project FootballBlog.API
+dotnet user-secrets set "Claude:ApiKey" "<your-claude-key>" --project FootballBlog.API
+dotnet user-secrets set "Telegram:BotToken" "<your-bot-token>" --project FootballBlog.API
+dotnet user-secrets set "Telegram:ChannelId" "<channel-id>" --project FootballBlog.API
+
+# Bước 2 — Restart API → ApiKeySeeder tự seed Claude/Gemini vào DB
+# (Không cần xóa row cũ nữa — fix đã check per-provider)
+
+# Bước 3 — Admin UI → test theo thứ tự
+# [Fetch Matches] → [Fetch Squads] → [H2H] → [Gemini] → [Telegram]
+```
+
+---
+
+# Deploy (Phase 7)
+
 ```powershell
 fly secrets set --app footballblog-api "FootballApi__ApiKey=<key>"
-fly secrets set --app footballblog-api "AI__Gemini__ApiKey=<key>"
+fly secrets set --app footballblog-api "Gemini__ApiKey=<key>"
+fly secrets set --app footballblog-api "Claude__ApiKey=<key>"
+fly secrets set --app footballblog-api "Telegram__BotToken=<token>"
+fly secrets set --app footballblog-api "Telegram__ChannelId=<id>"
 git push origin master
 fly logs --app footballblog-api
 ```
+
 Trigger thủ công sau deploy: `/hangfire` → Recurring Jobs → `fetch-upcoming-matches` → Trigger now.

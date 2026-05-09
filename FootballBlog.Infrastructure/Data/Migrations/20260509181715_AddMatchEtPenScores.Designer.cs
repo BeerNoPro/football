@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FootballBlog.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260506160646_AddApiUsageDaily")]
-    partial class AddApiUsageDaily
+    [Migration("20260509181715_AddMatchEtPenScores")]
+    partial class AddMatchEtPenScores
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -80,12 +80,16 @@ namespace FootballBlog.Infrastructure.Data.Migrations
 
                     b.Property<string>("Service")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Date", "Service")
+                        .IsUnique();
 
                     b.ToTable("ApiUsageDaily");
                 });
@@ -315,6 +319,12 @@ namespace FootballBlog.Infrastructure.Data.Migrations
                     b.Property<int>("AwayTeamId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("EtAwayScore")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("EtHomeScore")
+                        .HasColumnType("integer");
+
                     b.Property<int>("ExternalId")
                         .HasColumnType("integer");
 
@@ -327,10 +337,22 @@ namespace FootballBlog.Infrastructure.Data.Migrations
                     b.Property<int>("HomeTeamId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("HtAwayScore")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("HtHomeScore")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("KickoffUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("LeagueId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("PenAwayScore")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("PenHomeScore")
                         .HasColumnType("integer");
 
                     b.Property<string>("RefereeName")
@@ -448,9 +470,6 @@ namespace FootballBlog.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("BlogPostId")
-                        .HasColumnType("integer");
-
                     b.Property<int?>("CompletionTokens")
                         .HasColumnType("integer");
 
@@ -461,10 +480,10 @@ namespace FootballBlog.Infrastructure.Data.Migrations
                     b.Property<DateTime>("GeneratedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsPublished")
-                        .HasColumnType("boolean");
-
                     b.Property<int>("MatchId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Phase")
                         .HasColumnType("integer");
 
                     b.Property<int?>("PredictedAwayScore")
@@ -481,14 +500,15 @@ namespace FootballBlog.Infrastructure.Data.Migrations
                     b.Property<int?>("PromptTokens")
                         .HasColumnType("integer");
 
+                    b.Property<string>("RawResponse")
+                        .HasColumnType("text");
+
                     b.Property<long?>("TelegramMessageId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BlogPostId");
-
-                    b.HasIndex("MatchId")
+                    b.HasIndex("MatchId", "Phase")
                         .IsUnique();
 
                     b.ToTable("MatchPredictions");
@@ -1041,18 +1061,11 @@ namespace FootballBlog.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("FootballBlog.Core.Models.MatchPrediction", b =>
                 {
-                    b.HasOne("FootballBlog.Core.Models.Post", "BlogPost")
-                        .WithMany()
-                        .HasForeignKey("BlogPostId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("FootballBlog.Core.Models.Match", "Match")
-                        .WithOne("Prediction")
-                        .HasForeignKey("FootballBlog.Core.Models.MatchPrediction", "MatchId")
+                        .WithMany("Predictions")
+                        .HasForeignKey("MatchId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("BlogPost");
 
                     b.Navigation("Match");
                 });
@@ -1234,7 +1247,7 @@ namespace FootballBlog.Infrastructure.Data.Migrations
 
                     b.Navigation("LiveMatch");
 
-                    b.Navigation("Prediction");
+                    b.Navigation("Predictions");
                 });
 
             modelBuilder.Entity("FootballBlog.Core.Models.Player", b =>
