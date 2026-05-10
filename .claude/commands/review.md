@@ -4,6 +4,20 @@ Khi được gọi (`/review [focus]`):
 
 ---
 
+## BƯỚC 0 — Nạp context dự án (luôn làm trước)
+
+Đọc nhanh 3 file này trước khi review bất kỳ code nào:
+
+```
+STRUCTURE.md        — architecture, domain model, job lifecycle, known issues
+docs/FLOW_2.md      — production flow, provider order, bugs đã fix, checklist còn lại
+TODO.md             — open issues phân loại CRITICAL/HIGH/MEDIUM
+```
+
+Mục đích: hiểu pattern nào đang đúng, anti-pattern nào đã biết, contract nào cần giữ nguyên.
+
+---
+
 ## BƯỚC 1 — Xác định phạm vi thay đổi
 
 ```bash
@@ -53,7 +67,7 @@ Grouped by file → dễ thấy caller nào bị ảnh hưởng, có vỡ contra
 ### 2d. Kiểm tra migration nếu có thay đổi Model/DbContext
 
 ```bash
-rtk ls FootballBlog.Infrastructure/Migrations/
+rtk ls FootballBlog.Infrastructure/Data/Migrations/
 ```
 
 Migration mới nhất có khớp với entity thay đổi không?
@@ -67,13 +81,14 @@ Chỉ check những mục **liên quan** đến layer đang review.
 ### Service Layer
 - [ ] Async/await đúng — không `.Result` / `.Wait()`
 - [ ] Dùng `IUnitOfWork`, không inject DbContext trực tiếp
-- [ ] `CommitAsync()` chỉ gọi 1 lần — không gọi trong repository
+- [ ] `CommitAsync()` chỉ gọi 1 lần — không gọi trong repository hay trong upsert helper
 - [ ] Log đúng level: Debug bắt đầu | Info thành công | Warning not found | Error exception
 - [ ] Trả DTO — không expose entity ra ngoài service
 
 ### Repository Layer
 - [ ] Read-only query có `.AsNoTracking()`
-- [ ] Có `.Select()` chỉ lấy fields cần — không load toàn bộ entity
+- [ ] Có `.TagWithCaller()` trước mọi terminal method (`ToListAsync`, `FirstOrDefaultAsync`, `CountAsync`)
+- [ ] Không `.Include()` thừa trên list query — chỉ include khi caller cần field đó
 - [ ] Pagination dùng `.Skip().Take()` — không load all rồi filter
 - [ ] Không expose `IQueryable` ra ngoài repository
 
@@ -100,7 +115,54 @@ Chỉ check những mục **liên quan** đến layer đang review.
 
 ---
 
-## BƯỚC 4 — Output
+## BƯỚC 4 — Checklist đặc thù Football Blog
+
+Check kỹ khi review code liên quan đến jobs, AI, API Football, hoặc SignalR.
+
+### Hangfire Jobs
+- [ ] **Idempotent**: job chạy lại 2 lần không tạo duplicate data (check bằng `GetByExternalIdAsync` hoặc unique index)
+- [ ] **Throw on failure**: không `return false` / không swallow exception — phải `throw` để Hangfire retry
+- [ ] **CommitAsync ngoài loop**: không gọi `CommitAsync()` trong `foreach` upsert — commit 1 lần/batch sau khi tất cả entity đã vào ChangeTracker
+- [ ] **Navigation property thay FK int**: khi tạo entity mới cần FK của entity chưa commit, dùng navigation property (`League.Country = country`) thay vì gán `CountryId = country.Id` (Id có thể còn = 0)
+- [ ] **Log đầu + cuối job**: `LogInformation` khi bắt đầu + khi kết thúc kèm số record xử lý
+
+### AI Provider
+- [ ] **Thứ tự**: Gemini primary → Claude fallback (không đảo ngược)
+- [ ] **Cả 2 fail → throw**: không silent fail, không return null — để Hangfire retry
+- [ ] **Chỉ PremiumLeagues**: GeneratePredictionJob và HalfTimePredictionJob chỉ chạy cho league trong `PremiumLeagueIds` config
+
+### Football API / Rate Limiter
+- [ ] Mọi call tới `FootballApiClient` đều đi qua 2 lớp: `RedisFootballApiRateLimiter` (10 req/min) + `ApiUsageTracker` (100 req/day)
+- [ ] Khi API trả `null` → log warning + dừng lại, không tiếp tục process
+
+### LiveScore / SignalR
+- [ ] `GetLiveMatchesAsync()` **không** có `.Include(m => m.Events)` — events chỉ load từ API response khi broadcast
+- [ ] Broadcast dùng `fixture.MatchId` (nullable) — kiểm tra `.HasValue` trước khi gửi vào group
+
+### Upsert Pattern (FetchUpcomingMatchesJob)
+- [ ] Các upsert helper trả `entity object` (Country/League/Team), không trả `int`
+- [ ] Cache `Dictionary<string, Country>` / `Dictionary<int, League>` / `Dictionary<int, Team>` — tránh lookup DB lặp lại trong cùng run
+- [ ] `CommitAsync()` chỉ gọi 1 lần/ngày ở cuối `foreach (DateOnly date in datesToFetch)`
+
+---
+
+## BƯỚC 5 — Anti-patterns đã từng xảy ra trong project
+
+Những lỗi này đã được fix — nếu thấy lại trong code mới là regression:
+
+| Anti-pattern | Đúng |
+|---|---|
+| `ApiKeySeeder` check `if (table.Any())` → skip toàn bộ | Check per-provider: `where k.Provider == provider` |
+| `GeneratePredictionJob` `return false` khi AI fail | `throw new InvalidOperationException(...)` để Hangfire retry |
+| `FetchSquadJob` không đăng ký DI | `builder.Services.AddScoped<FetchSquadJob>()` |
+| `IEnumerable` gọi `.Count()` nhiều lần | `.ToList()` trước, dùng `list.Count` |
+| `FetchUpcomingMatchesJob` ghi đè `Round`/`VenueName` bằng `null` | `if (!string.IsNullOrEmpty(fixture.Round))` null-guard |
+| `CommitAsync()` trong mỗi upsert helper | Commit 1 lần/ngày sau toàn bộ batch |
+| `GetLiveMatchesAsync` có `.Include(m => m.Events)` | Bỏ Include — events lấy từ API response |
+
+---
+
+## BƯỚC 6 — Output
 
 ```
 ## Review Summary

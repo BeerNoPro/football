@@ -60,8 +60,8 @@ Fly.io Region: sin (Singapore) | Memory: 1GB | CPU: 1 core | Auto-stop khi idle
 | **Redis Client** | StackExchange.Redis | 2.12.14 | Singleton, thread-safe |
 | **Realtime** | SignalR | 8.0.0 | Redis backplane cho multi-instance |
 | **Background Jobs** | Hangfire | 1.8.23 | PostgreSQL storage (schema: hangfire) |
-| **AI (Primary)** | Google Gemini | — | Free tier, ưu tiên trước |
-| **AI (Fallback)** | Claude API | claude-opus-4-6 | Fallback khi Gemini rate-limit/fail |
+| **AI (Primary)** | Google Gemini | — | Free tier, ưu tiên trước (GeneratePrediction + HalfTime) |
+| **AI (Fallback)** | Claude API | claude-sonnet-4-6 | Fallback khi Gemini rate-limit/fail |
 | **Notifications** | Telegram.Bot | 22.5.0 | MarkdownV2 format, channel broadcast |
 | **External Data** | api-football v3 | api-sports.io | 100 req/day free tier, 10 req/min |
 | **Auth (API)** | ASP.NET Identity + JWT Bearer | 8.0.0 | 7-day token, int-based user ID |
@@ -518,3 +518,4 @@ Serilog với 5 sink targets khác nhau cho API:
 | `RemoveBlogPostFromPrediction` | 2026-05-08 | Cleanup: bỏ PostId FK từ MatchPrediction |
 | `AddMatchHtScore` | 2026-05-09 | HtHomeScore, HtAwayScore columns |
 | `AddMatchEtPenScores` | 2026-05-09 | Extra-time và penalty score columns |
+| `AddMatchStatusKickoffIndex` | 2026-05-10 | Composite index `(Status, KickoffUtc)` + StatsJson/EventsJson columns |

@@ -58,7 +58,6 @@ public class FetchSquadJob(
             {
                 // Upsert Player
                 var existing = await uow.Players.GetByExternalIdAsync(p.ExternalId);
-                int playerId;
 
                 if (existing is null)
                 {
@@ -71,8 +70,15 @@ public class FetchSquadJob(
                         Photo = p.Photo
                     };
                     await uow.Players.AddAsync(player);
-                    await uow.CommitAsync();
-                    playerId = player.Id;
+
+                    // Dùng navigation property — EF tự resolve PlayerId khi commit per-team
+                    await uow.SquadMembers.AddAsync(new SquadMember
+                    {
+                        Player = player,
+                        TeamId = team.Id,
+                        Number = p.Number,
+                        Position = p.Position
+                    });
                 }
                 else
                 {
@@ -84,26 +90,24 @@ public class FetchSquadJob(
                     }
 
                     await uow.Players.UpdateAsync(existing);
-                    playerId = existing.Id;
-                }
 
-                // Upsert SquadMember
-                var member = await uow.SquadMembers.GetByTeamAndPlayerAsync(team.Id, playerId);
-                if (member is null)
-                {
-                    await uow.SquadMembers.AddAsync(new SquadMember
+                    var member = await uow.SquadMembers.GetByTeamAndPlayerAsync(team.Id, existing.Id);
+                    if (member is null)
                     {
-                        TeamId = team.Id,
-                        PlayerId = playerId,
-                        Number = p.Number,
-                        Position = p.Position
-                    });
-                }
-                else
-                {
-                    member.Number = p.Number;
-                    member.Position = p.Position;
-                    await uow.SquadMembers.UpdateAsync(member);
+                        await uow.SquadMembers.AddAsync(new SquadMember
+                        {
+                            TeamId = team.Id,
+                            PlayerId = existing.Id,
+                            Number = p.Number,
+                            Position = p.Position
+                        });
+                    }
+                    else
+                    {
+                        member.Number = p.Number;
+                        member.Position = p.Position;
+                        await uow.SquadMembers.UpdateAsync(member);
+                    }
                 }
             }
 

@@ -104,9 +104,6 @@ public class PreMatchDataJob(
 
         await uow.CommitAsync();
 
-        // ── 5. Trigger Gemini ngay cho trận này ──────────────────────────────
-        BackgroundJob.Enqueue<GeneratePredictionJob>(j => j.ExecuteForMatchAsync(match.Id));
-
         sw.Stop();
         logger.LogInformation(
             "PreMatchDataJob.FetchH2H finished for fixture {FixtureId}. H2H={H2H}, HomeForm={HF}, AwayForm={AF}, Duration={DurationMs}ms",

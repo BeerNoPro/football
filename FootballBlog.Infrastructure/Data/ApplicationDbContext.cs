@@ -172,6 +172,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.HasIndex(m => new { m.HomeTeamId, m.KickoffUtc });
             entity.HasIndex(m => new { m.AwayTeamId, m.KickoffUtc });
             entity.HasIndex(m => new { m.LeagueId, m.Season });
+            // Hot-path jobs: GetUpcomingAsync, GetWithoutContextAsync, GetFinishedWithoutStatsAsync
+            entity.HasIndex(m => new { m.Status, m.KickoffUtc })
+                  .HasDatabaseName("IX_Match_Status_KickoffUtc");
         });
 
         // MatchPrediction — 1-to-many với Match (PreMatch + HalfTime per match)

@@ -38,12 +38,11 @@ public class FetchUpcomingMatchesJob(
         DateTime now = DateTime.UtcNow;
 
         // Cache trong 1 run để tránh lookup DB lặp lại cho cùng country/league/team
-        var countryCache = new Dictionary<string, int>();
-        var leagueCache = new Dictionary<int, int>();
-        var teamCache = new Dictionary<int, int>();
+        var countryCache = new Dictionary<string, Country>();
+        var leagueCache = new Dictionary<int, League>();
+        var teamCache = new Dictionary<int, Team>();
 
         var allowedLeagues = new HashSet<int>(opts.LeagueIds);
-        var premiumLeagues = new HashSet<int>(opts.PremiumLeagueIds);
 
         // 3. Fetch 1 request/ngày — trả về tất cả giải, lọc theo LeagueIds trong config
         foreach (DateOnly date in datesToFetch)
@@ -68,11 +67,11 @@ public class FetchUpcomingMatchesJob(
 
             foreach (FixtureRawDto fixture in fixtures)
             {
-                // Thứ tự upsert bắt buộc do FK dependency
-                int countryId = await UpsertCountryAsync(fixture, countryCache);
-                int leagueId = await UpsertLeagueAsync(fixture, countryId, leagueCache);
-                int homeTeamId = await UpsertTeamAsync(fixture.HomeTeamExternalId, fixture.HomeTeamName, fixture.HomeTeamLogo, countryId, teamCache);
-                int awayTeamId = await UpsertTeamAsync(fixture.AwayTeamExternalId, fixture.AwayTeamName, fixture.AwayTeamLogo, countryId, teamCache);
+                // Thứ tự upsert bắt buộc do FK dependency — dùng navigation property để tránh commit per-entity
+                Country country = await UpsertCountryAsync(fixture, countryCache);
+                League league = await UpsertLeagueAsync(fixture, country, leagueCache);
+                Team homeTeam = await UpsertTeamAsync(fixture.HomeTeamExternalId, fixture.HomeTeamName, fixture.HomeTeamLogo, country, teamCache);
+                Team awayTeam = await UpsertTeamAsync(fixture.AwayTeamExternalId, fixture.AwayTeamName, fixture.AwayTeamLogo, country, teamCache);
 
                 Match? existing = await uow.Matches.GetByExternalIdAsync(fixture.ExternalId);
 
@@ -81,9 +80,9 @@ public class FetchUpcomingMatchesJob(
                     Match newMatch = new()
                     {
                         ExternalId = fixture.ExternalId,
-                        HomeTeamId = homeTeamId,
-                        AwayTeamId = awayTeamId,
-                        LeagueId = leagueId,
+                        HomeTeam = homeTeam,
+                        AwayTeam = awayTeam,
+                        League = league,
                         Season = fixture.Season,
                         Round = fixture.Round,
                         KickoffUtc = fixture.KickoffUtc,
@@ -103,21 +102,6 @@ public class FetchUpcomingMatchesJob(
                     await uow.Matches.AddAsync(newMatch);
                     newMatches++;
                     dateNew++;
-
-                    // Schedule H2H fetch 5h trước kickoff — chỉ cho premium leagues
-                    if (premiumLeagues.Contains(fixture.LeagueExternalId))
-                    {
-                        DateTime h2hTime = fixture.KickoffUtc.AddHours(-5);
-                        if (h2hTime > now)
-                        {
-                            BackgroundJob.Schedule<PreMatchDataJob>(
-                                j => j.FetchH2HAsync(fixture.ExternalId, fixture.HomeTeamExternalId, fixture.AwayTeamExternalId),
-                                h2hTime);
-
-                            logger.LogDebug("Scheduled H2H fetch for fixture {FixtureId} at {Time}",
-                                fixture.ExternalId, h2hTime);
-                        }
-                    }
                 }
                 else
                 {
@@ -176,22 +160,6 @@ public class FetchUpcomingMatchesJob(
                     updatedMatches++;
                     dateUpdated++;
 
-                    // Seed League Data có thể đã insert match trước → H2H chưa được schedule.
-                    // Re-schedule H2H nếu chưa có ContextData — chỉ cho premium leagues
-                    if (premiumLeagues.Contains(fixture.LeagueExternalId))
-                    {
-                        DateTime h2hTime = fixture.KickoffUtc.AddHours(-5);
-                        bool hasContext = await uow.MatchContexts.GetByMatchIdAsync(existing.Id) is not null;
-                        if (h2hTime > now && !hasContext)
-                        {
-                            BackgroundJob.Schedule<PreMatchDataJob>(
-                                j => j.FetchH2HAsync(fixture.ExternalId, fixture.HomeTeamExternalId, fixture.AwayTeamExternalId),
-                                h2hTime);
-
-                            logger.LogDebug("Re-scheduled H2H for existing fixture {FixtureId} at {Time} (no ContextData yet)",
-                                fixture.ExternalId, h2hTime);
-                        }
-                    }
                 }
             }
 
@@ -199,9 +167,6 @@ public class FetchUpcomingMatchesJob(
             logger.LogInformation("Committed fixtures for {Date}. New={New}, Updated={Updated}",
                 date, dateNew, dateUpdated);
         }
-
-        // Enqueue post-match fetch cho các trận đã kết thúc chưa có stats — batch daily
-        BackgroundJob.Enqueue<FetchPostMatchDataJob>(j => j.ExecuteAsync());
 
         sw.Stop();
         int finalUsage = await rateLimiter.GetTodayUsageAsync();
@@ -211,10 +176,12 @@ public class FetchUpcomingMatchesJob(
     }
 
     // ── Upsert helpers ────────────────────────────────────────────────────────
+    // Trả về entity object và dùng navigation property để EF Core tự resolve FK —
+    // không CommitAsync trong helper, chỉ commit 1 lần/ngày ở caller.
 
-    private async Task<int> UpsertCountryAsync(FixtureRawDto fixture, Dictionary<string, int> cache)
+    private async Task<Country> UpsertCountryAsync(FixtureRawDto fixture, Dictionary<string, Country> cache)
     {
-        if (cache.TryGetValue(fixture.CountryCode, out int cached))
+        if (cache.TryGetValue(fixture.CountryCode, out Country? cached))
         {
             return cached;
         }
@@ -222,8 +189,8 @@ public class FetchUpcomingMatchesJob(
         Country? existing = await uow.Countries.GetByCodeAsync(fixture.CountryCode);
         if (existing is not null)
         {
-            cache[fixture.CountryCode] = existing.Id;
-            return existing.Id;
+            cache[fixture.CountryCode] = existing;
+            return existing;
         }
 
         Country country = new()
@@ -233,16 +200,15 @@ public class FetchUpcomingMatchesJob(
             FlagUrl = fixture.CountryFlag
         };
         await uow.Countries.AddAsync(country);
-        await uow.CommitAsync(); // commit ngay để lấy real ID
 
-        cache[fixture.CountryCode] = country.Id;
+        cache[fixture.CountryCode] = country;
         logger.LogInformation("Upserted new country: {Name} ({Code})", country.Name, country.Code);
-        return country.Id;
+        return country;
     }
 
-    private async Task<int> UpsertLeagueAsync(FixtureRawDto fixture, int countryId, Dictionary<int, int> cache)
+    private async Task<League> UpsertLeagueAsync(FixtureRawDto fixture, Country country, Dictionary<int, League> cache)
     {
-        if (cache.TryGetValue(fixture.LeagueExternalId, out int cached))
+        if (cache.TryGetValue(fixture.LeagueExternalId, out League? cached))
         {
             return cached;
         }
@@ -250,16 +216,15 @@ public class FetchUpcomingMatchesJob(
         League? existing = await uow.Leagues.GetByExternalIdAsync(fixture.LeagueExternalId);
         if (existing is not null)
         {
-            // Cập nhật tên nếu API đổi
+            // Cập nhật tên nếu API đổi — commit gộp vào cuối ngày
             if (existing.Name != fixture.LeagueName)
             {
                 existing.Name = fixture.LeagueName;
                 await uow.Leagues.UpdateAsync(existing);
-                await uow.CommitAsync();
             }
 
-            cache[fixture.LeagueExternalId] = existing.Id;
-            return existing.Id;
+            cache[fixture.LeagueExternalId] = existing;
+            return existing;
         }
 
         League league = new()
@@ -267,20 +232,19 @@ public class FetchUpcomingMatchesJob(
             ExternalId = fixture.LeagueExternalId,
             Name = fixture.LeagueName,
             LogoUrl = fixture.LeagueLogo,
-            CountryId = countryId,
+            Country = country, // navigation property — EF tự resolve CountryId
             IsActive = true
         };
         await uow.Leagues.AddAsync(league);
-        await uow.CommitAsync();
 
-        cache[fixture.LeagueExternalId] = league.Id;
+        cache[fixture.LeagueExternalId] = league;
         logger.LogInformation("Upserted new league: {Name} (ext={ExternalId})", league.Name, league.ExternalId);
-        return league.Id;
+        return league;
     }
 
-    private async Task<int> UpsertTeamAsync(int externalId, string name, string? logo, int countryId, Dictionary<int, int> cache)
+    private async Task<Team> UpsertTeamAsync(int externalId, string name, string? logo, Country country, Dictionary<int, Team> cache)
     {
-        if (cache.TryGetValue(externalId, out int cached))
+        if (cache.TryGetValue(externalId, out Team? cached))
         {
             return cached;
         }
@@ -288,16 +252,15 @@ public class FetchUpcomingMatchesJob(
         Team? existing = await uow.Teams.GetByExternalIdAsync(externalId);
         if (existing is not null)
         {
-            // Cập nhật tên nếu API đổi (ví dụ: đội đổi tên chính thức)
+            // Cập nhật tên nếu API đổi — commit gộp vào cuối ngày
             if (existing.Name != name)
             {
                 existing.Name = name;
                 await uow.Teams.UpdateAsync(existing);
-                await uow.CommitAsync();
             }
 
-            cache[externalId] = existing.Id;
-            return existing.Id;
+            cache[externalId] = existing;
+            return existing;
         }
 
         Team team = new()
@@ -305,14 +268,13 @@ public class FetchUpcomingMatchesJob(
             ExternalId = externalId,
             Name = name,
             LogoUrl = logo,
-            CountryId = countryId
+            Country = country // navigation property — EF tự resolve CountryId
         };
         await uow.Teams.AddAsync(team);
-        await uow.CommitAsync();
 
-        cache[externalId] = team.Id;
+        cache[externalId] = team;
         logger.LogInformation("Upserted new team: {Name} (ext={ExternalId})", team.Name, team.ExternalId);
-        return team.Id;
+        return team;
     }
 
     private static MatchStatus MapStatus(string s) => s switch

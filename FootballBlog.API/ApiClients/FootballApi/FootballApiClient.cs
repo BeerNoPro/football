@@ -578,16 +578,16 @@ public class FootballApiClient(
 
             await usageTracker.IncrementAsync("FootballAPI");
 
-            IEnumerable<SquadPlayerDto> players = envelope.Response[0].Players.Select(p => new SquadPlayerDto(
+            var players = envelope.Response[0].Players.Select(p => new SquadPlayerDto(
                 ExternalId: p.Id,
                 Name: p.Name,
                 Age: p.Age,
                 Number: p.Number,
                 Position: p.Position,
                 Photo: p.Photo
-            ));
+            )).ToList();
 
-            logger.LogInformation("Fetched {Count} players for team {TeamId}", players.Count(), teamExternalId);
+            logger.LogInformation("Fetched {Count} players for team {TeamId}", players.Count, teamExternalId);
             return players;
         }
         catch (Exception ex) when (ex is not HttpRequestException)

@@ -1,6 +1,7 @@
 # TODO — Football Blog
 
 > Cập nhật: 2026-05-10. Phân loại theo mức độ ưu tiên.
+> Fixed: C2 (CommitAsync trong upsert loop), C5 (composite index), H4 (Include Events)
 
 ---
 
@@ -16,26 +17,6 @@ builder.Services.AddHangfireServer(opt =>
 {
     opt.WorkerCount = Math.Max(4, Environment.ProcessorCount - 1);
 });
-```
-
----
-
-### C2. CommitAsync() gọi TRONG vòng lặp upsert — 1200+ DB round-trips
-**File:** `FootballBlog.API/Jobs/FetchUpcomingMatchesJob.cs` (UpsertCountryAsync, UpsertLeagueAsync, UpsertTeamAsync)
-**File:** `FootballBlog.API/Jobs/SeedLeagueDataJob.cs` (cùng pattern)
-
-**Vấn đề:** 300 fixtures/ngày × 4 upserts (Country + League + HomeTeam + AwayTeam) = 1200+ `SaveChangesAsync()` call mỗi lần FetchUpcomingMatchesJob chạy. SeedLeagueDataJob còn nặng hơn khi seed toàn season.
-
-**Fix:** Bỏ `CommitAsync()` khỏi các private upsert helper, chỉ gọi 1 lần ở cuối parent method sau khi tất cả entity đã được add/update vào ChangeTracker:
-```csharp
-// Thay vì commit trong từng helper:
-private async Task<int> UpsertCountryAsync(...) {
-    await uow.Countries.AddAsync(country);
-    // KHÔNG gọi uow.CommitAsync() ở đây
-    return country.Id;
-}
-// Gọi 1 lần duy nhất ở caller:
-await uow.CommitAsync();
 ```
 
 ---
@@ -69,25 +50,6 @@ builder.Services.AddHttpClient<IFootballApiClient, FootballApiClient>(...)
 // Lưu lastBroadcastAt per match vào Redis
 // Chỉ gửi events.Where(e => e.CreatedAt > lastBroadcast)
 // Nếu score + status không thay đổi → skip broadcast
-```
-
----
-
-### C5. Missing composite index (Status, KickoffUtc) trên bảng Match
-**File:** `FootballBlog.Infrastructure/Data/ApplicationDbContext.cs:145-175`
-
-**Vấn đề:** 3 query hot path đều filter theo `Status` + `KickoffUtc` nhưng chưa có index:
-- `GetUpcomingAsync()` — WHERE Status=Scheduled AND KickoffUtc <= cutoff
-- `GetWithoutContextAsync()` — WHERE Status=Scheduled AND KickoffUtc <= cutoff
-- `GetFinishedWithoutStatsAsync()` — WHERE Status=Finished
-
-Khi bảng Match có 10K+ rows → full table scan mỗi lần job chạy.
-
-**Fix:** Thêm migration:
-```csharp
-modelBuilder.Entity<Match>()
-    .HasIndex(m => new { m.Status, m.KickoffUtc })
-    .HasDatabaseName("IX_Match_Status_KickoffUtc");
 ```
 
 ---
@@ -172,16 +134,6 @@ await uow.CommitAsync(); // 1 lần duy nhất
 var results = await query.ToListAsync();
 return results.Where(m => !m.Predictions.Any(p => p.Phase == PredictionPhase.PreMatch));
 ```
-
----
-
-### H4. LiveScorePollingJob load toàn bộ Events vào memory
-**File:** `FootballBlog.API/Jobs/LiveScorePollingJob.cs:22`
-**File:** `FootballBlog.Infrastructure/Repositories/LiveMatchRepository.cs` (GetLiveMatchesAsync)
-
-**Vấn đề:** `GetLiveMatchesAsync()` dùng `.Include(m => m.Events)` → 30 live matches × 15 events = 450 objects materialized mỗi phút, chỉ để so sánh status.
-
-**Fix:** Bỏ `.Include(m => m.Events)` khỏi list query. Chỉ load events khi cần broadcast.
 
 ---
 

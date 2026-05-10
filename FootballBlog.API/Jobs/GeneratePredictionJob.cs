@@ -16,9 +16,6 @@ public class GeneratePredictionJob(
     IOptions<FootballApiOptions> options,
     ILogger<GeneratePredictionJob> logger)
 {
-    private static readonly TimeZoneInfo VnZone = TimeZoneInfo.FindSystemTimeZoneById(
-        OperatingSystem.IsWindows() ? "SE Asia Standard Time" : "Asia/Ho_Chi_Minh");
-
     /// <summary>
     /// Trigger per-match từ PreMatchDataJob.FetchH2HAsync — đây là path chính.
     /// Load match + context riêng để tránh bug ContextData = null khi dùng batch query.
@@ -187,21 +184,9 @@ public class GeneratePredictionJob(
         await uow.MatchPredictions.AddAsync(prediction);
         await uow.CommitAsync();
 
-        // Gửi Telegram lúc 06:00 VN hôm nay, hoặc ngày mai nếu đã qua
-        DateTime nowVn = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, VnZone);
-        DateTime sendAtVn = nowVn.Date.AddHours(6);
-        if (sendAtVn <= nowVn)
-        {
-            sendAtVn = sendAtVn.AddDays(1);
-        }
-
-        DateTime sendAtUtc = TimeZoneInfo.ConvertTimeToUtc(sendAtVn, VnZone);
-
-        BackgroundJob.Schedule<TelegramNotificationJob>(j => j.SendPredictionAsync(prediction.Id), sendAtUtc);
-
         logger.LogInformation(
-            "Prediction generated for match {MatchId} via {Provider}: {Outcome} ({Confidence}%), TelegramAt={SendAt} VN",
-            match.Id, usedProvider, result.PredictedOutcome, result.ConfidenceScore, sendAtVn);
+            "Prediction generated for match {MatchId} via {Provider}: {Outcome} ({Confidence}%)",
+            match.Id, usedProvider, result.PredictedOutcome, result.ConfidenceScore);
 
         return true;
     }
