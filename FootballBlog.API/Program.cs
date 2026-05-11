@@ -253,8 +253,8 @@ try
                   .AllowAnyHeader()
                   .AllowCredentials()));
 
-    // Swagger — chỉ dùng trong Development
-    if (builder.Environment.IsDevelopment())
+    // Swagger — Development + Staging (không dùng trong Production)
+    if (!builder.Environment.IsProduction())
     {
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(c =>
@@ -265,13 +265,16 @@ try
 
     app.UseSerilogRequestLogging();
 
-    if (app.Environment.IsDevelopment())
+    if (!app.Environment.IsProduction())
     {
         app.UseDeveloperExceptionPage();
         app.UseSwagger();
         app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "FootballBlog API v1"));
-        app.UseHangfireDashboard("/hangfire");
     }
+
+    // Phải gọi ngoài IsDevelopment — UseHangfireDashboard khởi tạo JobStorage.Current (static)
+    // Nếu không gọi ở đây thì RecurringJob.* crash ngay khi startup ở Staging/Production
+    app.UseHangfireDashboard("/hangfire");
 
     // Recurring jobs — toggle từng job qua appsettings "Jobs" section
     IConfigurationSection jobs = app.Configuration.GetSection("Jobs");
