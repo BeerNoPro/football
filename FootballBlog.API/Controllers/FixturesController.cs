@@ -27,17 +27,27 @@ public class FixturesController(ApplicationDbContext dbContext, IOptions<Footbal
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
-        // Default về mùa giải hiện tại nếu không truyền season (tránh trả data cũ lẫn lộn)
-        string effectiveSeason = season ?? CurrentSeason();
-
         var query = dbContext.Matches
             .AsNoTracking()
             .Include(m => m.HomeTeam)
             .Include(m => m.AwayTeam)
             .Include(m => m.League).ThenInclude(l => l.Country)
-            .Include(m => m.Prediction)
-            .Where(m => m.Season == effectiveSeason)
+            .Include(m => m.Predictions)
             .AsQueryable();
+
+        // Nếu truyền season cụ thể → filter chính xác.
+        // Nếu không → include cả năm hiện tại lẫn năm kế để cover leagues chạy calendar-year
+        // (European: "2025" = mùa 2025/26; Asian/V.League: "2026" = mùa 2026)
+        if (season != null)
+        {
+            query = query.Where(m => m.Season == season);
+        }
+        else
+        {
+            string s1 = CurrentSeason();
+            string s2 = (int.Parse(s1) + 1).ToString();
+            query = query.Where(m => m.Season == s1 || m.Season == s2);
+        }
 
         if (leagueId.HasValue)
         {
@@ -64,9 +74,17 @@ public class FixturesController(ApplicationDbContext dbContext, IOptions<Footbal
             }
         }
 
-        if (!string.IsNullOrEmpty(status) && Enum.TryParse<MatchStatus>(status, true, out var matchStatus))
+        if (!string.IsNullOrEmpty(status))
         {
-            query = query.Where(m => m.Status == matchStatus);
+            // "Live" bao gồm cả HalfTime vì hiệp phụ vẫn hiển thị là LIVE
+            if (status.Equals("Live", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(m => m.Status == MatchStatus.Live || m.Status == MatchStatus.HalfTime);
+            }
+            else if (Enum.TryParse<MatchStatus>(status, true, out var matchStatus))
+            {
+                query = query.Where(m => m.Status == matchStatus);
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(search))
@@ -96,6 +114,12 @@ public class FixturesController(ApplicationDbContext dbContext, IOptions<Footbal
                 m.Status,
                 m.HomeScore,
                 m.AwayScore,
+                m.HtHomeScore,
+                m.HtAwayScore,
+                m.EtHomeScore,
+                m.EtAwayScore,
+                m.PenHomeScore,
+                m.PenAwayScore,
                 m.HomeTeamId,
                 m.HomeTeam.Name,
                 m.HomeTeam.LogoUrl,
@@ -103,7 +127,8 @@ public class FixturesController(ApplicationDbContext dbContext, IOptions<Footbal
                 m.AwayTeam.Name,
                 m.AwayTeam.LogoUrl,
                 m.VenueName,
-                m.Prediction != null
+                m.RefereeName,
+                m.Predictions.Any(p => p.Phase == PredictionPhase.PreMatch)
             ))
             .ToListAsync();
 
@@ -123,13 +148,14 @@ public class FixturesController(ApplicationDbContext dbContext, IOptions<Footbal
         }
 
         var lower = q.ToLower();
-        string season = CurrentSeason();
+        string s1 = CurrentSeason();
+        string s2 = (int.Parse(s1) + 1).ToString();
 
         var matches = await dbContext.Matches
             .AsNoTracking()
             .Include(m => m.HomeTeam)
             .Include(m => m.AwayTeam)
-            .Where(m => m.Season == season &&
+            .Where(m => (m.Season == s1 || m.Season == s2) &&
                         (m.HomeTeam.Name.ToLower().Contains(lower) ||
                          m.AwayTeam.Name.ToLower().Contains(lower)))
             .Select(m => new { m.Id, Home = m.HomeTeam.Name, Away = m.AwayTeam.Name })
@@ -153,7 +179,7 @@ public class FixturesController(ApplicationDbContext dbContext, IOptions<Footbal
             .Include(m => m.HomeTeam)
             .Include(m => m.AwayTeam)
             .Include(m => m.League).ThenInclude(l => l.Country)
-            .Include(m => m.Prediction)
+            .Include(m => m.Predictions)
             .Where(m => m.Id == id)
             .Select(m => new FixtureDto(
                 m.Id,
@@ -169,6 +195,12 @@ public class FixturesController(ApplicationDbContext dbContext, IOptions<Footbal
                 m.Status,
                 m.HomeScore,
                 m.AwayScore,
+                m.HtHomeScore,
+                m.HtAwayScore,
+                m.EtHomeScore,
+                m.EtAwayScore,
+                m.PenHomeScore,
+                m.PenAwayScore,
                 m.HomeTeamId,
                 m.HomeTeam.Name,
                 m.HomeTeam.LogoUrl,
@@ -176,7 +208,8 @@ public class FixturesController(ApplicationDbContext dbContext, IOptions<Footbal
                 m.AwayTeam.Name,
                 m.AwayTeam.LogoUrl,
                 m.VenueName,
-                m.Prediction != null
+                m.RefereeName,
+                m.Predictions.Any(p => p.Phase == PredictionPhase.PreMatch)
             ))
             .FirstOrDefaultAsync();
 

@@ -4,6 +4,7 @@ using FootballBlog.Core.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types.Enums;
 
 namespace FootballBlog.Infrastructure.Services;
@@ -54,14 +55,14 @@ public class TelegramService : ITelegramService
         }
     }
 
-    public async Task EditResultAsync(long messageId, Match match, MatchPrediction prediction, CancellationToken ct = default)
+    public async Task EditHalfTimeAsync(long messageId, Match match, MatchPrediction preMatchPrediction, MatchPrediction htPrediction, CancellationToken ct = default)
     {
         if (_channelId == 0)
         {
             return;
         }
 
-        var text = BuildResultMessage(prediction, match);
+        var text = BuildHalfTimeMessage(preMatchPrediction, htPrediction, match);
 
         try
         {
@@ -72,12 +73,16 @@ public class TelegramService : ITelegramService
                 parseMode: ParseMode.MarkdownV2,
                 cancellationToken: ct);
 
-            _logger.LogInformation(
-                "Telegram message updated with result for match {MatchId}", match.Id);
+            _logger.LogInformation("Telegram message updated with HT analysis for match {MatchId}", match.Id);
+        }
+        catch (ApiRequestException ex) when (ex.Message.Contains("message is not modified"))
+        {
+            // Idempotent: job đã edit thành công ở lần trước, Hangfire retry là bình thường
+            _logger.LogDebug("Telegram message {MessageId} already has HT analysis (not modified), skip", messageId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Không thể edit Telegram message {MessageId}", messageId);
+            _logger.LogError(ex, "Không thể edit Telegram message {MessageId} với HT analysis", messageId);
         }
     }
 
@@ -119,26 +124,35 @@ public class TelegramService : ITelegramService
         return sb.ToString();
     }
 
-    private static string BuildResultMessage(MatchPrediction p, Match m)
+    private static string BuildHalfTimeMessage(MatchPrediction preMatch, MatchPrediction htP, Match m)
     {
         var sb = new StringBuilder();
+
+        // Giữ nguyên toàn bộ PreMatch message
+        sb.Append(BuildPredictionMessage(preMatch, m));
+
+        // Separator + section HT
+        sb.AppendLine();
+        sb.AppendLine(EscapeMd("---"));
+        sb.AppendLine($"⏱ *Phân tích hiệp 2*");
+
         var homeTeam = EscapeMd(m.HomeTeam.Name);
         var awayTeam = EscapeMd(m.AwayTeam.Name);
-
-        sb.AppendLine($"⚽ *{homeTeam} vs {awayTeam}* — KẾT THÚC");
-        sb.AppendLine($"📊 Kết quả thực tế: *{m.HomeScore} \\- {m.AwayScore}*");
-        sb.AppendLine();
-        sb.AppendLine($"🤖 AI dự đoán: {p.PredictedHomeScore} \\- {p.PredictedAwayScore} \\({EscapeMd(p.PredictedOutcome)}\\)");
-
-        var actualOutcome = (m.HomeScore, m.AwayScore) switch
+        var outcomeVi = htP.PredictedOutcome switch
         {
-            var (h, a) when h > a => "HomeWin",
-            var (h, a) when h < a => "AwayWin",
-            _ => "Draw"
+            "HomeWin" => $"🏠 {homeTeam} thắng",
+            "AwayWin" => $"✈️ {awayTeam} thắng",
+            _ => "🤝 Hòa"
         };
 
-        var correct = actualOutcome == p.PredictedOutcome ? "✅ Đúng\\!" : "❌ Sai";
-        sb.AppendLine($"Dự đoán: {correct}");
+        sb.AppendLine($"Dự đoán: *{htP.PredictedHomeScore} \\- {htP.PredictedAwayScore}* \\({outcomeVi}\\)");
+        sb.AppendLine($"Độ tự tin: *{EscapeMd(htP.ConfidenceScore.ToString())}%*");
+        sb.AppendLine();
+
+        var summary = htP.AnalysisSummary.Length > 500
+            ? htP.AnalysisSummary[..497] + "..."
+            : htP.AnalysisSummary;
+        sb.AppendLine(EscapeMd(summary));
 
         return sb.ToString();
     }

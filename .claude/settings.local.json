@@ -13,7 +13,8 @@
       "WebFetch(domain:www.flashscore.com)",
       "WebFetch(domain:www.sofascore.com)",
       "WebFetch(domain:www.whoscored.com)",
-      "WebSearch"
+      "WebSearch",
+      "WebFetch(domain:v3.football.api-sports.io)"
     ]
   }
 }

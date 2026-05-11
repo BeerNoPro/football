@@ -345,14 +345,70 @@ public class AdminApiClient(HttpClient httpClient, ILogger<AdminApiClient> logge
         }
     }
 
-    public async Task<PagedResult<MatchPredictionDto>?> GetPredictionsAsync(int page = 1, int pageSize = 20, bool? isPublished = null)
+    public async Task<bool> TriggerH2HAsync()
+    {
+        try
+        {
+            var response = await httpClient.PostAsync("api/admin/matches/trigger-h2h", null);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to trigger H2H");
+            return false;
+        }
+    }
+
+    public async Task<bool> TriggerTelegramAsync()
+    {
+        try
+        {
+            var response = await httpClient.PostAsync("api/admin/matches/trigger-telegram", null);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to trigger Telegram");
+            return false;
+        }
+    }
+
+    public async Task<bool> TriggerFetchSquadsAsync()
+    {
+        try
+        {
+            var response = await httpClient.PostAsync("api/admin/matches/fetch-squads", null);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to trigger fetch squads");
+            return false;
+        }
+    }
+
+    public async Task<bool> TriggerFetchPostMatchAsync()
+    {
+        try
+        {
+            var response = await httpClient.PostAsync("api/admin/matches/fetch-post-match", null);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Admin: failed to trigger fetch post-match data");
+            return false;
+        }
+    }
+
+    public async Task<PagedResult<MatchPredictionDto>?> GetPredictionsAsync(int page = 1, int pageSize = 20, string? phase = null)
     {
         try
         {
             var url = $"api/admin/predictions?page={page}&pageSize={pageSize}";
-            if (isPublished.HasValue)
+            if (!string.IsNullOrEmpty(phase))
             {
-                url += $"&isPublished={isPublished.Value}";
+                url += $"&phase={phase}";
             }
 
             var response = await httpClient.GetFromJsonAsync<ApiResponse<PagedResult<MatchPredictionDto>>>(url);

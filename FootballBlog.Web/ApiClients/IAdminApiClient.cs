@@ -33,9 +33,13 @@ public interface IAdminApiClient
     Task<bool> TriggerFetchMatchesAsync();
     Task<bool> TriggerPredictAllAsync();
     Task<bool> TriggerSeedLeagueDataAsync();
+    Task<bool> TriggerH2HAsync();
+    Task<bool> TriggerTelegramAsync();
+    Task<bool> TriggerFetchSquadsAsync();
+    Task<bool> TriggerFetchPostMatchAsync();
 
     // Predictions
-    Task<PagedResult<MatchPredictionDto>?> GetPredictionsAsync(int page = 1, int pageSize = 20, bool? isPublished = null);
+    Task<PagedResult<MatchPredictionDto>?> GetPredictionsAsync(int page = 1, int pageSize = 20, string? phase = null);
     Task<PredictionStatsDto?> GetPredictionStatsAsync();
 
     // Prompt Templates

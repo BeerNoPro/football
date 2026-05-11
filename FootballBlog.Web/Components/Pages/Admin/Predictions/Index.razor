@@ -37,8 +37,8 @@
     </MudItem>
     <MudItem xs="6" sm="3">
         <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:16px 20px;border-radius:10px;">
-            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Đã xuất bản</MudText>
-            <MudText Typo="Typo.h5" Style="color:#4ade80;font-weight:700;margin-top:6px;">@(_stats?.Published ?? 0)</MudText>
+            <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Đã gửi Telegram</MudText>
+            <MudText Typo="Typo.h5" Style="color:#4ade80;font-weight:700;margin-top:6px;">@(_stats?.TelegramSent ?? 0)</MudText>
         </MudPaper>
     </MudItem>
     <MudItem xs="6" sm="3">
@@ -58,11 +58,11 @@
 <!-- Filter bar -->
 <MudPaper Style="background:#1c1c1c;border:1px solid #242424;border-radius:10px;padding:16px 20px;margin-bottom:16px;">
     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
-        <MudSelect @bind-Value="_publishedFilter" Placeholder="Trạng thái" Variant="Variant.Outlined"
+        <MudSelect @bind-Value="_phaseFilter" Placeholder="Phase" Variant="Variant.Outlined"
                    Margin="Margin.Dense" Style="background:#0d0d0d;border-radius:6px;min-width:180px;"
                    T="string" Clearable="true" Dense="true">
-            <MudSelectItem Value="@("published")">Đã xuất bản</MudSelectItem>
-            <MudSelectItem Value="@("pending")">Chưa xuất bản</MudSelectItem>
+            <MudSelectItem Value="@("prematch")">Pre-Match</MudSelectItem>
+            <MudSelectItem Value="@("halftime")">Half-Time</MudSelectItem>
         </MudSelect>
         <MudButton Variant="Variant.Filled" Size="Size.Medium"
                    Style="background:#242424;color:#efefef;" OnClick="ApplyFilters">
@@ -88,8 +88,8 @@
                 <MudTh Style="@_th">Dự đoán tỉ số</MudTh>
                 <MudTh Style="@_th">Confidence</MudTh>
                 <MudTh Style="@_th">Model</MudTh>
-                <MudTh Style="@_th">Trạng thái</MudTh>
-                <MudTh Style="@_th">Bài viết</MudTh>
+                <MudTh Style="@_th">Phase</MudTh>
+                <MudTh Style="@_th">Telegram</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd Style="padding:12px 16px;">
@@ -132,25 +132,19 @@
                     </span>
                 </MudTd>
                 <MudTd Style="padding:12px 16px;">
-                    @if (context.IsPublished)
+                    @if (context.Phase == "HalfTime")
                     {
-                        <span style="background:rgba(74,222,128,0.12);color:#4ade80;font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;">
-                            Đã xuất bản
-                        </span>
+                        <span style="background:rgba(200,240,77,0.10);color:#c8f04d;font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;">HT</span>
                     }
                     else
                     {
-                        <span style="background:rgba(249,115,22,0.12);color:#f97316;font-size:11px;padding:3px 8px;border-radius:4px;">
-                            Chờ xuất bản
-                        </span>
+                        <span style="background:rgba(99,102,241,0.12);color:#818cf8;font-size:11px;padding:3px 8px;border-radius:4px;">Pre</span>
                     }
                 </MudTd>
                 <MudTd Style="padding:12px 16px;">
-                    @if (context.BlogPostId.HasValue)
+                    @if (context.TelegramSent)
                     {
-                        <MudIconButton Icon="@Icons.Material.Filled.OpenInNew"
-                                       Size="Size.Small" Style="color:#666;"
-                                       Href="@($"/admin/posts/edit/{context.BlogPostId}")" />
+                        <span style="background:rgba(74,222,128,0.12);color:#4ade80;font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;">Sent</span>
                     }
                     else
                     {
@@ -184,7 +178,7 @@
     private PredictionStatsDto? _stats;
     private bool _loading;
     private int _page = 1;
-    private string? _publishedFilter;
+    private string? _phaseFilter;
 
     protected override async Task OnAdminInitializedAsync()
     {
@@ -196,9 +190,7 @@
         _loading = true;
         StateHasChanged();
         var statsTask = AdminClient.GetPredictionStatsAsync();
-        var listTask = AdminClient.GetPredictionsAsync(
-            _page, 20,
-            _publishedFilter == "published" ? true : _publishedFilter == "pending" ? (bool?)false : null);
+        var listTask = AdminClient.GetPredictionsAsync(_page, 20, _phaseFilter);
         await Task.WhenAll(statsTask, listTask);
         _stats = statsTask.Result;
         _result = listTask.Result;

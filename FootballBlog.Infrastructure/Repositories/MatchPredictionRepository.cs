@@ -13,16 +13,13 @@ public class MatchPredictionRepository(ApplicationDbContext dbContext)
             .AsNoTracking()
             .Include(p => p.Match)
             .TagWithCaller()
-            .FirstOrDefaultAsync(p => p.MatchId == matchId);
+            .FirstOrDefaultAsync(p => p.MatchId == matchId && p.Phase == PredictionPhase.PreMatch);
 
-    public async Task<IEnumerable<MatchPrediction>> GetUnpublishedAsync()
+    public async Task<MatchPrediction?> GetByMatchAndPhaseAsync(int matchId, PredictionPhase phase)
         => await _dbSet
             .AsNoTracking()
-            .Include(p => p.Match)
-            .Where(p => !p.IsPublished)
-            .OrderBy(p => p.Match.KickoffUtc)
             .TagWithCaller()
-            .ToListAsync();
+            .FirstOrDefaultAsync(p => p.MatchId == matchId && p.Phase == phase);
 
     public async Task<MatchPrediction?> GetByTelegramMessageIdAsync(long messageId)
         => await _dbSet

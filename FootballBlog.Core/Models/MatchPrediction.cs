@@ -26,17 +26,16 @@ public class MatchPrediction
     public int? PromptTokens { get; set; }
     public int? CompletionTokens { get; set; }
 
+    public PredictionPhase Phase { get; set; } = PredictionPhase.PreMatch;
+
+    /// <summary>Raw response từ AI trước khi parse — dùng để audit và tune prompt.</summary>
+    public string? RawResponse { get; set; }
+
     public DateTime GeneratedAt { get; set; }
 
-    /// <summary>Message ID trên Telegram — dùng để edit sau khi có kết quả thực.</summary>
+    /// <summary>Message ID trên Telegram — PreMatch dùng để edit khi HT.</summary>
     public long? TelegramMessageId { get; set; }
-
-    /// <summary>Blog post được tạo tự động từ prediction này (nullable).</summary>
-    public int? BlogPostId { get; set; }
-
-    public bool IsPublished { get; set; }
 
     // Navigation
     public Match Match { get; set; } = null!;
-    public Post? BlogPost { get; set; }
 }

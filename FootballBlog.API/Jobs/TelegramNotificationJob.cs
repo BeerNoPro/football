@@ -11,7 +11,7 @@ public class TelegramNotificationJob(
     ITelegramService telegramService,
     ILogger<TelegramNotificationJob> logger)
 {
-    /// <summary>Gửi prediction mới lên Telegram (gọi sau PublishPredictionJob).</summary>
+    /// <summary>Gửi prediction mới lên Telegram lúc 06:00 VN (schedule từ GeneratePredictionJob).</summary>
     public async Task SendPredictionAsync(int predictionId)
     {
         var sw = Stopwatch.StartNew();
@@ -59,38 +59,39 @@ public class TelegramNotificationJob(
         }
     }
 
-    /// <summary>Edit Telegram message sau khi trận kết thúc với kết quả thực tế.</summary>
-    public async Task SendResultAsync(int matchId)
+    /// <summary>Edit message gốc (PreMatch) — thêm phân tích H2 sau khi HT. Idempotent nếu đã edit.</summary>
+    public async Task EditHalfTimeAsync(int htPredictionId)
     {
         var sw = Stopwatch.StartNew();
-        logger.LogInformation("TelegramNotificationJob.SendResult started for match {MatchId}", matchId);
+        logger.LogInformation("TelegramNotificationJob.EditHalfTime started for htPrediction {PredictionId}", htPredictionId);
 
-        var match = await uow.Matches.GetWithPredictionAsync(matchId);
-        if (match?.Prediction is null)
+        var htPrediction = await uow.MatchPredictions.GetByIdAsync(htPredictionId);
+        if (htPrediction is null)
         {
-            logger.LogWarning("Match {MatchId} or prediction not found", matchId);
+            logger.LogWarning("HT prediction {PredictionId} not found", htPredictionId);
             return;
         }
 
-        if (!match.Prediction.TelegramMessageId.HasValue)
+        // Lấy PreMatch prediction để có TelegramMessageId
+        var preMatchPrediction = await uow.MatchPredictions.GetByMatchAndPhaseAsync(htPrediction.MatchId, PredictionPhase.PreMatch);
+        if (preMatchPrediction?.TelegramMessageId is null)
         {
-            sw.Stop();
-            logger.LogDebug("No Telegram message to edit for match {MatchId}. Duration={DurationMs}ms",
-                matchId, sw.ElapsedMilliseconds);
+            logger.LogDebug("No Telegram message to edit for match {MatchId} (no PreMatch TelegramMessageId)", htPrediction.MatchId);
             return;
         }
 
-        if (match.HomeScore is null || match.AwayScore is null)
+        var match = await uow.Matches.GetWithPredictionAsync(htPrediction.MatchId);
+        if (match is null)
         {
-            logger.LogWarning("Match {MatchId} result not available yet", matchId);
+            logger.LogWarning("Match {MatchId} not found for HT prediction", htPrediction.MatchId);
             return;
         }
 
-        await telegramService.EditResultAsync(match.Prediction.TelegramMessageId.Value, match, match.Prediction);
+        await telegramService.EditHalfTimeAsync(preMatchPrediction.TelegramMessageId.Value, match, preMatchPrediction, htPrediction);
 
         sw.Stop();
         logger.LogInformation(
-            "TelegramNotificationJob.SendResult finished for match {MatchId}. Result={Result}, Duration={DurationMs}ms",
-            matchId, $"{match.HomeScore}-{match.AwayScore}", sw.ElapsedMilliseconds);
+            "TelegramNotificationJob.EditHalfTime finished for match {MatchId}. Duration={DurationMs}ms",
+            htPrediction.MatchId, sw.ElapsedMilliseconds);
     }
 }

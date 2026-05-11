@@ -414,10 +414,10 @@
                 </tr>
                 <tr>
                   <td class="td-muted">14:01:32</td>
-                  <td style="font-weight:600;font-size:11px;">PublishPredictionJob</td>
+                  <td style="font-weight:600;font-size:11px;">TelegramNotificationJob</td>
                   <td><span class="chip chip-success">Thành công</span></td>
                   <td class="dur">3.8s</td>
-                  <td class="td-muted">Blog post created · Telegram sent</td>
+                  <td class="td-muted">Telegram message sent · messageId saved</td>
                 </tr>
                 <tr>
                   <td class="td-muted">14:01:05</td>
@@ -829,7 +829,7 @@
         'fetch-matches': 'FetchUpcomingMatchesJob',
         'gen-prediction': 'GeneratePredictionJob',
         'fetch-context': 'FetchMatchContextJob',
-        'send-telegram': 'PublishPredictionJob (Telegram)',
+        'send-telegram': 'TelegramNotificationJob',
         'live-poll': 'LiveScorePollingJob',
       };
       alert('Trigger: ' + (labels[jobName] || jobName) + '\n\nJob đã được đưa vào queue. Kiểm tra Hangfire Dashboard để theo dõi.');

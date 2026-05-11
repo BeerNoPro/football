@@ -10,6 +10,12 @@ public record FixtureRawDto(
     string StatusShort,
     int? HomeScore,
     int? AwayScore,
+    int? HtHomeScore,
+    int? HtAwayScore,
+    int? EtHomeScore,
+    int? EtAwayScore,
+    int? PenHomeScore,
+    int? PenAwayScore,
     string? VenueName,
     string? RefereeName,
 

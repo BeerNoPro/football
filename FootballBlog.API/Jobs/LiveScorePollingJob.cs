@@ -43,6 +43,7 @@ public class LiveScorePollingJob(
 
         int inserted = 0;
         int updated = 0;
+        var htMatchIds = new List<int>();
 
         // Upsert live matches từ API
         foreach (LiveMatch fixture in liveFromApiList)
@@ -59,37 +60,53 @@ public class LiveScorePollingJob(
             }
             else
             {
+                var prevStatus = existing.Status;
                 existing.HomeScore = fixture.HomeScore;
                 existing.AwayScore = fixture.AwayScore;
                 existing.Status = fixture.Status;
                 existing.Minute = fixture.Minute;
                 await uow.LiveMatches.UpdateAsync(existing);
                 updated++;
+
+                if (fixture.Status == MatchStatus.HalfTime && prevStatus != MatchStatus.HalfTime && existing.MatchId.HasValue)
+                {
+                    htMatchIds.Add(existing.MatchId.Value);
+                }
             }
         }
 
-        // Đánh dấu Finished — trận không còn trong API response nhưng vẫn Live trong DB
+        // Đánh dấu Finished — trận không còn trong API response nhưng vẫn Live/HalfTime trong DB
         foreach (LiveMatch dbLive in liveInDbList.Where(m => !apiExternalIds.Contains(m.ExternalId)))
         {
             dbLive.Status = MatchStatus.Finished;
             await uow.LiveMatches.UpdateAsync(dbLive);
 
-            // Cập nhật parent Match
             if (dbLive.ExternalId > 0)
             {
                 Match? parentMatch = await uow.Matches.GetByExternalIdAsync(dbLive.ExternalId);
                 if (parentMatch is not null)
                 {
                     parentMatch.Status = MatchStatus.Finished;
+                    parentMatch.HomeScore = dbLive.HomeScore;
+                    parentMatch.AwayScore = dbLive.AwayScore;
                     await uow.Matches.UpdateAsync(parentMatch);
-
-                    // Trigger cập nhật kết quả lên Telegram
-                    BackgroundJob.Enqueue<TelegramNotificationJob>(j => j.SendResultAsync(parentMatch.Id));
                 }
             }
         }
 
         await uow.CommitAsync();
+
+        // Enqueue HT prediction SAU commit để job đọc được score mới nhất từ DB
+        foreach (int matchId in htMatchIds)
+        {
+            BackgroundJob.Enqueue<HalfTimePredictionJob>(j => j.ExecuteAsync(matchId));
+        }
+
+        // Enqueue post-match data fetch nếu có trận vừa kết thúc trong run này
+        if (liveInDbList.Any(m => !apiExternalIds.Contains(m.ExternalId)))
+        {
+            BackgroundJob.Enqueue<FetchPostMatchDataJob>(j => j.ExecuteAsync());
+        }
 
         // Broadcast mỗi live match đã update tới subscribers
         foreach (LiveMatch fixture in liveFromApiList.Where(m => m.MatchId.HasValue))

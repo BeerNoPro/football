@@ -13,12 +13,6 @@ public class ApiKeySeeder(
 {
     public async Task SeedAsync()
     {
-        if (await dbContext.ApiKeyConfigs.AnyAsync())
-        {
-            logger.LogDebug("ApiKeyConfigs table already has data — skipping seed");
-            return;
-        }
-
         var seeds = new[]
         {
             ("FootballApi", configuration["FootballApi:ApiKey"]),
@@ -26,23 +20,32 @@ public class ApiKeySeeder(
             ("Gemini",      configuration["Gemini:ApiKey"]),
         };
 
-        var toInsert = seeds
-            .Where(s => !string.IsNullOrWhiteSpace(s.Item2))
-            .Select(s => new ApiKeyConfig
+        var toInsert = new List<ApiKeyConfig>();
+
+        foreach (var (provider, value) in seeds.Where(s => !string.IsNullOrWhiteSpace(s.Item2)))
+        {
+            bool exists = await dbContext.ApiKeyConfigs.AnyAsync(k => k.Provider == provider);
+            if (exists)
             {
-                Provider = s.Item1,
-                KeyValue = s.Item2!,
+                logger.LogDebug("ApiKey for {Provider} already seeded — skipping", provider);
+                continue;
+            }
+
+            toInsert.Add(new ApiKeyConfig
+            {
+                Provider = provider,
+                KeyValue = value!,
                 Priority = 1,
                 IsActive = true,
                 DailyLimit = 0,
                 Note = "Seeded from appsettings/user-secrets",
                 CreatedAt = DateTime.UtcNow,
-            })
-            .ToList();
+            });
+        }
 
         if (toInsert.Count == 0)
         {
-            logger.LogWarning("No API keys found in configuration to seed");
+            logger.LogDebug("All API keys already seeded — nothing to do");
             return;
         }
 

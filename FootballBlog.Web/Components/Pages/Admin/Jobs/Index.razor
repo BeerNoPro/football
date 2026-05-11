@@ -4,7 +4,6 @@
 @inherits AdminPageBase
 @inject IAdminApiClient AdminClient
 @inject ISnackbar Snackbar
-@implements IAsyncDisposable
 
 <MudPopoverProvider />
 <MudSnackbarProvider />
@@ -12,7 +11,7 @@
 <PageTitle>Job Monitor — Admin | FootballBlog</PageTitle>
 
 <!-- Header -->
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-top:24px;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
     <div>
         <MudText Typo="Typo.h5" Style="color:#efefef;font-weight:700;margin-bottom:4px;">Job Monitor</MudText>
         <MudText Typo="Typo.body2" Style="color:#666;">
@@ -44,7 +43,19 @@
         <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:20px;border-radius:10px;">
             <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Tổng trận</MudText>
             <MudText Typo="Typo.h4" Style="color:#c8f04d;font-weight:700;margin:8px 0 4px;">@(_matchStats?.Total ?? 0)</MudText>
-            <MudText Typo="Typo.caption" Style="color:#555;">@(_matchStats?.PendingPrediction ?? 0) chờ nhận định</MudText>
+            <MudText Typo="Typo.caption" Style="color:#555;margin-bottom:6px;display:block;">@(_matchStats?.PendingPrediction ?? 0) chờ nhận định</MudText>
+            @if (_matchStats?.BySeasons is { Count: > 0 })
+            {
+                <div style="border-top:1px solid #2a2a2a;padding-top:6px;margin-top:2px;">
+                    @foreach (var kv in _matchStats.BySeasons.OrderBy(x => x.Key))
+                    {
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+                            <span style="font-size:10px;color:#666;">Mùa @SeasonLabel(kv.Key)</span>
+                            <span style="font-size:10px;color:#888;font-weight:600;">@kv.Value</span>
+                        </div>
+                    }
+                </div>
+            }
         </MudPaper>
     </MudItem>
     <MudItem xs="6" sm="3">
@@ -58,7 +69,7 @@
         <MudPaper Style="background:#1c1c1c;border:1px solid #242424;padding:20px;border-radius:10px;">
             <MudText Typo="Typo.caption" Style="color:#666;text-transform:uppercase;letter-spacing:1px;">Predictions</MudText>
             <MudText Typo="Typo.h4" Style="color:#efefef;font-weight:700;margin:8px 0 4px;">@(_predStats?.Total ?? 0)</MudText>
-            <MudText Typo="Typo.caption" Style="color:#555;">@(_predStats?.Published ?? 0) đã publish</MudText>
+            <MudText Typo="Typo.caption" Style="color:#555;">@(_predStats?.TelegramSent ?? 0) đã gửi Telegram</MudText>
         </MudPaper>
     </MudItem>
     <MudItem xs="6" sm="3">
@@ -82,15 +93,30 @@
                    Style="background:#c8f04d;color:#0d0d0d;font-weight:600;" Disabled="_triggering">
             Fetch Matches
         </MudButton>
+        <MudButton OnClick="TriggerH2HAsync" Variant="Variant.Outlined" Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.CompareArrows"
+                   Style="color:#999;border-color:#333;" Disabled="_triggering">
+            H2H
+        </MudButton>
         <MudButton OnClick="TriggerPredictAllAsync" Variant="Variant.Outlined" Size="Size.Small"
                    StartIcon="@Icons.Material.Filled.Psychology"
                    Style="color:#999;border-color:#333;" Disabled="_triggering">
-            Run Predictions
+            Gemini
         </MudButton>
-        <MudButton OnClick="TriggerSeedLeagueDataAsync" Variant="Variant.Outlined" Size="Size.Small"
-                   StartIcon="@Icons.Material.Filled.Download"
+        <MudButton OnClick="TriggerTelegramAsync" Variant="Variant.Outlined" Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.Send"
                    Style="color:#999;border-color:#333;" Disabled="_triggering">
-            Seed League Data
+            Telegram
+        </MudButton>
+        <MudButton OnClick="TriggerFetchSquadsAsync" Variant="Variant.Outlined" Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.People"
+                   Style="color:#999;border-color:#333;" Disabled="_triggering">
+            Fetch Squads
+        </MudButton>
+        <MudButton OnClick="TriggerFetchPostMatchAsync" Variant="Variant.Outlined" Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.BarChart"
+                   Style="color:#999;border-color:#333;" Disabled="_triggering">
+            Post-Match Stats
         </MudButton>
     </div>
     @if (_lastTriggerMsg != null)
@@ -123,16 +149,10 @@
     private bool _triggering;
     private string? _lastTriggerMsg;
     private DateTime _lastRefresh = DateTime.Now;
-    private System.Threading.Timer? _timer;
 
     protected override async Task OnAdminInitializedAsync()
     {
         await LoadDataAsync();
-        _timer = new System.Threading.Timer(async _ => await InvokeAsync(async () =>
-        {
-            await LoadDataAsync();
-            StateHasChanged();
-        }), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
     }
 
     private async Task LoadDataAsync()
@@ -190,8 +210,56 @@
         _triggering = false;
     }
 
-    public async ValueTask DisposeAsync()
+    private async Task TriggerH2HAsync()
     {
-        if (_timer != null) await _timer.DisposeAsync();
+        _triggering = true;
+        _lastTriggerMsg = null;
+        bool ok = await AdminClient.TriggerH2HAsync();
+        _lastTriggerMsg = ok
+            ? "H2H jobs đã được đưa vào queue cho các trận chưa có context — theo dõi tại Hangfire Dashboard."
+            : "Không thể trigger H2H. Kiểm tra logs.";
+        Snackbar.Add(ok ? "H2H jobs đã enqueue!" : "Trigger thất bại", ok ? Severity.Success : Severity.Error);
+        _triggering = false;
     }
+
+    private async Task TriggerTelegramAsync()
+    {
+        _triggering = true;
+        _lastTriggerMsg = null;
+        bool ok = await AdminClient.TriggerTelegramAsync();
+        _lastTriggerMsg = ok
+            ? "Telegram jobs đã được đưa vào queue cho các prediction chưa gửi — theo dõi tại Hangfire Dashboard."
+            : "Không thể trigger Telegram. Kiểm tra logs.";
+        Snackbar.Add(ok ? "Telegram jobs đã enqueue!" : "Trigger thất bại", ok ? Severity.Success : Severity.Error);
+        _triggering = false;
+    }
+
+    private async Task TriggerFetchSquadsAsync()
+    {
+        _triggering = true;
+        _lastTriggerMsg = null;
+        bool ok = await AdminClient.TriggerFetchSquadsAsync();
+        _lastTriggerMsg = ok
+            ? "FetchSquadJob đã được đưa vào queue — chỉ fetch đội có trận 7 ngày tới, theo dõi tại Hangfire Dashboard."
+            : "Không thể trigger job. Kiểm tra logs.";
+        Snackbar.Add(ok ? "Fetch Squads đã enqueue!" : "Trigger thất bại", ok ? Severity.Success : Severity.Error);
+        _triggering = false;
+    }
+
+    private static string SeasonLabel(string season) =>
+        int.TryParse(season, out var y) ? $"{y}/{(y + 1) % 100:D2}" : season;
+
+    private async Task TriggerFetchPostMatchAsync()
+    {
+        _triggering = true;
+        _lastTriggerMsg = null;
+        bool ok = await AdminClient.TriggerFetchPostMatchAsync();
+        _lastTriggerMsg = ok
+            ? "FetchPostMatchDataJob đã được đưa vào queue — fetch statistics + events cho tối đa 15 trận đã kết thúc (premium leagues)."
+            : "Không thể trigger job. Kiểm tra logs.";
+        Snackbar.Add(ok ? "Post-Match Stats đã enqueue!" : "Trigger thất bại", ok ? Severity.Success : Severity.Error);
+        _triggering = false;
+    }
+
+
 }

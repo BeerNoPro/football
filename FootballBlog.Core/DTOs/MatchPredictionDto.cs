@@ -15,6 +15,6 @@ public record MatchPredictionDto(
     decimal ConfidenceScore,
     string AnalysisSummary,
     DateTime GeneratedAt,
-    bool IsPublished,
-    int? BlogPostId
+    string Phase,
+    bool TelegramSent
 );

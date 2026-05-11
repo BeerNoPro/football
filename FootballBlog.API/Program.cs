@@ -104,6 +104,10 @@ try
         options
             .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
             .AddInterceptors(sp.GetRequiredService<QueryLoggingInterceptor>()));
+    builder.Services.AddDbContextFactory<ApplicationDbContext>((sp, options) =>
+        options
+            .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+            .AddInterceptors(sp.GetRequiredService<QueryLoggingInterceptor>()), ServiceLifetime.Scoped);
 
     // ASP.NET Core Identity
     builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
@@ -150,9 +154,9 @@ try
     builder.Services.AddScoped<ICategoryService, CategoryService>();
     builder.Services.AddScoped<ILiveScoreService, LiveScoreService>();
 
-    // AI Prediction providers — Claude (primary) + Gemini (fallback)
-    builder.Services.AddScoped<IAIPredictionProvider, ClaudeAIPredictionProvider>();
+    // AI Prediction providers — Gemini (primary, free) + Claude (fallback)
     builder.Services.AddScoped<IAIPredictionProvider, GeminiAIPredictionProvider>();
+    builder.Services.AddScoped<IAIPredictionProvider, ClaudeAIPredictionProvider>();
 
     // API Key rotation
     builder.Services.AddScoped<IApiKeyRotator, ApiKeyRotator>();
@@ -161,8 +165,19 @@ try
     // Telegram
     builder.Services.AddScoped<ITelegramService, TelegramService>();
 
+    // API usage tracking (DB-backed, cross-service)
+    builder.Services.AddScoped<IApiUsageTracker, ApiUsageTracker>();
+
     // Hangfire jobs (phải đăng ký tường minh để DI resolve được)
     builder.Services.AddScoped<SeedLeagueDataJob>();
+    builder.Services.AddScoped<FetchUpcomingMatchesJob>();
+    builder.Services.AddScoped<FetchSquadJob>();
+    builder.Services.AddScoped<FetchPostMatchDataJob>();
+    builder.Services.AddScoped<PreMatchDataJob>();
+    builder.Services.AddScoped<GeneratePredictionJob>();
+    builder.Services.AddScoped<HalfTimePredictionJob>();
+    builder.Services.AddScoped<TelegramNotificationJob>();
+    builder.Services.AddScoped<LiveScorePollingJob>();
 
     // Output Cache — cache GET blog endpoints 5 phút, invalidate khi có write
     builder.Services.AddOutputCache(options =>
@@ -263,11 +278,13 @@ try
 
     if (jobs.GetValue<bool>("FetchUpcomingMatches"))
     {
+        var vnZone = TimeZoneInfo.FindSystemTimeZoneById(
+            OperatingSystem.IsWindows() ? "SE Asia Standard Time" : "Asia/Ho_Chi_Minh");
         RecurringJob.AddOrUpdate<FetchUpcomingMatchesJob>(
             "fetch-upcoming-matches",
             j => j.ExecuteAsync(),
-            "0 */6 * * *",
-            new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+            "0 5 * * *", // 05:00 VN — fetch xong để kịp generate + gửi Telegram 06:00 VN
+            new RecurringJobOptions { TimeZone = vnZone });
     }
     else
     {

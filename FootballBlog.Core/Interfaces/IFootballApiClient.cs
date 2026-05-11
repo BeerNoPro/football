@@ -5,9 +5,6 @@ namespace FootballBlog.Core.Interfaces;
 
 public interface IFootballApiClient
 {
-    /// <summary>Lấy fixtures sắp tới của một league. Trả null nếu rate limit hoặc lỗi HTTP.</summary>
-    Task<IEnumerable<FixtureRawDto>?> GetUpcomingFixturesAsync(int leagueId, int next = 20);
-
     /// <summary>Lấy TẤT CẢ live fixtures trong 1 request duy nhất — GET /fixtures?live=all.</summary>
     Task<IEnumerable<LiveMatch>?> GetAllLiveFixturesAsync();
 
@@ -25,4 +22,16 @@ public interface IFootballApiClient
 
     /// <summary>Lấy fixtures trong khoảng ngày. GET /fixtures?league=X&amp;season=Y&amp;from=...&amp;to=...</summary>
     Task<IEnumerable<FixtureRawDto>?> GetFixturesByRangeAsync(int leagueId, int season, DateOnly from, DateOnly to);
+
+    /// <summary>Lấy TẤT CẢ fixtures theo ngày — GET /fixtures?date=yyyy-MM-dd. 1 request/ngày, không giới hạn league.</summary>
+    Task<IEnumerable<FixtureRawDto>?> GetFixturesByDateAsync(DateOnly date);
+
+    /// <summary>Lấy dữ liệu HT: statistics + events H1. 2 API req. Dùng cho HalfTimePredictionJob.</summary>
+    Task<HalfTimeContext?> GetFixtureHalfTimeDataAsync(int fixtureExternalId, int htHomeScore, int htAwayScore, int homeTeamExternalId, int awayTeamExternalId);
+
+    /// <summary>Lấy squad (danh sách cầu thủ) của 1 đội. GET /players/squads?team={teamExternalId}.</summary>
+    Task<IEnumerable<SquadPlayerDto>?> GetSquadByTeamAsync(int teamExternalId);
+
+    /// <summary>Fetch toàn bộ statistics + events sau FT. 2 API req. Trả raw JSON để lưu vào Match.StatsJson / EventsJson.</summary>
+    Task<(string? StatsJson, string? EventsJson)> GetFixturePostMatchDataAsync(int fixtureExternalId);
 }

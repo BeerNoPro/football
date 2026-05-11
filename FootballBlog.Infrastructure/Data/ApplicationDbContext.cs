@@ -26,6 +26,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Standing> Standings => Set<Standing>();
     public DbSet<Player> Players => Set<Player>();
     public DbSet<SquadMember> SquadMembers => Set<SquadMember>();
+    public DbSet<ApiUsageDaily> ApiUsageDaily => Set<ApiUsageDaily>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -171,26 +172,24 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.HasIndex(m => new { m.HomeTeamId, m.KickoffUtc });
             entity.HasIndex(m => new { m.AwayTeamId, m.KickoffUtc });
             entity.HasIndex(m => new { m.LeagueId, m.Season });
+            // Hot-path jobs: GetUpcomingAsync, GetWithoutContextAsync, GetFinishedWithoutStatsAsync
+            entity.HasIndex(m => new { m.Status, m.KickoffUtc })
+                  .HasDatabaseName("IX_Match_Status_KickoffUtc");
         });
 
-        // MatchPrediction — 1-to-1 với Match
+        // MatchPrediction — 1-to-many với Match (PreMatch + HalfTime per match)
         modelBuilder.Entity<MatchPrediction>(entity =>
         {
-            entity.HasIndex(p => p.MatchId).IsUnique();
+            entity.HasIndex(p => new { p.MatchId, p.Phase }).IsUnique();
             entity.Property(p => p.AIProvider).HasMaxLength(50).IsRequired();
             entity.Property(p => p.AIModel).HasMaxLength(100).IsRequired();
             entity.Property(p => p.PredictedOutcome).HasMaxLength(20).IsRequired();
             entity.Property(p => p.ConfidenceScore).HasPrecision(5, 2);
 
             entity.HasOne(p => p.Match)
-                  .WithOne(m => m.Prediction)
-                  .HasForeignKey<MatchPrediction>(p => p.MatchId);
+                  .WithMany(m => m.Predictions)
+                  .HasForeignKey(p => p.MatchId);
 
-            entity.HasOne(p => p.BlogPost)
-                  .WithMany()
-                  .HasForeignKey(p => p.BlogPostId)
-                  .IsRequired(false)
-                  .OnDelete(DeleteBehavior.SetNull);
         });
 
         // MatchContextData — 1-to-1 với Match, lazy loaded
@@ -265,6 +264,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                   .WithMany(p => p.SquadMembers)
                   .HasForeignKey(s => s.PlayerId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ApiUsageDaily — unique per (Date, Service) để tránh duplicate khi concurrent insert
+        modelBuilder.Entity<ApiUsageDaily>(entity =>
+        {
+            entity.HasIndex(a => new { a.Date, a.Service }).IsUnique();
+            entity.Property(a => a.Service).HasMaxLength(50).IsRequired();
         });
     }
 }

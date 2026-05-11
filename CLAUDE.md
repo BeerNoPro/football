@@ -74,14 +74,13 @@ Sau khi hoàn thành bất kỳ task/plan:
 ### AI Prediction (Phase 5 ✅)
 - `IAIPredictionProvider` interface — Claude (primary) + Gemini (fallback)
 - `ClaudeAIPredictionProvider` / `GeminiAIPredictionProvider` (`Infrastructure/Services/`)
-- `GeneratePredictionJob` — Hangfire, trigger 24h trước kickoff
-- `PublishPredictionJob` — tạo blog post từ prediction, dùng `SlugService.Generate()`
+- `GeneratePredictionJob` — Hangfire, trigger KO−5h (per-match) + hourly batch scan
 
-### Telegram (Phase 6 ✅ core)
-- `ITelegramService` — `SendPredictionAsync`, `EditResultAsync`
+### Telegram (Phase 6 ✅)
+- `ITelegramService` — `SendPredictionAsync`, `EditHalfTimeAsync`
 - `TelegramService` (Infrastructure) — Telegram.Bot v22, `ParseMode.MarkdownV2` + `EscapeMd()`
-- `TelegramNotificationJob` — Hangfire, gửi prediction + edit khi có kết quả
+- `TelegramNotificationJob` — `SendPredictionAsync` lúc 06:00 VN (PreMatch) + `EditHalfTimeAsync` khi HT
 
 ## Current Phase
-**Phase 4 ✅ | Phase 5 ✅ | Phase 6 ✅ (core) | Phase 7 ⬜ Deploy**
+**Phase 4 ✅ | Phase 5 ✅ | Phase 6 ✅ | Phase 6.5 ✅ | Phase 6.6 ✅ | Phase 6.7 ⬜ (wire admin UI) | Phase 7 ⬜ (deploy)**
 Xem **TODO.md** (chi tiết tasks). Xem **Bugs.md** (architectural decisions + known issues).

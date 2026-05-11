@@ -128,7 +128,7 @@ dotnet ef migrations script \
 | `LiveMatches` | Trận đang live — FK → `Matches` (nullable) |
 | `MatchEvents` | Sự kiện trận (goal/card/sub) — FK → `LiveMatches` |
 | `Matches` | Lịch thi đấu từ Football API — FK → `MatchPredictions` |
-| `MatchPredictions` | Kết quả AI dự đoán — FK → `Posts` (khi publish) |
+| `MatchPredictions` | Kết quả AI dự đoán — Phase (PreMatch/HalfTime), TelegramMessageId |
 
 ---
 

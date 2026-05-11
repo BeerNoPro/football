@@ -12,7 +12,14 @@ internal record FixtureResponse(
     [property: JsonPropertyName("fixture")] FixtureInfo Fixture,
     [property: JsonPropertyName("league")] LeagueInfo League,
     [property: JsonPropertyName("teams")] TeamsInfo Teams,
-    [property: JsonPropertyName("goals")] GoalsInfo Goals);
+    [property: JsonPropertyName("goals")] GoalsInfo Goals,
+    [property: JsonPropertyName("score")] ScoreInfo? Score);
+
+internal record ScoreInfo(
+    [property: JsonPropertyName("halftime")] GoalsInfo? Halftime,
+    [property: JsonPropertyName("fulltime")] GoalsInfo? Fulltime,
+    [property: JsonPropertyName("extratime")] GoalsInfo? Extratime,
+    [property: JsonPropertyName("penalty")] GoalsInfo? Penalty);
 
 internal record FixtureInfo(
     [property: JsonPropertyName("id")] int Id,
@@ -101,3 +108,43 @@ internal record StandingStats(
 internal record StandingGoals(
     [property: JsonPropertyName("for")] int For,
     [property: JsonPropertyName("against")] int Against);
+
+// ── GET /players/squads?team=X ──────────────────────────────────────────────
+
+internal record SquadResponse(
+    [property: JsonPropertyName("team")] TeamInfo Team,
+    [property: JsonPropertyName("players")] List<SquadPlayerInfo> Players);
+
+internal record SquadPlayerInfo(
+    [property: JsonPropertyName("id")] int Id,
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("age")] int? Age,
+    [property: JsonPropertyName("number")] int? Number,
+    [property: JsonPropertyName("position")] string? Position,
+    [property: JsonPropertyName("photo")] string? Photo);
+
+// ── GET /fixtures/statistics?fixture=X ──────────────────────────────────────
+
+internal record FixtureStatisticsTeam(
+    [property: JsonPropertyName("team")] TeamInfo Team,
+    [property: JsonPropertyName("statistics")] List<StatisticItem> Statistics);
+
+internal record StatisticItem(
+    [property: JsonPropertyName("type")] string Type,
+    [property: JsonPropertyName("value")] JsonElement Value);
+
+// ── GET /fixtures/events?fixture=X ──────────────────────────────────────────
+
+internal record FixtureEvent(
+    [property: JsonPropertyName("time")] EventTime Time,
+    [property: JsonPropertyName("team")] TeamInfo Team,
+    [property: JsonPropertyName("player")] EventPlayer? Player,
+    [property: JsonPropertyName("type")] string Type,
+    [property: JsonPropertyName("detail")] string? Detail);
+
+internal record EventTime(
+    [property: JsonPropertyName("elapsed")] int Elapsed,
+    [property: JsonPropertyName("extra")] int? Extra);
+
+internal record EventPlayer(
+    [property: JsonPropertyName("name")] string? Name);

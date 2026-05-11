@@ -28,4 +28,7 @@ public interface IMatchRepository : IRepository<Match>
 
     /// <summary>Kiểm tra DB đã có fixtures cho league+season chưa — dùng bởi SeedLeagueDataJob.</summary>
     Task<bool> HasFixturesForLeagueAsync(int leagueId, string season);
+
+    /// <summary>Trả các trận Finished chưa có StatsJson — dùng bởi FetchPostMatchDataJob. Kèm League để job filter premium.</summary>
+    Task<IEnumerable<Match>> GetFinishedWithoutStatsAsync(int limit = 15);
 }

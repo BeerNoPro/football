@@ -29,7 +29,7 @@ public class ClaudeAIPredictionProvider(
         var requestBody = new
         {
             model = ModelName,
-            max_tokens = 1024,
+            max_tokens = 2048,
             messages = new[] { new { role = "user", content = prompt } }
         };
 
@@ -38,6 +38,44 @@ public class ClaudeAIPredictionProvider(
         client.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01");
 
         logger.LogDebug("Calling Claude API for match {MatchId}", match.Id);
+
+        var response = await client.PostAsJsonAsync(ApiUrl, requestBody, ct);
+
+        if (response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.Unauthorized)
+        {
+            await keyRotator.MarkExhaustedAsync("Claude", apiKey);
+        }
+
+        response.EnsureSuccessStatusCode();
+
+        var raw = await response.Content.ReadFromJsonAsync<ClaudeResponse>(cancellationToken: ct)
+            ?? throw new InvalidOperationException("Claude trả về null response");
+
+        var text = raw.Content.FirstOrDefault()?.Text
+            ?? throw new InvalidOperationException("Claude trả về content rỗng");
+
+        return ParseResult(text, raw.Usage.InputTokens, raw.Usage.OutputTokens);
+    }
+
+    public async Task<AIPredictionResult> PredictHalfTimeAsync(Match match, MatchContext preMatchContext, HalfTimeContext htContext, CancellationToken ct = default)
+    {
+        var apiKey = await keyRotator.GetAvailableKeyAsync("Claude")
+            ?? throw new InvalidOperationException("Không có Claude API key khả dụng");
+
+        var prompt = BuildHalfTimePrompt(match, preMatchContext, htContext);
+
+        var requestBody = new
+        {
+            model = ModelName,
+            max_tokens = 2048,
+            messages = new[] { new { role = "user", content = prompt } }
+        };
+
+        using var client = httpClientFactory.CreateClient();
+        client.DefaultRequestHeaders.Add("x-api-key", apiKey);
+        client.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01");
+
+        logger.LogDebug("Calling Claude API for HT prediction match {MatchId}", match.Id);
 
         var response = await client.PostAsJsonAsync(ApiUrl, requestBody, ct);
 
@@ -159,9 +197,50 @@ public class ClaudeAIPredictionProvider(
         return sb.ToString();
     }
 
+    private static string BuildHalfTimePrompt(Match match, MatchContext preMatch, HalfTimeContext ht)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine($"Phân tích hiệp 2 trận đấu bóng đá. Trả lời bằng JSON hợp lệ.");
+        sb.AppendLine();
+        sb.AppendLine($"## Thông tin trận đấu");
+        sb.AppendLine($"- {match.HomeTeam.Name} vs {match.AwayTeam.Name} | {match.League.Name}");
+        sb.AppendLine($"- Tỷ số HT: {ht.HtHomeScore} - {ht.HtAwayScore}");
+        sb.AppendLine();
+        sb.AppendLine("## Thống kê hiệp 1");
+        sb.AppendLine($"- Kiểm soát bóng: {match.HomeTeam.Name} {ht.HomePossession ?? "N/A"} | {match.AwayTeam.Name} {ht.AwayPossession ?? "N/A"}");
+        sb.AppendLine($"- Cú sút trúng đích: {match.HomeTeam.Name} {ht.HomeShotsOnTarget ?? 0} | {match.AwayTeam.Name} {ht.AwayShotsOnTarget ?? 0}");
+        sb.AppendLine($"- Phạt góc: {match.HomeTeam.Name} {ht.HomeCorners ?? 0} | {match.AwayTeam.Name} {ht.AwayCorners ?? 0}");
+        sb.AppendLine($"- Thẻ vàng: {match.HomeTeam.Name} {ht.HomeYellowCards ?? 0} | {match.AwayTeam.Name} {ht.AwayYellowCards ?? 0}");
+
+        if (ht.H1Events.Count > 0)
+        {
+            sb.AppendLine();
+            sb.AppendLine("## Sự kiện hiệp 1");
+            foreach (var ev in ht.H1Events)
+            {
+                sb.AppendLine($"  {ev.Minute}' {ev.Type} — {ev.Team}{(ev.PlayerName != null ? $" ({ev.PlayerName})" : "")}");
+            }
+        }
+
+        sb.AppendLine();
+        sb.AppendLine("## Bối cảnh trước trận");
+        sb.AppendLine($"- H2H: Nhà {preMatch.H2H.HomeWins}W-{preMatch.H2H.Draws}D-{preMatch.H2H.AwayWins}W Khách");
+        sb.AppendLine($"- Phong độ nhà: {preMatch.HomeForm.FormString} | Khách: {preMatch.AwayForm.FormString}");
+        sb.AppendLine();
+        sb.AppendLine("## Yêu cầu đầu ra");
+        sb.AppendLine("Phân tích hiệp 2 dựa trên diễn biến hiệp 1. Trả về JSON hợp lệ (không markdown fence):");
+        sb.AppendLine(@"{
+  ""predictedOutcome"": ""HomeWin"" | ""Draw"" | ""AwayWin"",
+  ""predictedHomeScore"": <tổng tỷ số cả trận>,
+  ""predictedAwayScore"": <tổng tỷ số cả trận>,
+  ""confidenceScore"": <0-100>,
+  ""analysisSummary"": ""<phân tích hiệp 2 bằng tiếng Việt, markdown>""
+}");
+        return sb.ToString();
+    }
+
     private static AIPredictionResult ParseResult(string text, int promptTokens, int completionTokens)
     {
-        // Xóa markdown fence nếu có
         var json = text.Trim();
         if (json.StartsWith("```"))
         {
@@ -183,7 +262,8 @@ public class ClaudeAIPredictionProvider(
             ConfidenceScore: root.TryGetProperty("confidenceScore", out var c) ? c.GetDecimal() : 50m,
             AnalysisSummary: root.GetProperty("analysisSummary").GetString() ?? string.Empty,
             PromptTokens: promptTokens,
-            CompletionTokens: completionTokens
+            CompletionTokens: completionTokens,
+            RawResponse: text
         );
     }
 

@@ -11,8 +11,7 @@ public class LiveMatchRepository : BaseRepository<LiveMatch>, ILiveMatchReposito
 
     public async Task<IEnumerable<LiveMatch>> GetLiveMatchesAsync() =>
         await _dbSet
-            .Where(m => m.Status == MatchStatus.Live)
-            .Include(m => m.Events)
+            .Where(m => m.Status == MatchStatus.Live || m.Status == MatchStatus.HalfTime)
             .OrderBy(m => m.StartedAt)
             .TagWithCaller()
             .ToListAsync();

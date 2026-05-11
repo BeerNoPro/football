@@ -99,26 +99,30 @@ Admin có thể update prompt bất kỳ lúc nào mà không cần deploy lại
 Đây là flow nghiệp vụ chính của hệ thống — từ dữ liệu trận đấu tới bài viết public:
 
 ```
-[Football API] ─── FetchUpcomingMatchesJob (cron 6h)
+[Football API] ─── FetchUpcomingMatchesJob (cron 05:00 VN)
        ↓
  admin-matches.html  ◄── xem danh sách trận sắp diễn ra
        ↓
- GeneratePredictionJob (cron 1h)
-   ├── Match SCH + chưa có bài DuDoan  → AI tạo bài "Dự đoán" (PostType.DuDoan)
-   ├── Match LIVE + chưa có bài NhanDinh → AI tạo bài "Nhận định" (PostType.NhanDinh)
-   └── Match FT + chưa có bài PhanTich  → AI tạo bài "Phân tích" (PostType.PhanTich)
+ PreMatchDataJob.FetchH2HAsync (KO − 5h)
+   └── H2H + Form + Fatigue + Referee → MatchContextData
        ↓
- admin-predictions.html  ◄── xem kết quả AI, approve / reject / chỉnh sửa
+ GeneratePredictionJob → Claude primary / Gemini fallback
+   └── Save MatchPrediction (Phase=PreMatch)
        ↓
- PublishPredictionJob ─── tạo bài viết tự động + gửi Telegram
+ TelegramNotificationJob.SendPredictionAsync (06:00 VN)
+   └── Gửi message mới lên Telegram channel
        ↓
- admin-posts.html  ◄── bài mới xuất hiện, có thể edit thêm
+ admin-predictions.html  ◄── xem AI predictions (Phase, TelegramSent)
+       ↓ (khi HT)
+ HalfTimePredictionJob → AI phân tích H2
+   └── TelegramNotificationJob.EditHalfTimeAsync
+       └── Edit message gốc: thêm section "Phân tích H2"
+       ↓
+ admin-posts.html  ◄── admin tạo bài viết thủ công từ prediction nếu muốn
        ↓
  post-detail.html  ◄── public đọc bài
        │
-       ├── home.html right panel tab "Dự đoán" ← PostType.DuDoan
-       ├── home.html right panel tab "Nhận định" ← PostType.NhanDinh (LIVE)
-       └── home.html right panel tab "Phân tích" ← PostType.PhanTich
+       └── home.html right panel ← bài viết nhận định
 ```
 
 **Live Score Real-time:**

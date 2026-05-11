@@ -10,7 +10,7 @@ public class TeamRepository : BaseRepository<Team>, ITeamRepository
     public TeamRepository(ApplicationDbContext context) : base(context) { }
 
     public async Task<Team?> GetByExternalIdAsync(int externalId) =>
-        await _dbSet.AsNoTracking()
+        await _dbSet
             .TagWithCaller()
             .FirstOrDefaultAsync(t => t.ExternalId == externalId);
 }
