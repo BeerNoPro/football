@@ -74,9 +74,17 @@ public class FixturesController(ApplicationDbContext dbContext, IOptions<Footbal
             }
         }
 
-        if (!string.IsNullOrEmpty(status) && Enum.TryParse<MatchStatus>(status, true, out var matchStatus))
+        if (!string.IsNullOrEmpty(status))
         {
-            query = query.Where(m => m.Status == matchStatus);
+            // "Live" bao gồm cả HalfTime vì hiệp phụ vẫn hiển thị là LIVE
+            if (status.Equals("Live", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(m => m.Status == MatchStatus.Live || m.Status == MatchStatus.HalfTime);
+            }
+            else if (Enum.TryParse<MatchStatus>(status, true, out var matchStatus))
+            {
+                query = query.Where(m => m.Status == matchStatus);
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(search))

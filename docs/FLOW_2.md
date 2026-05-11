@@ -168,19 +168,6 @@ Tất cả nullable. Update logic dùng null-guard: chỉ ghi đè khi API trả
 
 # Trạng Thái Thực Tế (2026-05-10)
 
-## Bugs đã fix
-
-| Bug | File | Trạng thái |
-|-----|------|-----------|
-| `ApiKeySeeder` skip toàn bộ nếu table có ≥1 row | `Infrastructure/Services/ApiKeySeeder.cs` | ✅ Fixed — check per-provider |
-| `GeneratePredictionJob` silent fail, Hangfire không retry | `API/Jobs/GeneratePredictionJob.cs` | ✅ Fixed — throw thay vì return false |
-| `FetchSquadJob` thiếu đăng ký DI | `API/Program.cs` | ✅ Fixed — AddScoped<FetchSquadJob>() |
-| `FetchSquadJob` double-enumeration `.Count()` | `API/Jobs/FetchSquadJob.cs` | ✅ Fixed — ToList() trước foreach |
-| `FetchUpcomingMatchesJob` ghi đè Round/VenueName null | `API/Jobs/FetchUpcomingMatchesJob.cs` | ✅ Fixed — null-guard |
-| `Home.razor` _expandedLeagues dùng dual-purpose | `Web/Components/Pages/Blog/Home.razor` | ✅ Fixed — tách _leaguesWithMatches |
-| **C2** `FetchUpcomingMatchesJob` CommitAsync trong mỗi upsert helper | `API/Jobs/FetchUpcomingMatchesJob.cs` | ✅ Fixed — navigation property, commit 1 lần/ngày |
-| **C5** Thiếu composite index `(Status, KickoffUtc)` trên bảng Match | `Infrastructure/Data/ApplicationDbContext.cs` | ✅ Fixed — migration `AddMatchStatusKickoffIndex` |
-| **H4** `GetLiveMatchesAsync` load toàn bộ Events vào memory | `Infrastructure/Repositories/LiveMatchRepository.cs` | ✅ Fixed — bỏ Include(Events) |
 
 ## Checklist việc còn lại
 

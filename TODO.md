@@ -1,7 +1,6 @@
 # TODO — Football Blog
 
-> Cập nhật: 2026-05-10. Phân loại theo mức độ ưu tiên.
-> Fixed: C2 (CommitAsync trong upsert loop), C5 (composite index), H4 (Include Events)
+> Cập nhật: 2026-05-11. Phân loại theo mức độ ưu tiên.
 
 ---
 

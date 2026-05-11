@@ -77,13 +77,19 @@ public class AdminMatchesController(
     [HttpGet("stats")]
     public async Task<ActionResult<ApiResponse<MatchStatsDto>>> GetStats()
     {
-        var total = await dbContext.Matches.CountAsync();
-        var live = await dbContext.Matches.CountAsync(m => m.Status == MatchStatus.Live || m.Status == MatchStatus.HalfTime);
-        var withPrediction = await dbContext.Matches.CountAsync(m => m.Predictions.Any(p => p.Phase == PredictionPhase.PreMatch));
-        var pending = await dbContext.Matches.CountAsync(m =>
+        var q = dbContext.Matches.AsNoTracking();
+        var total = await q.CountAsync();
+        var live = await q.CountAsync(m => m.Status == MatchStatus.Live || m.Status == MatchStatus.HalfTime);
+        var withPrediction = await q.CountAsync(m => m.Predictions.Any(p => p.Phase == PredictionPhase.PreMatch));
+        var pending = await q.CountAsync(m =>
             m.Status == MatchStatus.Scheduled && !m.Predictions.Any(p => p.Phase == PredictionPhase.PreMatch));
 
-        return Ok(ApiResponse<MatchStatsDto>.Ok(new MatchStatsDto(total, live, withPrediction, pending)));
+        var bySeasons = await q
+            .GroupBy(m => m.Season)
+            .Select(g => new { Season = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.Season, x => x.Count);
+
+        return Ok(ApiResponse<MatchStatsDto>.Ok(new MatchStatsDto(total, live, withPrediction, pending, bySeasons)));
     }
 
     [HttpPost("fetch")]

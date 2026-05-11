@@ -305,7 +305,7 @@ FetchPostMatchDataJob
 | GET | `/api/categories` | All categories |
 | GET | `/api/categories/{slug}` | Single category |
 | GET | `/api/tags` | All tags |
-| GET | `/api/fixtures` | Fixtures (filter: leagueId, date, season, status, search) |
+| GET | `/api/fixtures` | Fixtures (filter: leagueId, date, season, status, search) — `status=Live` bao gồm cả HalfTime |
 | GET | `/api/livescore` | All live matches |
 | GET | `/api/livescore/{id}` | Single live match |
 | POST | `/api/auth/login` | JWT login (rate-limited 5/min/IP) |
@@ -320,6 +320,7 @@ FetchPostMatchDataJob
 | POST | `/api/media/upload` | Image upload (5MB, JPG/PNG/WebP/GIF) |
 | GET | `/api/admin/predictions` | Predictions (filter by phase) |
 | GET | `/api/admin/predictions/stats` | Accuracy stats |
+| GET | `/api/admin/matches/stats` | Match stats (total, live, predictions, pending) + breakdown theo mùa |
 | GET | `/api/admin/matches` | Match list with filters |
 | POST | `/api/admin/matches/fetch` | Trigger FetchUpcomingMatchesJob |
 | POST | `/api/admin/matches/predict-all` | Trigger GeneratePredictionJob batch |
@@ -420,13 +421,18 @@ await uow.CommitAsync();                    // SaveChangesAsync() duy nhất →
 ### Repository Query Pattern
 
 ```csharp
-// Tất cả query đều AsNoTracking + TagWithCaller
+// Read-only queries (list/detail cho API/controller): AsNoTracking + TagWithCaller
 return await _context.Matches
     .AsNoTracking()
     .Include(m => m.HomeTeam).Include(m => m.AwayTeam)
     .Where(m => m.Status == MatchStatus.Scheduled)
     .TagWithCaller()   // log SQL với caller context vào db.log
     .ToListAsync();
+
+// Upsert lookup queries (dùng trong job để check existing trước khi Add/Update):
+// KHÔNG dùng AsNoTracking — entity phải được track để EF Core không cascade Add
+// lên related entities khi gọi AddAsync(newEntity { Navigation = existingEntity })
+await _dbSet.TagWithCaller().FirstOrDefaultAsync(x => x.Code == code);
 ```
 
 ### API Response Wrapper

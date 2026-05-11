@@ -10,7 +10,7 @@ public class LeagueRepository : BaseRepository<League>, ILeagueRepository
     public LeagueRepository(ApplicationDbContext context) : base(context) { }
 
     public async Task<League?> GetByExternalIdAsync(int externalId) =>
-        await _dbSet.AsNoTracking()
+        await _dbSet
             .TagWithCaller()
             .FirstOrDefaultAsync(l => l.ExternalId == externalId);
 

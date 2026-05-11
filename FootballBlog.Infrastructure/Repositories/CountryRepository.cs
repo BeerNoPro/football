@@ -10,7 +10,7 @@ public class CountryRepository : BaseRepository<Country>, ICountryRepository
     public CountryRepository(ApplicationDbContext context) : base(context) { }
 
     public async Task<Country?> GetByCodeAsync(string code) =>
-        await _dbSet.AsNoTracking()
+        await _dbSet
             .TagWithCaller()
             .FirstOrDefaultAsync(c => c.Code == code);
 }

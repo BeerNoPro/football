@@ -4,5 +4,6 @@ public record MatchStatsDto(
     int Total,
     int Live,
     int WithPrediction,
-    int PendingPrediction
+    int PendingPrediction,
+    Dictionary<string, int>? BySeasons = null
 );
