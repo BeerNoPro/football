@@ -98,15 +98,42 @@ try
 
     builder.Services.AddControllers();
 
+    // Normalize connection string: Hangfire.PostgreSql không chấp nhận URI format
+    // Fly.io có thể inject postgresql://... thay vì Host=...;Port=5432;...
+    static string NormalizeConnStr(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return raw ?? "";
+        }
+
+        if (!raw.StartsWith("postgresql://") && !raw.StartsWith("postgres://"))
+        {
+            return raw;
+        }
+
+        var uri = new Uri(raw);
+        var userInfo = uri.UserInfo.Split(':', 2);
+        var user = Uri.UnescapeDataString(userInfo[0]);
+        var pass = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
+        var db = uri.AbsolutePath.TrimStart('/');
+        var port = uri.Port > 0 ? uri.Port : 5432;
+        var qs = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        var ssl = qs["sslmode"] ?? "Require";
+        return $"Host={uri.Host};Port={port};Database={db};Username={user};Password={pass};SSL Mode={ssl};Trust Server Certificate=true";
+    }
+
+    var pgConnStr = NormalizeConnStr(builder.Configuration.GetConnectionString("DefaultConnection"));
+
     // EF Core + PostgreSQL
     builder.Services.AddSingleton<QueryLoggingInterceptor>();
     builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
         options
-            .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+            .UseNpgsql(pgConnStr)
             .AddInterceptors(sp.GetRequiredService<QueryLoggingInterceptor>()));
     builder.Services.AddDbContextFactory<ApplicationDbContext>((sp, options) =>
         options
-            .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+            .UseNpgsql(pgConnStr)
             .AddInterceptors(sp.GetRequiredService<QueryLoggingInterceptor>()), ServiceLifetime.Scoped);
 
     // ASP.NET Core Identity
@@ -220,7 +247,7 @@ try
         .UseSimpleAssemblyNameTypeSerializer()
         .UseRecommendedSerializerSettings()
         .UsePostgreSqlStorage(
-            o => o.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection")),
+            o => o.UseNpgsqlConnection(pgConnStr),
             new PostgreSqlStorageOptions { SchemaName = "hangfire" }));
 
     builder.Services.AddHangfireServer(opt => { opt.WorkerCount = 2; });
@@ -229,7 +256,7 @@ try
 
     // Health checks
     builder.Services.AddHealthChecks()
-        .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!)
+        .AddNpgSql(pgConnStr)
         .AddRedis(builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379");
 
     // Rate Limiting — login 5 req/phút/IP (theo security.md)
