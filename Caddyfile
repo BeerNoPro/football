@@ -1,0 +1,10 @@
+# Thay yourdomain.com bằng domain thực tế của bạn
+# Caddy tự động cấp HTTPS qua Let's Encrypt
+
+api.yourdomain.com {
+    reverse_proxy localhost:8080
+}
+
+yourdomain.com {
+    reverse_proxy localhost:8081
+}

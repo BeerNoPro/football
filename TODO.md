@@ -6,6 +6,35 @@
 
 ## CRITICAL — Fix trước khi production
 
+### C0. Hangfire startup block port bind → Fly proxy timeout (502 cold start)
+**File:** `FootballBlog.API/Program.cs:291–400`
+
+**Vấn đề:** Toàn bộ Hangfire schema install + seeding xảy ra **trước** `app.Run()` → app bind port 8080 sau ~19 giây. Fly.io proxy chỉ chờ 8 giây → timeout → user nhận 502 trong mỗi cold start.
+
+**Thứ tự hiện tại (sai):**
+```
+builder.Build()           → Hangfire kết nối DB, tạo schema "hangfire" (~8-10s)
+UseHangfireDashboard()    → khởi tạo JobStorage.Current
+RecurringJob.AddOrUpdate() → ghi vào Hangfire DB
+Seeding (lines 365-397)   → DB queries API keys + admin user
+app.Run()                 → MỚI bind port 8080  ← quá muộn
+```
+
+**Fix:** Dùng `IHostApplicationLifetime.ApplicationStarted` để defer Hangfire server init sau khi app đã bind port:
+```csharp
+// Sau app.Run() vẫn nhận traffic, Hangfire init trong background
+var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+lifetime.ApplicationStarted.Register(() => {
+    // RecurringJob.AddOrUpdate(...) calls ở đây
+    // Seeding ở đây
+});
+app.Run(); // bind port ngay, không chờ Hangfire
+```
+
+**Kết quả:** Cold start giảm từ ~19s xuống ~3-4s, proxy không timeout nữa.
+
+---
+
 ### C1. Hangfire worker count quá thấp
 **File:** `FootballBlog.API/Program.cs:226`
 **Vấn đề:** Chỉ có 2 worker threads cho toàn bộ 9 Hangfire jobs. Peak match day: LiveScorePollingJob (mỗi phút) + GeneratePredictionJob + TelegramNotificationJob chen nhau 2 slot → job queue backlog, prediction miss deadline 06:00 VN.
@@ -267,7 +296,7 @@ dto.Content = sanitizer.Sanitize(dto.Content);
 **Vấn đề sẽ gặp:**
 - Kiến trúc monolith (API duy nhất) không đủ — Hangfire jobs cạnh tranh CPU/memory với HTTP requests
 - PostgreSQL dù có replica vẫn bottleneck ở write (live score upsert)
-- SignalR connection limit per server (~50K connections/instance) → cần nhiều instance hơn
+- SignalR connection limit per server (~50K connections/instance) → cần nhiều instance hơnb
 - api-football free tier 100 req/day hoàn toàn không đủ (cần paid plan hoặc multiple accounts)
 - Single Telegram bot có rate limit 30 messages/giây → không đủ nếu nhiều giải đấu đồng thời
 

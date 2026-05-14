@@ -51,6 +51,7 @@ Luồng trace theo thứ tự:
 3. Interface — implementation nào được inject?
 4. Layer trên: Controller → Service → Repository → DB/HTTP
 5. Nếu là Blazor: Component → ApiClient → API Controller → Service
+6. Nếu là Job: xem docs/FLOW_2.md để hiểu chuỗi trigger trước khi trace code
 ```
 
 ### 1c. Kiểm tra Bugs.md
@@ -61,13 +62,15 @@ rtk grep "từ khóa liên quan" Bugs.md
 
 ### 1d. Đọc rule tương ứng với layer bị lỗi
 
-| Layer | Rule file |
-|-------|-----------|
-| Repository / EF Core | `.claude/rules/database.md` |
-| Controller / API endpoint | `.claude/rules/api.md` |
-| Blazor Component / Page | `.claude/rules/blazor.md` |
-| Logging / Serilog | `.claude/rules/logging.md` |
-| Security / Auth | `.claude/rules/security.md` |
+| Layer | Rule file | Ghi chú |
+|-------|-----------|---------|
+| Repository / EF Core | `.claude/rules/database.md` | Bắt buộc dùng `uow.CommitAsync()` — không gọi `SaveChanges()` trực tiếp trong repository |
+| Controller / API endpoint | `.claude/rules/api.md` | |
+| Blazor Component / Page | `.claude/rules/blazor.md` | |
+| Logging / Serilog | `.claude/rules/logging.md` | |
+| Security / Auth | `.claude/rules/security.md` | |
+| Hangfire Jobs (`API/Jobs/`) | xem `docs/FLOW_2.md` | Trace chuỗi trigger: FetchUpcoming → PreMatch → GeneratePrediction → Telegram. Kiểm tra idempotent + retry logic |
+| Infrastructure/Services | `.claude/rules/database.md` (nếu EF) / `.claude/rules/api.md` (nếu HTTP) | `ClaudeAIPredictionProvider`, `GeminiAIPredictionProvider`, `TelegramService`, `ApiKeyRotator`, `RedisFootballApiRateLimiter` |
 
 ### 1e. Xác định skill phù hợp
 

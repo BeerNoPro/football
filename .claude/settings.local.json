@@ -14,7 +14,9 @@
       "WebFetch(domain:www.sofascore.com)",
       "WebFetch(domain:www.whoscored.com)",
       "WebSearch",
-      "WebFetch(domain:v3.football.api-sports.io)"
+      "WebFetch(domain:v3.football.api-sports.io)",
+      "WebFetch(domain:aws.amazon.com)",
+      "WebFetch(domain:roadmap.sh)"
     ]
   }
 }

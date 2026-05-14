@@ -12,7 +12,6 @@ Khi được gọi (`/debug-log [loại]`):
 | `/debug-log error` | `logs/error/error-{hôm nay}.log` |
 | `/debug-log jobs` | `logs/jobs/jobs-{hôm nay}.log` |
 | `/debug-log api` | `logs/api/api-{hôm nay}.log` |
-| `/debug-log build` | `logs/build/build-{hôm nay}.log` |
 | `/debug-log database` | `logs/database/db-{hôm nay}.log` ⚠️ xem bên dưới |
 
 Nếu file chưa có → nhắc chạy app trước.
@@ -80,8 +79,10 @@ rtk grep "TênMethod|TênClass" Bugs.md
 ```
 
 Kiểm tra rule tương ứng với layer:
-- Repository / EF → `.claude/rules/database.md`
+- Repository / EF → `.claude/rules/database.md` (nhớ: chỉ `uow.CommitAsync()`, không `SaveChanges()` trực tiếp)
 - Controller / API → `.claude/rules/api.md`
+- Hangfire Jobs → `docs/FLOW_2.md` (trace chuỗi trigger trước khi vào code)
+- Infrastructure/Services (AI providers, Telegram, rate limiter) → `.claude/rules/api.md` nếu HTTP, `.claude/rules/database.md` nếu EF
 - Blazor → `.claude/rules/blazor.md`
 - Logging → `.claude/rules/logging.md`
 

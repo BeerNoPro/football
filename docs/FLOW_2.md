@@ -56,6 +56,230 @@ Khi FT    LiveScorePollingJob phát hiện match biến mất khỏi live feed
 
 **Timezone:** Toàn bộ dùng VN timezone (`SE Asia Standard Time` Windows / `Asia/Ho_Chi_Minh` Linux). `KickoffUtc` trong DB vẫn lưu UTC — chỉ convert khi hiển thị UI.
 
+---
+
+# Chi Tiết Từng Job
+
+## Bảng tổng hợp
+
+| Job | File | Schedule | Football API calls | Downstream jobs |
+|-----|------|----------|--------------------|----------------|
+| FetchUpcomingMatchesJob | Jobs/FetchUpcomingMatchesJob.cs | Cron `0 5 * * *` (05:00 VN) | 3 req/ngày (`fixtures?date`) | PreMatchDataJob (per match, KO−5h), FetchPostMatchDataJob |
+| PreMatchDataJob | Jobs/PreMatchDataJob.cs | BackgroundJob.Schedule (KO−5h) | 1 req/match (H2H) | GeneratePredictionJob |
+| GeneratePredictionJob | Jobs/GeneratePredictionJob.cs | Per-match + Cron hourly batch | 0 req (AI: Gemini→Claude) | TelegramNotificationJob (06:00 VN) |
+| TelegramNotificationJob | Jobs/TelegramNotificationJob.cs | 06:00 VN (PreMatch) / immediate (HT) | 0 req (Telegram Bot API) | — |
+| LiveScorePollingJob | Jobs/LiveScorePollingJob.cs | Cron.Minutely() | 1 req/phút (`live=all`), skip nếu không có live match trong DB | HalfTimePredictionJob (khi HT), FetchPostMatchDataJob (khi FT) |
+| HalfTimePredictionJob | Jobs/HalfTimePredictionJob.cs | BackgroundJob.Enqueue (khi HT detect) | 2 req/match (stats + events) | TelegramNotificationJob.EditHalfTimeAsync |
+| FetchPostMatchDataJob | Jobs/FetchPostMatchDataJob.cs | Ad-hoc (enqueue từ FetchUpcoming/LiveScore hoặc Admin UI) | 2 req/match, max 15 matches (30 req max) | — |
+| SeedLeagueDataJob | Jobs/SeedLeagueDataJob.cs | Manual (Admin UI / Hangfire Dashboard) | 3 req/league (teams + fixtures + standings) | — |
+| FetchSquadJob | Jobs/FetchSquadJob.cs | Manual (Admin UI / Hangfire Dashboard) | 1 req/team chưa có squad | — |
+
+---
+
+## FetchUpcomingMatchesJob
+
+**Schedule:** Cron `0 5 * * *` (05:00 VN, UTC+7)
+
+**Logic:**
+- Fetch fixtures cho 3 ngày: hôm qua / hôm nay / ngày mai
+- Filter theo `FootballApi.LeagueIds` trong config (client-side)
+- Upsert: Countries → Leagues → Teams → Matches
+- Dùng in-memory cache per-run (`countryCache`, `leagueCache`, `teamCache`) để tránh duplicate DB lookup
+- Commit sau mỗi ngày (nếu ngày 2 lỗi, ngày 1 vẫn được lưu)
+- Abort nếu API trả null (quota hit)
+
+**Downstream (production — hiện bị comment):**
+- `BackgroundJob.Schedule<PreMatchDataJob>` per upcoming match tại `KickoffUtc − 5h`
+- `BackgroundJob.Enqueue<FetchPostMatchDataJob>` cho các trận đã FT chưa có stats
+
+---
+
+## PreMatchDataJob
+
+**Schedule:** `BackgroundJob.Schedule` từ FetchUpcomingMatchesJob (KO−5h)
+
+**Logic (FetchH2HAsync):**
+1. Fetch H2H 10 trận gần nhất — 1 API call (`fixtures/headtohead?h2h=homeId-awayId`)
+2. Build HomeForm + AwayForm (5 trận gần nhất) — 0 API call, từ DB
+3. Tính Fatigue (ngày nghỉ kể từ trận trước) — 0 API call, từ DB
+4. Lấy RefereeName từ `Match.RefereeName` — 0 API call
+5. Serialize `MatchContext` → JSON → lưu vào `MatchContextData` table
+
+**MatchContext structure:**
+```
+H2HContext: RecentMatches(10), HomeWins, Draws, AwayWins
+HomeForm / AwayForm: TeamName, RecentMatches(5), FormString, GoalsScored, GoalsConceded
+RefereeContext: Name
+FatigueContext: HomeDaysSinceLastMatch, AwayDaysSinceLastMatch
+LineupContext: null (FetchLineupsAsync bị skip để tiết kiệm quota)
+```
+
+**Downstream (production — hiện bị comment):**
+- `BackgroundJob.Enqueue<GeneratePredictionJob>` per match
+
+---
+
+## GeneratePredictionJob
+
+**Schedule:** Per-match (enqueue từ PreMatchDataJob) + Cron hourly batch scan
+
+**Logic (ExecuteForMatchAsync):**
+1. Load Match + MatchContextData từ DB
+2. Idempotency check: skip nếu prediction đã tồn tại
+3. Skip nếu match status ≠ Scheduled
+4. Call AI: **Gemini (primary, 1500 req/ngày free)** → **Claude (fallback)**
+5. Save `MatchPrediction` (Phase=PreMatch)
+6. Throw nếu cả 2 fail → Hangfire auto-retry
+
+**Logic (ExecuteAsync — hourly batch):**
+- Query tất cả matches premium leagues chưa có PreMatch prediction
+- Gọi ExecuteForMatchAsync per match
+
+**Downstream (production — hiện bị comment):**
+- `BackgroundJob.Schedule<TelegramNotificationJob.SendPredictionAsync>` lúc 06:00 VN
+
+---
+
+## TelegramNotificationJob
+
+**Schedule:**
+- `SendPredictionAsync`: BackgroundJob.Schedule lúc 06:00 VN từ GeneratePredictionJob
+- `EditHalfTimeAsync`: BackgroundJob.Enqueue ngay từ HalfTimePredictionJob
+
+**Logic (SendPredictionAsync):**
+1. Load MatchPrediction
+2. Idempotency: skip nếu `TelegramMessageId != null`
+3. Gửi prediction lên Telegram channel (Telegram.Bot v22, MarkdownV2)
+4. Lưu `TelegramMessageId` vào MatchPrediction
+
+**Logic (EditHalfTimeAsync):**
+1. Load HT MatchPrediction
+2. Lấy `TelegramMessageId` từ PreMatch prediction
+3. Edit message gốc: append section "Phân tích H2"
+
+---
+
+## LiveScorePollingJob
+
+**Schedule:** `Cron.Minutely()` (UTC timezone)
+
+**Adaptive gate:** Kiểm tra DB trước — exit early nếu không có live match (0 API cost)
+
+**Logic:**
+1. `GetAllLiveFixturesAsync()` — 1 req cho toàn bộ live matches
+2. Upsert `LiveMatch` table (score, status, minute)
+3. Detect HalfTime: status chuyển sang HT → enqueue HalfTimePredictionJob
+4. Detect FullTime: match biến mất khỏi live feed → update `Match.Status = Finished`, update score
+5. Broadcast via SignalR → group `match-{matchId}`
+
+**Downstream:**
+- `BackgroundJob.Enqueue<HalfTimePredictionJob>` per match khi phát hiện HT
+- `BackgroundJob.Enqueue<FetchPostMatchDataJob>` nếu có bất kỳ trận nào FT
+
+---
+
+## HalfTimePredictionJob
+
+**Schedule:** BackgroundJob.Enqueue từ LiveScorePollingJob (khi status = HalfTime)
+
+**Logic:**
+1. Idempotency: skip nếu HT prediction đã tồn tại
+2. Load Match + MatchContextData (context từ PreMatch)
+3. `GetFixtureHalfTimeDataAsync()` — 2 req (statistics + events H1)
+4. Call AI: **Gemini (primary)** → **Claude (fallback)** với `PredictHalfTimeAsync`
+5. Save `MatchPrediction` (Phase=HalfTime)
+
+**HalfTimeContext:**
+```
+H1 statistics: possession%, shots on target, corners, fouls, cards
+H1 events: goals, red/yellow cards, substitutions (với phút)
+PreMatch context: H2H, form, fatigue (từ MatchContextData)
+```
+
+**Downstream:**
+- `BackgroundJob.Enqueue<TelegramNotificationJob.EditHalfTimeAsync>`
+
+---
+
+## FetchPostMatchDataJob
+
+**Schedule:** Ad-hoc — enqueue từ FetchUpcomingMatchesJob, LiveScorePollingJob, hoặc Admin UI
+
+**Logic:**
+1. Query tối đa 15 finished matches chưa có stats (premium leagues only)
+2. `GetFixturePostMatchDataAsync(externalId)` — 2 req/match (stats + events)
+3. Lưu `Match.StatsJson` + `Match.EventsJson` (raw JSON)
+4. Commit sau mỗi match
+5. Abort nếu API trả null (quota hit)
+
+**Giới hạn 15 match:** 2 req/match × 15 = 30 req max, tránh exhaust daily quota (100/ngày)
+
+---
+
+## SeedLeagueDataJob
+
+**Schedule:** Manual only (Admin UI hoặc Hangfire Dashboard)
+
+**Logic (per league, 3 bước):**
+1. `GetTeamsByLeagueAsync(leagueId, season)` — Upsert Venue + Team
+2. `GetFixturesByRangeAsync(leagueId, season, from, to)` — Upsert Country, League, Team, Match
+3. `GetStandingsAsync(leagueId, season)` — Upsert Standing (rank, points, W/D/L, goals, form)
+
+**Retry logic (FetchWithRetryAsync):**
+- Network error: exponential backoff 5s→10s→…→120s, deadline 10 phút
+- Rate limit (null response): retry 3 lần, wait 65s mỗi lần, sau đó abort
+
+---
+
+## FetchSquadJob
+
+**Schedule:** Manual only (Admin UI hoặc Hangfire Dashboard)
+
+**Logic:**
+1. Query matches trong 7 ngày tới (premium leagues only)
+2. Extract unique teams (~20 max)
+3. Skip team đã có squad trong DB
+4. `GetSquadByTeamAsync(team.ExternalId)` — 1 req/team mới
+5. Upsert Player + SquadMember
+
+---
+
+# Infrastructure Services
+
+## RedisFootballApiRateLimiter
+**File:** `FootballBlog.Infrastructure/Services/RedisFootballApiRateLimiter.cs`
+
+- Redis key: `apikey:usage:FootballApi:perminute:{yyyy-MM-dd-HH-mm}`, TTL 65s
+- Giới hạn: 10 req/phút (per-minute gate, chặn burst trước khi API trả 429)
+- Fail-open: Redis unavailable → cho phép request (log warning)
+
+## ApiKeyRotator
+**File:** `FootballBlog.Infrastructure/Services/ApiKeyRotator.cs`
+
+- Load keys từ `ApiKeyConfigs` table, cache Redis 5 phút
+- Multi-key rotation: trả key đầu tiên còn available (order by Priority)
+- Block key ngay lập tức trên Redis khi nhận 429/403 (65s cho per-minute, đến ngày mai cho daily)
+- `InvalidateCacheAsync()`: force reload từ DB (gọi sau khi add/remove key qua Admin UI)
+
+## ApiUsageTracker
+**File:** `FootballBlog.Infrastructure/Services/ApiUsageTracker.cs`
+
+- Daily hard limit lưu trong bảng `ApiUsageDaily` (Date + Service)
+- Atomic `ExecuteUpdateAsync` để tránh race condition
+- Limits từ config: `FootballAPI=100`, `Gemini=1500`, `Telegram=0` (unlimited)
+
+## FootballApiClient — Flow mỗi API call
+**File:** `FootballBlog.API/ApiClients/FootballApi/FootballApiClient.cs`
+
+```
+1. keyRotator.GetAvailableKeyAsync()     → null nếu không có key khả dụng
+2. rateLimiter.TryConsumeAsync()         → false nếu >10 req/phút (Redis)
+3. usageTracker.CanCallAsync()           → false nếu ≥100 req hôm nay (DB)
+4. HTTP request với header x-apisports-key
+5. HandleRateLimitAsync(response, key)   → parse 429/403, block key trong Redis
+6. usageTracker.IncrementAsync()         → ghi +1 vào DB
+```
+
 **`FetchLineupsAsync`** — giữ trong `PreMatchDataJob` nhưng không schedule. Trigger thủ công từ Hangfire dashboard nếu cần. Bỏ qua để tiết kiệm quota.
 
 **`FetchSquadJob`** — trigger thủ công từ Admin UI. Chỉ fetch đội có trận trong 7 ngày tới, chỉ premium leagues, bỏ qua đội đã có squad.
